@@ -51,6 +51,7 @@ async function unescapeCodePoints(file) {
 
 {
   let bundleEntryPoints = [
+    src('index.js'),
     src('grapheme.js'),
     src('intl-adapter.js'),
     src('intl-polyfill.js'),

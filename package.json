@@ -22,6 +22,7 @@
     }
   ],
   "exports": {
+    ".": "./src/index.js",
     "./grapheme": "./src/grapheme.js",
     "./intl-adapter": "./src/intl-adapter.js"
   },
@@ -31,7 +32,14 @@
   ],
   "publishConfig": {
     "type": "commonjs",
+    "main": "./index.cjs",
+    "types": "./index.d.ts",
     "exports": {
+      ".": {
+        "types": "./grapheme.d.ts",
+        "import": "./index.js",
+        "require": "./index.cjs"
+      },
       "./grapheme": {
         "types": "./grapheme.d.ts",
         "import": "./grapheme.js",
