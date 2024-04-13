@@ -30,6 +30,7 @@
     "./dist/intl-polyfill.cjs"
   ],
   "publishConfig": {
+    "type": "commonjs",
     "exports": {
       "./grapheme": {
         "types": "./dist/grapheme.d.ts",
