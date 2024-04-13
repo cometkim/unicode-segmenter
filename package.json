@@ -1,0 +1,73 @@
+{
+  "name": "unicode-segmenter",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "A lightweight and fast, pure JavaScript library for Unicode segmentation",
+  "license": "MIT",
+  "homepage": "https://github.com/cometkim/unicode-segmenter",
+  "keywords": [
+    "cjk",
+    "unicode",
+    "grapheme",
+    "emoji"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cometkim/unicode-segmenter.git"
+  },
+  "maintainers": [
+    {
+      "email": "hey@hyeseong.kim",
+      "name": "Hyeseong Kim"
+    }
+  ],
+  "exports": {
+    "./grapheme": "./src/grapheme.js",
+    "./intl-adapter": "./src/intl-adapter.js"
+  },
+  "sideEffects": [
+    "./dist/intl-polyfill.js",
+    "./dist/intl-polyfill.cjs"
+  ],
+  "publishConfig": {
+    "exports": {
+      "./grapheme": {
+        "types": "./dist/grapheme.d.ts",
+        "import": "./dist/grapheme.js",
+        "require": "./dist/grapheme.cjs"
+      },
+      "./intl-adapter": {
+        "types": "./dist/intl-adapter.d.ts",
+        "import": "./dist/intl-adapter.js",
+        "require": "./dist/intl-adapter.cjs"
+      },
+      "./intl-polyfill": {
+        "types": "./dist/intl-polyfill.d.ts",
+        "import": "./dist/intl-polyfill.js",
+        "require": "./dist/intl-polyfill.cjs"
+      },
+      "./bundle/*": "./dist/bundle/*",
+      "./package.json": "./package.json"
+    }
+  },
+  "files": [
+    "src",
+    "dist",
+    "licenses"
+  ],
+  "scripts": {
+    "prepack": "yarn build",
+    "build": "node scripts/build-exports.js && tsc -p tsconfig.build.json"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "@types/node": "^20.12.7",
+    "esbuild": "^0.20.2",
+    "grapheme-splitter": "1.0.4",
+    "graphemer": "1.4.0",
+    "pretty-bytes": "^6.1.1",
+    "tinybench": "^2.6.0",
+    "typescript": "^5.4.5"
+  },
+  "packageManager": "yarn@4.1.1"
+}
