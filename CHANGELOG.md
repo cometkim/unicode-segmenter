@@ -1,5 +1,13 @@
 # unicode-segmenter
 
+## 0.1.2
+
+### Patch Changes
+
+- 973d645: Add index entry
+
+  And good old `"main"` entry
+
 ## 0.1.1
 
 ### Patch Changes
