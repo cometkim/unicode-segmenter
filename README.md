@@ -80,7 +80,7 @@ See [benchmark/performance.js](benchmark/performance.js) for more detail.
 
 [MIT](LICENSE)
 
-See also [license](licenses/unicode_segmentation-MIT.txt) of the original code.
+See also [license](licenses/unicode-segmentation_MIT.txt) of the original code.
 
 [unicode-segmentation]: https://github.com/unicode-rs/unicode-segmentation
 [`Intl.Segmenter`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter
