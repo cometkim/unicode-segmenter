@@ -40,11 +40,7 @@ A lightweight and fast, pure JavaScript library for Unicode segmentation.
 
 ### TypeScript
 
-Library is fully typed, and provides `.d.ts` file.
-
-However, this library only expose entry points by [`"exports"`](https://nodejs.org/api/packages.html#exports) field. It requires `"moduleResolution": "Node16"` or `"moduleResolution": "NodeNext"` config to your TypeScript project. (And I strongly recommend you to switch if you're not using it)
-
-See [docs](https://www.typescriptlang.org/docs/handbook/modules/reference.html#node16-nodenext) for detail.
+No worry. Library is fully typed, and provides `.d.ts` file 😉.
 
 ## Benchmark
 

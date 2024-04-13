@@ -12,7 +12,7 @@ let brotli = promisify(zlib.brotliCompress);
 
 let baseDir = import.meta.dirname;
 let rootDir = path.join(baseDir, '..');
-let distDir = path.join(rootDir, 'dist');
+let distDir = path.join(rootDir, '.');
 let bundleDir = path.join(distDir, 'bundle');
 
 let bundle = name => path.join(bundleDir, name);

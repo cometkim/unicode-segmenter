@@ -26,35 +26,37 @@
     "./intl-adapter": "./src/intl-adapter.js"
   },
   "sideEffects": [
-    "./dist/intl-polyfill.js",
-    "./dist/intl-polyfill.cjs"
+    "./intl-polyfill.js",
+    "./intl-polyfill.cjs"
   ],
   "publishConfig": {
     "type": "commonjs",
     "exports": {
       "./grapheme": {
-        "types": "./dist/grapheme.d.ts",
-        "import": "./dist/grapheme.js",
-        "require": "./dist/grapheme.cjs"
+        "types": "./grapheme.d.ts",
+        "import": "./grapheme.js",
+        "require": "./grapheme.cjs"
       },
       "./intl-adapter": {
-        "types": "./dist/intl-adapter.d.ts",
-        "import": "./dist/intl-adapter.js",
-        "require": "./dist/intl-adapter.cjs"
+        "types": "./intl-adapter.d.ts",
+        "import": "./intl-adapter.js",
+        "require": "./intl-adapter.cjs"
       },
       "./intl-polyfill": {
-        "types": "./dist/intl-polyfill.d.ts",
-        "import": "./dist/intl-polyfill.js",
-        "require": "./dist/intl-polyfill.cjs"
+        "types": "./intl-polyfill.d.ts",
+        "import": "./intl-polyfill.js",
+        "require": "./intl-polyfill.cjs"
       },
-      "./bundle/*": "./dist/bundle/*",
+      "./bundle/*": "./bundle/*",
       "./package.json": "./package.json"
     }
   },
   "files": [
-    "src",
-    "dist",
-    "licenses"
+    "/*.js",
+    "/*.cjs",
+    "/*.d.ts",
+    "/src",
+    "/licenses"
   ],
   "scripts": {
     "prepack": "yarn build",

@@ -11,5 +11,7 @@ node_modules/
 *.txt
 !licenses/*.txt
 
-lib/
-dist/
+/*.d.ts
+/*.js
+/*.cjs
+/bundle/

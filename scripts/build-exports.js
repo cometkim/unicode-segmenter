@@ -5,7 +5,7 @@ import { build } from 'esbuild';
 
 let rootDir = path.join(import.meta.dirname, '..');
 let srcDir = path.join(rootDir, 'src');
-let distDir = path.join(rootDir, 'dist');
+let distDir = path.join(rootDir, '');
 let bundleDir = path.join(distDir, 'bundle');
 
 await fs.mkdir(distDir, { recursive: true });
