@@ -8,7 +8,7 @@ let srcDir = path.join(rootDir, 'src');
 let distDir = path.join(rootDir, 'dist');
 let bundleDir = path.join(distDir, 'bundle');
 
-fs.mkdir(distDir, { recursive: true });
+await fs.mkdir(distDir, { recursive: true });
 
 let src = name => path.join(srcDir, name);
 let dist = name => path.join(distDir, name);
@@ -25,8 +25,9 @@ async function unescapeCodePoints(file) {
 }
 
 {
+  let entryPoints = modules.map(src);
   await build({
-    entryPoints: modules.map(src),
+    entryPoints,
     outdir: distDir,
     outExtension: { '.js': '.js' },
     format: 'esm',
@@ -34,7 +35,7 @@ async function unescapeCodePoints(file) {
     write: true,
   });
   await build({
-    entryPoints: modules.map(src),
+    entryPoints,
     outdir: distDir,
     outExtension: { '.js': '.cjs' },
     format: 'cjs',
@@ -49,13 +50,14 @@ async function unescapeCodePoints(file) {
 }
 
 {
+  let bundleEntryPoints = [
+    src('grapheme.js'),
+    src('intl-adapter.js'),
+    src('intl-polyfill.js'),
+  ];
   await build({
     bundle: true,
-    entryPoints: [
-      src('grapheme.js'),
-      src('intl-adapter.js'),
-      src('intl-polyfill.js'),
-    ],
+    entryPoints: bundleEntryPoints,
     outdir: bundleDir,
     outExtension: { '.js': '.js' },
     format: 'esm',
@@ -64,11 +66,7 @@ async function unescapeCodePoints(file) {
   });
   await build({
     bundle: true,
-    entryPoints: [
-      src('grapheme.js'),
-      src('intl-adapter.js'),
-      src('intl-polyfill.js'),
-    ],
+    entryPoints: bundleEntryPoints,
     outdir: bundleDir,
     outExtension: { '.js': '.min.js' },
     format: 'esm',
