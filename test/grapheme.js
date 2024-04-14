@@ -4,6 +4,10 @@ import * as assert from 'node:assert/strict';
 import { graphemeSegments } from 'unicode-segmenter/grapheme';
 
 test('graphemeSegmentes', async t => {
+  await t.test('empty string', () => {
+    assert.deepEqual([...graphemeSegments('')], []);
+  });
+
   await t.test('ascii', () => {
     assert.deepEqual(
       [...graphemeSegments('abc123')],
