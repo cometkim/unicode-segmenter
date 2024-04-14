@@ -1,5 +1,14 @@
 # unicode-segmenter
 
+## 0.1.4
+
+### Patch Changes
+
+- 0baf327: Fix CommonJS entries
+
+  CommonJS entries had wrong import paths to ESM, now fixed.
+  I really need to work on [espub](https://github.com/cometkim/espub) 😅
+
 ## 0.1.3
 
 ### Patch Changes
