@@ -26,6 +26,11 @@ const GS_Emoji = 4;
  * @return {core.Segmenter}
  */
 export function* graphemeSegments(input) {
+  // do nothing on empty string
+  if (input === '') {
+    return;
+  }
+
   /** @type {number} Current cursor position. */
   let cursor = 0;
 
@@ -129,6 +134,8 @@ export function* graphemeSegments(input) {
         return decision(false);
     }
   };
+
+
 
   let ch = take();
   let segment = ch;

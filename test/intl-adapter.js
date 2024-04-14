@@ -6,6 +6,7 @@ let segmenter = new Segmenter();
 let intlSegmenter = new Intl.Segmenter();
 
 let cases = [
+  '',
   'abc123',
   'a̐éö̲\r\n',
   '🇷🇸🇮🇴' ,
