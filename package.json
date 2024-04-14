@@ -68,7 +68,9 @@
   ],
   "scripts": {
     "prepack": "yarn build",
-    "build": "node scripts/build-exports.js && tsc -p tsconfig.build.json"
+    "build": "node scripts/build-exports.js && tsc -p tsconfig.build.json",
+    "test": "node --test --test-reporter spec --test-reporter-destination=stdout",
+    "test:coverage": "yarn test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
