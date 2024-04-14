@@ -24,6 +24,14 @@ async function unescapeCodePoints(file) {
   await fs.writeFile(file, content, 'utf8');
 }
 
+async function rewriteCjsEntries(file) {
+  let content = await fs.readFile(file, 'utf8');
+  content = content.replace(/(require\("(?<id>.*)\.js"\))/g, (_match, _group1, id) => {
+    return `require("${id}.cjs")`;
+  });
+  await fs.writeFile(file, content, 'utf8');
+}
+
 {
   let entryPoints = modules.map(src);
   await build({
@@ -45,6 +53,9 @@ async function unescapeCodePoints(file) {
   for (let file of await fs.readdir(distDir)) {
     if (file.startsWith('_')) {
       await unescapeCodePoints(dist(file));
+    }
+    if (file.endsWith('.cjs')) {
+      await rewriteCjsEntries(dist(file));
     }
   }
 }
