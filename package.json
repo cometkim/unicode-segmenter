@@ -70,10 +70,12 @@
     "prepack": "yarn build",
     "build": "node scripts/build-exports.js && tsc -p tsconfig.build.json",
     "test": "node --test --test-reporter spec --test-reporter-destination=stdout",
-    "test:coverage": "yarn test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info"
+    "test:coverage": "yarn test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info",
+    "fuzz": "jazzer fuzz/target.cjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
+    "@jazzer.js/core": "^2.1.0",
     "@types/node": "^20.12.7",
     "esbuild": "^0.20.2",
     "fast-check": "^3.17.1",
