@@ -1,7 +1,9 @@
 # unicode-segmenter
 [![Package Version](https://img.shields.io/npm/v/unicode-segmenter)](https://npm.im/unicode-segmenter)
-[![LICENSE - MIT](https://img.shields.io/github/license/cometkim/unicode-segmenter)](#license)
 [![Bundle Size](https://img.shields.io/bundlephobia/minzip/unicode-segmenter)](https://bundlephobia.com/package/unicode-segmenter)
+[![Integration](https://github.com/cometkim/unicode-segmenter/actions/workflows/ci.yml/badge.svg)](https://github.com/cometkim/unicode-segmenter/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/cometkim/unicode-segmenter/graph/badge.svg?token=3rA29JEH4J)](https://codecov.io/gh/cometkim/unicode-segmenter)
+[![LICENSE - MIT](https://img.shields.io/github/license/cometkim/unicode-segmenter)](#license)
 
 A lightweight and fast, pure JavaScript library for Unicode segmentation.
 
