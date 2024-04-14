@@ -1,5 +1,14 @@
 # unicode-segmenter
 
+## 0.1.3
+
+### Patch Changes
+
+- b65ae23: Skip invariant state checks
+- 5b127e8: Fix error on empty string
+- 4dfce08: Fix codepoint boundary check
+- 4e34e25: Fix missing surrogate boundary check
+
 ## 0.1.2
 
 ### Patch Changes
