@@ -2,6 +2,7 @@
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "strict": true,
     "allowJs": true,
     "noEmit": true
   }

@@ -109,18 +109,11 @@ export function* graphemeSegments(input) {
   };
 
   /**
+   * @param {base.GraphemeCategory} catBefore
+   * @param {base.GraphemeCategory} catAfter
    * @return {boolean}
    */
-  let isBoundary = () => {
-    if (catBefore === null || catAfter === null) {
-      throw new RangeError('Segments isn\'t intialized');
-    }
-    if (state === GS_Break) {
-      return true;
-    }
-    if (state === GS_NotBreak) {
-      return false;
-    }
+  let isBoundary = (catBefore, catAfter) => {
     switch (checkPair(catBefore, catAfter)) {
       case P_NotBreak:
         return decision(false);
@@ -166,7 +159,7 @@ export function* graphemeSegments(input) {
     ch = take();
     catAfter = categoryOf(ch);
 
-    if (isBoundary()) {
+    if (isBoundary(catBefore, catAfter)) {
       yield { segment, input, index };
       segment = '';
     }
