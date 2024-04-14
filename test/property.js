@@ -5,7 +5,7 @@ import fc from 'fast-check';
 import { graphemeSegments } from 'unicode-segmenter/grapheme';
 
 fc.configureGlobal({
-  numRuns: 50_000,
+  numRuns: 100_000,
 });
 
 test('pbt using fast-check', async t => {
