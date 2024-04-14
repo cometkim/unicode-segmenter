@@ -76,6 +76,7 @@
     "@changesets/cli": "^2.27.1",
     "@types/node": "^20.12.7",
     "esbuild": "^0.20.2",
+    "fast-check": "^3.17.1",
     "grapheme-splitter": "1.0.4",
     "graphemer": "1.4.0",
     "pretty-bytes": "^6.1.1",
