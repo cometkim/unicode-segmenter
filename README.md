@@ -48,7 +48,8 @@ No worry. Library is fully typed, and provides `.d.ts` file 😉.
 
 This library aims to be lighter and faster than other existing libraries in the ecosystem.
 
-vs with:
+`unicode-segmenter/grapheme`@0.1.3 vs with:
+
 - [`Intl.Segmenter`] in Node.js (browser's version may vary)
 - [graphemer]@1.4.0 (16.6M+ weekly downloads)
 - [grapheme-splitter]@1.0.4 (5.7M+ weekly downloads)
@@ -61,9 +62,9 @@ Tested on:
 
 | Name                         | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
 |------------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-| `unicode-segmenter/grapheme` |    ✔️ |  44,824 |           30,782 |            9,755 |            5,922 |
-| `graphemer`                  |    ✖️ ️| 410,410 |           95,091 |           15,749 |           10,674 |
-| `grapheme-splitter`          |    ✖️ | 122,227 |           23,667 |            7,838 |            4,846 |
+| `unicode-segmenter/grapheme` |    ✔️ |  44,669 |           30,698 |            9,696 |            5,917 |
+| `graphemer`                  |    ✖️ ️| 410,424 |           95,104 |           15,752 |           10,660 |
+| `grapheme-splitter`          |    ✖️ | 122,241 |           23,680 |            7,852 |            4,841 |
 
 See [benchmark/bundle-stats.js](benchmark/bundle-stats.js) for more detail.
 
