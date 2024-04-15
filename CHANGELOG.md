@@ -1,5 +1,11 @@
 # unicode-segmenter
 
+## 0.1.6
+
+### Patch Changes
+
+- 18c7f44: Fix breaks on Unicode extended characters
+
 ## 0.1.5
 
 ### Patch Changes
