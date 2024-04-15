@@ -4,6 +4,8 @@ import fc from 'fast-check';
 
 import { graphemeSegments } from 'unicode-segmenter/grapheme';
 
+let intlSegmenter = new Intl.Segmenter();
+
 fc.configureGlobal({
   // Fix seed here for stable coverage report
   seed: 1713140942000,
@@ -14,8 +16,9 @@ test('pbt using fast-check', async t => {
   await t.test('ascii', () => {
     fc.assert(
       fc.property(fc.asciiString(), data => {
-        assert.doesNotThrow(
-          () => void [...graphemeSegments(data)],
+        assert.deepEqual(
+          [...intlSegmenter.segment(data)],
+          [...graphemeSegments(data)],
         );
       }),
     );
@@ -24,8 +27,9 @@ test('pbt using fast-check', async t => {
   await t.test('unicode', () => {
     fc.assert(
       fc.property(fc.unicodeString(), data => {
-        assert.doesNotThrow(
-          () => void [...graphemeSegments(data)],
+        assert.deepEqual(
+          [...intlSegmenter.segment(data)],
+          [...graphemeSegments(data)],
         );
       }),
     );
@@ -34,8 +38,9 @@ test('pbt using fast-check', async t => {
   await t.test('utf-16', () => {
     fc.assert(
       fc.property(fc.string16bits(), data => {
-        assert.doesNotThrow(
-          () => void [...graphemeSegments(data)],
+        assert.deepEqual(
+          [...intlSegmenter.segment(data)],
+          [...graphemeSegments(data)],
         );
       }),
     );
@@ -59,5 +64,21 @@ test('Counterexample: "\udbf9"', () => {
       { segment: '\udbf9', index: 0, input: '\udbf9' },
       { segment: '', index: 1, input: '\udbf9' },
     ],
+  );
+});
+
+test('Counterexample: " ᯪ"', () => {
+  let data = ' ᯪ';
+  assert.deepEqual(
+    [...intlSegmenter.segment(data)],
+    [...graphemeSegments(data)],
+  );
+});
+
+test('Counterexample: "܏ "', () => {
+  let data = '܏ ';
+  assert.deepEqual(
+    [...intlSegmenter.segment(data)],
+    [...graphemeSegments(data)],
   );
 });

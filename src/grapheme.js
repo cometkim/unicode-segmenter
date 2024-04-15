@@ -116,15 +116,15 @@ export function* graphemeSegments(input) {
   let isBoundary = (catBefore, catAfter) => {
     switch (checkPair(catBefore, catAfter)) {
       case P_NotBreak:
-        return decision(false);
-      case P_Break:
       case P_Extended:
-        return decision(true);
-      case P_Regional:
-        return decision(risCount % 2 === 0);
+        // always handle extended characters
       case P_Emoji:
         // Here is always ZWJ + emoji combo
         return decision(false);
+      case P_Break:
+        return decision(true);
+      case P_Regional:
+        return decision(risCount % 2 === 0);
     }
   };
 
