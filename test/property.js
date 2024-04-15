@@ -12,7 +12,7 @@ fc.configureGlobal({
   numRuns: 100_000,
 });
 
-test.skip('pbt using fast-check', async t => {
+test('pbt using fast-check', async t => {
   await t.test('ascii', () => {
     fc.assert(
       fc.property(fc.asciiString(), data => {
