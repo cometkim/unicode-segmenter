@@ -62,7 +62,7 @@ export function* graphemeSegments(input) {
       if (cursor + 1 < len) {
         let lo = input.charCodeAt(cursor + 1);
         if (0xdc00 <= lo && lo <= 0xdfff) {
-          return String.fromCodePoint(((hi - 0xD800) << 10) + (lo - 0xDC00) + 0x10000);
+          return String.fromCodePoint(((hi - 0xd800) << 10) + (lo - 0xdc00) + 0x10000);
         }
       }
     }

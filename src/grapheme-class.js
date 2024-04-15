@@ -104,7 +104,7 @@ export class GraphemeSegments {
       ch = this._take();
       this.catAfter = this._cat(ch);
 
-      if (this._isBoundary()) {
+      if (this._isBoundary(this.catBefore, this.catAfter)) {
         let value = { segment, input, index: cursor };
         return { done: false, value };
       }
@@ -128,8 +128,8 @@ export class GraphemeSegments {
     if (0xd800 <= hi && hi <= 0xdbff) {
       if (cursor + 1 < len) {
         let lo = input.charCodeAt(cursor + 1);
-        if (0xdc00 <= lo && 0xffff) {
-          return String.fromCodePoint(((hi - 0xD800) << 10) + (lo - 0xDC00) + 0x10000);
+        if (0xdc00 <= lo && lo <= 0xdfff) {
+          return String.fromCodePoint(((hi - 0xd800) << 10) + (lo - 0xdc00) + 0x10000);
         }
       }
     }
@@ -177,30 +177,22 @@ export class GraphemeSegments {
   }
 
   /**
+   * @param {base.GraphemeCategory} catBefore
+   * @param {base.GraphemeCategory} catAfter
    * @return {boolean}
    */
-  _isBoundary() {
-    let { state, catBefore, catAfter } = this;
-    if (catBefore === null || catAfter === null) {
-      throw new RangeError('Segments isn\'t intialized');
-    }
-    if (state === GS_Break) {
-      return true;
-    }
-    if (state === GS_NotBreak) {
-      return false;
-    }
+  _isBoundary(catBefore, catAfter) {
     switch (checkPair(catBefore, catAfter)) {
       case P_NotBreak:
-        return this._decision(false);
-      case P_Break:
       case P_Extended:
-        return this._decision(true);
-      case P_Regional:
-        return this._decision(this.risCount % 2 === 0);
+        // always handle extended characters
       case P_Emoji:
         // Here is always ZWJ + emoji combo
-        return this._decision(false);
+        return decision(false);
+      case P_Break:
+        return decision(true);
+      case P_Regional:
+        return decision(risCount % 2 === 0);
     }
   }
 }
@@ -348,8 +340,6 @@ function checkPair(before, after) {
             return 1;
         }
         break;
-    default:
-      
   }
   switch (after) {
     case 1 :
