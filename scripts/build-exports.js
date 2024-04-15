@@ -11,25 +11,15 @@ let bundleDir = path.join(distDir, 'bundle');
 await fs.mkdir(distDir, { recursive: true });
 
 let src = name => path.join(srcDir, name);
-let dist = name => path.join(distDir, name);
-let bundle = name => path.join(bundleDir, name);
-
 let modules = await fs.readdir(srcDir);
 
-async function unescapeCodePoints(file) {
-  let content = await fs.readFile(file, 'utf8');
-  content = content.replace(/(\\u\{?[0-9a-zA-Z]+\}?)/g, (_match, group) => {
-    return eval(`"${group}"`);
-  });
-  await fs.writeFile(file, content, 'utf8');
-}
-
-async function rewriteCjsEntries(file) {
-  let content = await fs.readFile(file, 'utf8');
-  content = content.replace(/(require\("(?<id>.*)\.js"\))/g, (_match, _group1, id) => {
+/**
+ * @param {string} content
+ */
+function rewriteCjsEntries(content) {
+  return content.replace(/(require\("(?<id>.*)\.js"\))/g, (_match, _group1, id) => {
     return `require("${id}.cjs")`;
   });
-  await fs.writeFile(file, content, 'utf8');
 }
 
 {
@@ -42,21 +32,16 @@ async function rewriteCjsEntries(file) {
     treeShaking: true,
     write: true,
   });
-  await build({
+  let { outputFiles: cjsOutputFiles = [] } = await build({
     entryPoints,
     outdir: distDir,
     outExtension: { '.js': '.cjs' },
     format: 'cjs',
     treeShaking: true,
-    write: true,
+    write: false,
   });
-  for (let file of await fs.readdir(distDir)) {
-    if (file.startsWith('_')) {
-      await unescapeCodePoints(dist(file));
-    }
-    if (file.endsWith('.cjs')) {
-      await rewriteCjsEntries(dist(file));
-    }
+  for (let file of cjsOutputFiles) {
+    await fs.writeFile(file.path, rewriteCjsEntries(file.text), 'utf8');
   }
 }
 
@@ -86,7 +71,4 @@ async function rewriteCjsEntries(file) {
     treeShaking: true,
     write: true,
   });
-  for (let file of await fs.readdir(bundleDir)) {
-    await unescapeCodePoints(bundle(file));
-  }
 }
