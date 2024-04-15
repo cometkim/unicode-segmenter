@@ -5,6 +5,8 @@ import fc from 'fast-check';
 import { graphemeSegments } from 'unicode-segmenter/grapheme';
 
 fc.configureGlobal({
+  // Fix seed here for stable coverage report
+  seed: 1713140942000,
   numRuns: 100_000,
 });
 
