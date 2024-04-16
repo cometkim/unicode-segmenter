@@ -1,5 +1,32 @@
 # unicode-segmenter
 
+## 0.2.0
+
+### Minor Changes
+
+- 9938499: Getting 2x faster by optimizing hot path. Also with reduced bundle size
+
+  By casting Unicode chars to u32 in advance, all internal operations become 32-bit integer operations.
+
+  The previous version (v0.1.6) was
+
+  - 2.47x faster than Intl.Segmenter
+  - 2.68x faster than graphemer
+  - 4.95x faster than grapheme-splitter
+
+  Now it is
+
+  - 5.04x faster than Intl.Segmenter
+  - 5.52x faster than graphemer
+  - 9.83x faster than grapheme-splitter
+
+### Patch Changes
+
+- b6824b5: Mark `sideEffects` on the polyfill bundle
+- 7c68863: Reduce bundle size a bit by inlining internal constants, and removing unused insternal state.
+- 9938499: Reduce bundle size a bit more
+- f1c80b7: Publish sourcemaps
+
 ## 0.1.6
 
 ### Patch Changes
