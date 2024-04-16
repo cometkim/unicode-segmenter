@@ -13,7 +13,9 @@ node_modules/
 
 /*.d.ts
 /*.js
+/*.js.map
 /*.cjs
+/*.cjs.map
 /bundle/
 
 lcov.info

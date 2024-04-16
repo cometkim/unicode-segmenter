@@ -13,15 +13,6 @@ await fs.mkdir(distDir, { recursive: true });
 let src = name => path.join(srcDir, name);
 let modules = await fs.readdir(srcDir);
 
-/**
- * @param {string} content
- */
-function rewriteCjsEntries(content) {
-  return content.replace(/(require\("(?<id>.*)\.js"\))/g, (_match, _group1, id) => {
-    return `require("${id}.cjs")`;
-  });
-}
-
 {
   let entryPoints = modules.map(src);
   await build({
@@ -31,18 +22,17 @@ function rewriteCjsEntries(content) {
     format: 'esm',
     treeShaking: true,
     write: true,
+    sourcemap: true,
   });
-  let { outputFiles: cjsOutputFiles = [] } = await build({
+  await build({
     entryPoints,
     outdir: distDir,
     outExtension: { '.js': '.cjs' },
     format: 'cjs',
     treeShaking: true,
-    write: false,
+    write: true,
+    sourcemap: true,
   });
-  for (let file of cjsOutputFiles) {
-    await fs.writeFile(file.path, rewriteCjsEntries(file.text), 'utf8');
-  }
 }
 
 {
@@ -60,6 +50,7 @@ function rewriteCjsEntries(content) {
     format: 'esm',
     treeShaking: true,
     write: true,
+    sourcemap: true,
   });
   await build({
     bundle: true,
@@ -70,5 +61,6 @@ function rewriteCjsEntries(content) {
     minify: true,
     treeShaking: true,
     write: true,
+    sourcemap: true,
   });
 }
