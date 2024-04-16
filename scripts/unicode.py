@@ -195,7 +195,7 @@ def load_properties(f, interestingprops):
     return props
 
 def escape_char(c):
-    return "0x%x" % c
+    return "%d" % c
 
 def emit_table(f, name, t_data, pfun=lambda x: f"[{escape_char(x[0])},{escape_char(x[1])}]"):
     f.write("const %s = [\n" % name)
