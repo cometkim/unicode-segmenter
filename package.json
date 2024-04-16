@@ -81,6 +81,7 @@
     "fast-check": "^3.17.1",
     "grapheme-splitter": "1.0.4",
     "graphemer": "1.4.0",
+    "mitata": "^0.1.11",
     "pretty-bytes": "^6.1.1",
     "tinybench": "^2.6.0",
     "typescript": "^5.4.5"

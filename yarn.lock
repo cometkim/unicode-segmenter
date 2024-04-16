@@ -3187,6 +3187,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mitata@npm:^0.1.11":
+  version: 0.1.11
+  resolution: "mitata@npm:0.1.11"
+  checksum: 10c0/0e270f36e176de1ecc7eb86455182940281d85995b6e67294bfa58cbc132257c3fad8ecfcd2c9f1b1e31aff9df40cd21e600906791c1686b250bc4e866ea70ff
+  languageName: node
+  linkType: hard
+
 "mixme@npm:^0.5.1":
   version: 0.5.10
   resolution: "mixme@npm:0.5.10"
@@ -4502,6 +4509,7 @@ __metadata:
     fast-check: "npm:^3.17.1"
     grapheme-splitter: "npm:1.0.4"
     graphemer: "npm:1.4.0"
+    mitata: "npm:^0.1.11"
     pretty-bytes: "npm:^6.1.1"
     tinybench: "npm:^2.6.0"
     typescript: "npm:^5.4.5"
