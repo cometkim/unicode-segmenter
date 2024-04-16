@@ -58,7 +58,7 @@ unicode-segmenter@latest vs:
 
 | Name                         | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
 |------------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-| `unicode-segmenter/grapheme` |    ✔️ |  53,904 |           40,332 |            9,541 |            5,305 |
+| `unicode-segmenter/grapheme` |    ✔️ |  43,742 |           29,566 |            9,001 |            5,657 |
 | `graphemer`                  |    ✖️ ️| 410,424 |           95,104 |           15,752 |           10,660 |
 | `grapheme-splitter`          |    ✖️ | 122,241 |           23,680 |            7,852 |            4,841 |
 
@@ -72,16 +72,16 @@ runtime: node v21.7.1 (arm64-darwin)
 
 benchmark              time (avg)             (min … max)       p75       p99      p999
 --------------------------------------------------------- -----------------------------
-unicode-segmenter     973 ns/iter     (930 ns … 1'306 ns)    963 ns  1'201 ns  1'306 ns
-Intl.Segmenter      2'402 ns/iter   (1'547 ns … 3'187 ns)  2'628 ns  3'117 ns  3'187 ns
-graphemer           2'610 ns/iter   (2'585 ns … 2'931 ns)  2'613 ns  2'762 ns  2'931 ns
-grapheme-splitter   4'817 ns/iter   (4'208 ns … 1'057 µs)  4'333 ns 12'000 ns 59'500 ns
+unicode-segmenter     475 ns/iter       (463 ns … 830 ns)    481 ns    561 ns    830 ns
+Intl.Segmenter      2'391 ns/iter   (1'556 ns … 3'428 ns)  2'613 ns  3'286 ns  3'428 ns
+graphemer           2'623 ns/iter   (2'574 ns … 2'914 ns)  2'633 ns  2'891 ns  2'914 ns
+grapheme-splitter   4'668 ns/iter     (4'208 ns … 263 µs)  4'334 ns  5'375 ns 54'625 ns
 
 summary
   unicode-segmenter
-   2.47x faster than Intl.Segmenter
-   2.68x faster than graphemer
-   4.95x faster than grapheme-splitter
+   5.04x faster than Intl.Segmenter
+   5.52x faster than graphemer
+   9.83x faster than grapheme-splitter
 ```
 
 See [benchmark/performance.js](benchmark/performance.js) for more detail.
