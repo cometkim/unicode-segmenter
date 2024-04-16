@@ -28,7 +28,8 @@
   },
   "sideEffects": [
     "./intl-polyfill.js",
-    "./intl-polyfill.cjs"
+    "./intl-polyfill.cjs",
+    "./bundle/intl-polyfill.js"
   ],
   "publishConfig": {
     "type": "commonjs",
