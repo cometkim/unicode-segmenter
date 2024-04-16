@@ -172,7 +172,7 @@ export class GraphemeSegments {
       // If this char isn't within the cached range, update the cache to the
       // range that includes it.
       if (cp < this.cache[0] || cp > this.cache[1]) {
-        this.cache = searchGrapheme(ch);
+        this.cache = searchGrapheme(cp);
       }
       return this.cache[2];
     }
