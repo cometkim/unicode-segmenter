@@ -72,16 +72,16 @@ runtime: node v21.7.1 (arm64-darwin)
 
 benchmark              time (avg)             (min … max)       p75       p99      p999
 --------------------------------------------------------- -----------------------------
-unicode-segmenter     542 ns/iter       (516 ns … 791 ns)    550 ns    611 ns    791 ns
-Intl.Segmenter      2'444 ns/iter   (1'570 ns … 3'455 ns)  2'679 ns  3'453 ns  3'455 ns
-graphemer           2'616 ns/iter   (2'578 ns … 2'953 ns)  2'619 ns  2'860 ns  2'953 ns
-grapheme-splitter   4'645 ns/iter     (4'208 ns … 346 µs)  4'334 ns  5'958 ns 56'542 ns
+unicode-segmenter     475 ns/iter       (463 ns … 830 ns)    481 ns    561 ns    830 ns
+Intl.Segmenter      2'391 ns/iter   (1'556 ns … 3'428 ns)  2'613 ns  3'286 ns  3'428 ns
+graphemer           2'623 ns/iter   (2'574 ns … 2'914 ns)  2'633 ns  2'891 ns  2'914 ns
+grapheme-splitter   4'668 ns/iter     (4'208 ns … 263 µs)  4'334 ns  5'375 ns 54'625 ns
 
 summary
   unicode-segmenter
-   4.51x faster than Intl.Segmenter
-   4.83x faster than graphemer
-   8.58x faster than grapheme-splitter
+   5.04x faster than Intl.Segmenter
+   5.52x faster than graphemer
+   9.83x faster than grapheme-splitter
 ```
 
 See [benchmark/performance.js](benchmark/performance.js) for more detail.

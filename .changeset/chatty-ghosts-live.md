@@ -12,6 +12,6 @@ The previous version (v0.1.6) was
 - 4.95x faster than grapheme-splitter
 
 Now it is
-- 4.51x faster than Intl.Segmenter
-- 4.83x faster than graphemer
-- 8.58x faster than grapheme-splitter
+- 5.04x faster than Intl.Segmenter
+- 5.52x faster than graphemer
+- 9.83x faster than grapheme-splitter

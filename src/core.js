@@ -43,11 +43,12 @@ export function bsearchUnicodeRange(cp, table, defaultLower, defaultUpper, slice
 
   while (low <= high) {
     let mid = low + high >> 1;
-    let [lo, hi, cat] = table[mid];
+    let cur = table[mid];
+    let lo = cur[0], hi = cur[1];
 
     // Found some
     if (lo <= cp && cp <= hi) {
-      return [lo, hi, cat];
+      return cur;
     } else if (hi < cp) {
       low = mid + 1;
     } else {
