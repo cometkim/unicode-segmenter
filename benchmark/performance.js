@@ -2,7 +2,8 @@ import { group, bench, run } from 'mitata';
 
 import Graphemer from 'graphemer';
 import GraphemeSplitter from 'grapheme-splitter';
-import { graphemeSegments } from 'unicode-segmenter/grapheme';
+
+import { graphemeSegments } from '../src/grapheme.js';
 
 let input = '👻👩‍👩‍👦‍👦';
 
@@ -10,8 +11,8 @@ const intlSegmenter = new Intl.Segmenter();
 const graphemer = new (Graphemer.default || Graphemer)();
 const graphemeSplitter = new (GraphemeSplitter.default || GraphemeSplitter)();
 
-group(() => {
-  bench('unicode-segmenter/grapheme', () => {
+group('Unicode grapheme splitter libraries', () => {
+  bench('unicode-segmenter', () => {
     void ([...graphemeSegments(input)]);
   });
 
@@ -28,4 +29,4 @@ group(() => {
   });
 });
 
-await run();
+run();
