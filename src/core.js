@@ -42,12 +42,12 @@ export function bsearchUnicodeRange(ch, table, defaultLower, defaultUpper, slice
   let high = sliceTo - 1;
 
   while (low <= high) {
-    let mid = ~~((low + high) / 2);
-    let [lo, hi] = table[mid];
+    let mid = low + high >> 1;
+    let [lo, hi, cat] = table[mid];
 
     // Found some
     if (lo <= ch && ch <= hi) {
-      return [lo.codePointAt(0), hi.codePointAt(0), table[mid][2]];
+      return [lo.codePointAt(0), hi.codePointAt(0), cat];
     } else if (hi < ch) {
       low = mid + 1;
     } else {
