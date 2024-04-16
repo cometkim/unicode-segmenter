@@ -48,15 +48,11 @@ No worry. Library is fully typed, and provides `.d.ts` file 😉.
 
 This library aims to be lighter and faster than other existing libraries in the ecosystem.
 
-`unicode-segmenter/grapheme`@latest vs with:
+unicode-segmenter@latest vs:
 
-- [`Intl.Segmenter`] in Node.js (browser's version may vary)
-- [graphemer]@1.4.0 (16.6M+ weekly downloads)
-- [grapheme-splitter]@1.0.4 (5.7M+ weekly downloads)
-
-Tested on:
-- Apple MacBook Pro 18 (M1 Pro) macOS 14.1.1 arm64
-- Node.js 21.7.1 (V8 11.8.172.17-node.20)
+- Node.js' built-in [`Intl.Segmenter`] (browser's version may vary)
+- [graphemer]@1.4.0 (16.6M+ weekly downloads on NPM)
+- [grapheme-splitter]@1.0.4 (5.7M+ weekly downloads on NPM)
 
 ### Bundle Stats
 
@@ -70,12 +66,25 @@ See [benchmark/bundle-stats.js](benchmark/bundle-stats.js) for more detail.
 
 ### Performance
 
-| Task Name                    | ops/sec   | Average Time (ns)   |  Margin |  Samples |
-|------------------------------|----------:|--------------------:|--------:|---------:|
-| `unicode-segmenter/grapheme` | 1,035,579 |   965.7360103527205 | ± 0.25% |  517,740 |
-| `Intl.Segmenter`             |   379,206 |  2673.1848024250185 | ±24.34% |  187,043 |
-| `graphemer`                  |   385,927 |  2596.4455787960496 | ± 0.44% |  192,572 |
-| `grapheme-splitter`          |   228,615 |  4450.0678901368470 | ± 0.63% |  112,358 |
+```
+cpu: Apple M1 Pro
+runtime: node v21.7.1 (arm64-darwin)
+
+benchmark              time (avg)             (min … max)       p75       p99      p999
+--------------------------------------------------------- -----------------------------
+• Unicode grapheme splitter libraries
+--------------------------------------------------------- -----------------------------
+unicode-segmenter     973 ns/iter     (930 ns … 1'306 ns)    963 ns  1'201 ns  1'306 ns
+Intl.Segmenter      2'402 ns/iter   (1'547 ns … 3'187 ns)  2'628 ns  3'117 ns  3'187 ns
+graphemer           2'610 ns/iter   (2'585 ns … 2'931 ns)  2'613 ns  2'762 ns  2'931 ns
+grapheme-splitter   4'817 ns/iter   (4'208 ns … 1'057 µs)  4'333 ns 12'000 ns 59'500 ns
+
+summary for Unicode grapheme splitter libraries
+  unicode-segmenter
+   2.47x faster than Intl.Segmenter
+   2.68x faster than graphemer
+   4.95x faster than grapheme-splitter
+```
 
 See [benchmark/performance.js](benchmark/performance.js) for more detail.
 

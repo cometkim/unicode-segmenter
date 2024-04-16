@@ -71,7 +71,13 @@
     "build": "node scripts/build-exports.js && tsc -p tsconfig.build.json",
     "test": "node --test --test-reporter spec --test-reporter-destination=stdout",
     "test:coverage": "yarn test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info",
-    "fuzz": "jazzer fuzz/target.cjs"
+    "fuzz": "jazzer fuzz/target.cjs",
+    "bundle-stats": "yarn build && node benchmark/bundle-stats.js",
+    "perf:node": "node benchmark/performance.js",
+    "perf:browser": "parcel benchmark/performance.html"
+  },
+  "alias": {
+    "process": false
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
@@ -81,6 +87,8 @@
     "fast-check": "^3.17.1",
     "grapheme-splitter": "1.0.4",
     "graphemer": "1.4.0",
+    "mitata": "^0.1.11",
+    "parcel": "^2.12.0",
     "pretty-bytes": "^6.1.1",
     "tinybench": "^2.6.0",
     "typescript": "^5.4.5"

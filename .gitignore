@@ -17,3 +17,6 @@ node_modules/
 /bundle/
 
 lcov.info
+
+/.parcel-cache/
+/dist/
