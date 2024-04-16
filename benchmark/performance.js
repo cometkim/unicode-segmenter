@@ -11,7 +11,7 @@ const intlSegmenter = new Intl.Segmenter();
 const graphemer = new (Graphemer.default || Graphemer)();
 const graphemeSplitter = new (GraphemeSplitter.default || GraphemeSplitter)();
 
-group('Unicode grapheme splitter libraries', () => {
+group(() => {
   bench('unicode-segmenter', () => {
     void ([...graphemeSegments(input)]);
   });

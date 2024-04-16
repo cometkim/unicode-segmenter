@@ -72,14 +72,12 @@ runtime: node v21.7.1 (arm64-darwin)
 
 benchmark              time (avg)             (min … max)       p75       p99      p999
 --------------------------------------------------------- -----------------------------
-• Unicode grapheme splitter libraries
---------------------------------------------------------- -----------------------------
 unicode-segmenter     973 ns/iter     (930 ns … 1'306 ns)    963 ns  1'201 ns  1'306 ns
 Intl.Segmenter      2'402 ns/iter   (1'547 ns … 3'187 ns)  2'628 ns  3'117 ns  3'187 ns
 graphemer           2'610 ns/iter   (2'585 ns … 2'931 ns)  2'613 ns  2'762 ns  2'931 ns
 grapheme-splitter   4'817 ns/iter   (4'208 ns … 1'057 µs)  4'333 ns 12'000 ns 59'500 ns
 
-summary for Unicode grapheme splitter libraries
+summary
   unicode-segmenter
    2.47x faster than Intl.Segmenter
    2.68x faster than graphemer
