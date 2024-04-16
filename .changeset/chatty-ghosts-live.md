@@ -1,5 +1,5 @@
 ---
-"unicode-segmenter": patch
+"unicode-segmenter": minor
 ---
 
 Getting 2x faster by optimizing hot path. Also with reduced bundle size
