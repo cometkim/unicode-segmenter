@@ -195,7 +195,7 @@ def load_properties(f, interestingprops):
     return props
 
 def escape_char(c):
-    return "'\\u{%04x}'" % c
+    return "0x%x" % c
 
 def emit_table(f, name, t_data, pfun=lambda x: f"[{escape_char(x[0])},{escape_char(x[1])}]"):
     f.write("const %s = [\n" % name)
@@ -354,16 +354,16 @@ import { bsearchUnicodeRange } from './core.js';
 
     f.write("""
 /**
- * @param {string} ch
+ * @param {number} cp
  * @return {%sSearchResult}
  */
-export function search%s(ch) {
+export function search%s(cp) {
   // Perform a quick O(1) lookup in a precomputed table to determine
   // the slice of the range table to search in.
   let lookup_table = %s_cat_lookup;
   let lookup_interval = 0x%x;
 
-  let idx = (ch.codePointAt(0) / lookup_interval) | 0;
+  let idx = cp / lookup_interval | 0;
   // If the `idx` is outside of the precomputed table - use the slice
   // starting from the last covered index in the precomputed table and
   // ending with the length of the range table.
@@ -378,7 +378,7 @@ export function search%s(ch) {
   // in the table slice - these bounds has to apply.
   let lower = idx * lookup_interval;
   let upper = lower + lookup_interval - 1;
-  return bsearchUnicodeRange(ch, %s_cat_table, lower, upper, sliceFrom, sliceTo);
+  return bsearchUnicodeRange(cp, %s_cat_table, lower, upper, sliceFrom, sliceTo);
 }
 """ % (Name, Name, name, lookup_interval, j, len(break_table), name))
 

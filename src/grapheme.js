@@ -76,7 +76,7 @@ export function* graphemeSegments(input) {
       // If this char isn't within the cached range, update the cache to the
       // range that includes it.
       if (cp < cache[0] || cp > cache[1]) {
-        cache = searchGrapheme(ch);
+        cache = searchGrapheme(cp);
       }
       return cache[2];
     }

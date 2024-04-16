@@ -1,12 +1,12 @@
 /**
- * @typedef {[from: string, to: string]} UnicodeRange
+ * @typedef {[from: number, to: number]} UnicodeRange
  *
  * Encoded unicode range
  */
 
 /**
  * @template {number} T
- * @typedef {[from: string, to: string, category: T]} CategorizedUnicodeRange
+ * @typedef {[from: number, to: number, category: T]} CategorizedUnicodeRange
  *
  * Encoded unicode range with category code
  */
@@ -31,13 +31,13 @@
 
 /**
  * @template {number} T
- * @param {string} ch
+ * @param {number} cp Unicode code point
  * @param {Array<CategorizedUnicodeRange<T>>} table
  * @param {number} defaultLower
  * @param {number} defaultUpper
  * @return {SearchResult<T>}
  */
-export function bsearchUnicodeRange(ch, table, defaultLower, defaultUpper, sliceFrom = 0, sliceTo = table.length) {
+export function bsearchUnicodeRange(cp, table, defaultLower, defaultUpper, sliceFrom = 0, sliceTo = table.length) {
   let low = sliceFrom;
   let high = sliceTo - 1;
 
@@ -46,9 +46,9 @@ export function bsearchUnicodeRange(ch, table, defaultLower, defaultUpper, slice
     let [lo, hi, cat] = table[mid];
 
     // Found some
-    if (lo <= ch && ch <= hi) {
-      return [lo.codePointAt(0), hi.codePointAt(0), cat];
-    } else if (hi < ch) {
+    if (lo <= cp && cp <= hi) {
+      return [lo, hi, cat];
+    } else if (hi < cp) {
       low = mid + 1;
     } else {
       high = mid - 1;
@@ -56,7 +56,7 @@ export function bsearchUnicodeRange(ch, table, defaultLower, defaultUpper, slice
   }
 
   // Not found
-  let lower = low > 0 ? table[low - 1][1].codePointAt(0) + 1 : defaultLower;
-  let upper = table[low] ? table[low][0].codePointAt(0) - 1 : defaultUpper;
+  let lower = low > 0 ? table[low - 1][1] + 1 : defaultLower;
+  let upper = table[low] ? table[low][0] - 1 : defaultUpper;
   return [lower, upper, 0 /* Any */];
 }
