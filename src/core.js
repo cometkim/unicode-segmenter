@@ -1,18 +1,12 @@
 /**
- * @typedef {string & {}} Uchar
+ * @typedef {[from: string, to: string]} UnicodeRange
  *
- * A single unicode character. (u32 representaion)
- */
-
-/**
- * @typedef {[from: Uchar, to: Uchar]} UnicodeRange
- *
- * Encoded unicode range, with optional category code
+ * Encoded unicode range
  */
 
 /**
  * @template {number} T
- * @typedef {[from: Uchar, to: Uchar, category: T]} CategorizedUnicodeRange
+ * @typedef {[from: string, to: string, category: T]} CategorizedUnicodeRange
  *
  * Encoded unicode range with category code
  */
@@ -37,7 +31,7 @@
 
 /**
  * @template {number} T
- * @param {Uchar} ch
+ * @param {string} ch
  * @param {Array<CategorizedUnicodeRange<T>>} table
  * @param {number} defaultLower
  * @param {number} defaultUpper

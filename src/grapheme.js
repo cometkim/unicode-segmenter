@@ -1,29 +1,15 @@
-import * as core from './core.js';
-import * as base from './_grapheme_table.js';
+import { searchGrapheme } from './_grapheme_table.js';
 
 /**
- * @typedef {(
- *   | GS_Unknown
- *   | GS_NotBreak
- *   | GS_Break
- *   | GS_Regional
- *   | GS_Emoji
- * )} GraphemeState
+ * @typedef {import('./core.js').Segmenter} Segmenter
+ *
+ * @typedef {import('./_grapheme_table.js').GraphemeCategory} GraphemeCategory
+ * @typedef {import('./_grapheme_table.js').GraphemeSearchResult} GraphemeSearchResult
  */
-/** No information is known */
-const GS_Unknown = 0;
-/** It is known to not be a boundary. */
-const GS_NotBreak = 1;
-/** It is known to be a boundary. */
-const GS_Break = 2;
-/** The codepoint after is a Regional Indicator Symbol, so a boundary iff it is preceded by an even number of RIS codepoints. (GB12, GB13) */
-const GS_Regional = 3;
-/** The codepoint after is Extended_Pictographic, so whether it's a boundary depends on pre-context according to GB11. */
-const GS_Emoji = 4;
 
 /**
  * @param {string} input
- * @return {core.Segmenter}
+ * @return {Segmenter}
  */
 export function* graphemeSegments(input) {
   // do nothing on empty string
@@ -37,23 +23,20 @@ export function* graphemeSegments(input) {
   /** @type {number} Total length of the input string. */
   let len = input.length;
 
-  /** @type {GraphemeState} Information about the potential boundary at `cursor` */
-  let state = GS_Break;
-
-  /** @type {base.GraphemeCategory | null} Category of codepoint immediately preceding cursor, if known. */
+  /** @type {GraphemeCategory | null} Category of codepoint immediately preceding cursor, if known. */
   let catBefore = null;
 
-  /** @type {base.GraphemeCategory | null} Category of codepoint immediately preceding cursor, if known. */
+  /** @type {GraphemeCategory | null} Category of codepoint immediately preceding cursor, if known. */
   let catAfter = null;
 
-  /** @type {base.GraphemeSearchResult} */
-  let cache = [0, 0, base.GC_Control];
+  /** @type {GraphemeSearchResult} */
+  let cache = [0, 0, 2 /* GC_Control */];
 
   /** @type {number | null} The number of RIS codepoints preceding `cursor`. */
   let risCount = 0;
 
   /**
-   * @return {core.Uchar}
+   * @return {string}
    * Take a u32 char from the current cursor
    */
   let take = () => {
@@ -70,17 +53,8 @@ export function* graphemeSegments(input) {
   };
 
   /**
-   * @param {boolean} isBreak
-   * @return {boolean} Identity
-   */
-  let decision = (isBreak) => {
-    state = isBreak ? GS_Break : GS_NotBreak;
-    return isBreak;
-  };
-
-  /**
-   * @param {core.Uchar} ch
-   * @return {base.GraphemeCategory}
+   * @param {string} ch
+   * @return {GraphemeCategory}
    */
   let categoryOf = (ch) => {
     if (ch <= '\u{007e}') {
@@ -89,46 +63,44 @@ export function* graphemeSegments(input) {
       // due to use of punctuation and white space characters from the
       // ascii range.
       if (ch >= '\u{0020}') {
-        return base.GC_Any;
+        return 0 /* GC_Any */;
       } else if (ch == '\n') {
-        return base.GC_LF;
+        return 6 /* GC_LF */;
       } else if (ch == '\r') {
-        return base.GC_CR;
+        return 1 /* GC_CR */;
       } else {
-        return base.GC_Control;
+        return 2 /* GC_Control */;
       }
     } else {
       let cp = ch.codePointAt(0);
       // If this char isn't within the cached range, update the cache to the
       // range that includes it.
       if (cp < cache[0] || cp > cache[1]) {
-        cache = base.searchGrapheme(ch);
+        cache = searchGrapheme(ch);
       }
       return cache[2];
     }
   };
 
   /**
-   * @param {base.GraphemeCategory} catBefore
-   * @param {base.GraphemeCategory} catAfter
+   * @param {GraphemeCategory} catBefore
+   * @param {GraphemeCategory} catAfter
    * @return {boolean}
    */
   let isBoundary = (catBefore, catAfter) => {
     switch (checkPair(catBefore, catAfter)) {
-      case P_NotBreak:
-      case P_Extended:
-        // always handle extended characters
-      case P_Emoji:
+      case 0 /* P_NotBreak */:
+      case 2 /* P_Extended */:
+        // Always handle extended characters
+      case 4 /* P_Emoji */:
         // Here is always ZWJ + emoji combo
-        return decision(false);
-      case P_Break:
-        return decision(true);
-      case P_Regional:
-        return decision(risCount % 2 === 0);
+        return false;
+      case 1 /* P_Break */:
+        return true;
+      case 3 /* P_Regional */:
+        return risCount % 2 === 0;
     }
   };
-
-
 
   let ch = take();
   let segment = ch;
@@ -143,14 +115,12 @@ export function* graphemeSegments(input) {
       break;
     }
 
-    state = GS_Unknown;
-
     catBefore = catAfter;
     if (catBefore === null) {
       catBefore = categoryOf(ch);
     }
 
-    if (catBefore === base.GC_Regional_Indicator) {
+    if (catBefore === 10 /* GC_Regional_Indicator*/) {
       risCount += 1;
     } else {
       risCount = 0;
@@ -169,6 +139,11 @@ export function* graphemeSegments(input) {
 }
 
 /**
+ * @typedef {0} P_NotBreak
+ * @typedef {1} P_Break
+ * @typedef {2} P_Extended
+ * @typedef {3} P_Regional
+ * @typedef {4} P_Emoji
  * @typedef {(
  *   | P_NotBreak
  *   | P_Break
@@ -177,15 +152,10 @@ export function* graphemeSegments(input) {
  *   | P_Emoji
  * )} PairResult
  */
-const P_NotBreak = 0;
-const P_Break = 1;
-const P_Extended = 2;
-const P_Regional = 3;
-const P_Emoji = 4;
 
 /**
- * @param {base.GraphemeCategory} before
- * @param {base.GraphemeCategory} after
+ * @param {GraphemeCategory} before
+ * @param {GraphemeCategory} after
  * @return {PairResult}
  *
  * Generated by ReScript v11.0.1

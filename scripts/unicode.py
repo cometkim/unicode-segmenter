@@ -214,11 +214,6 @@ def emit_generic_module(f):
     f.write(preamble)
     f.write("""
 /**
- * @typedef {import('./core.js').Uchar} Uchar
- * @typedef {import('./core.js').UnicodeRange} UnicodeRange
- */
-
-/**
  * @template T
  * @param {T} x
  * @param {Array<[T, T]>} table
@@ -246,6 +241,10 @@ function bsearchRange(x, table) {
     derived = load_properties("DerivedCoreProperties.txt", ["Alphabetic"])
 
     f.write("""
+/**
+ * @typedef {import('./core.js').UnicodeRange} UnicodeRange
+ */
+
 /**
  * @type {UnicodeRange[]}
  */
@@ -287,7 +286,7 @@ export function isAlphanumeric(c) {
 
 def emit_break_module(f, break_table, break_cats, name):
     Name = name.capitalize()
-    type_name = f"{Name}Category"
+    typename = f"{Name}Category"
 
     # We don't want the lookup table to be too large so choose a reasonable
     # cutoff. 0x20000 is selected because most of the range table entries are
@@ -318,49 +317,47 @@ def emit_break_module(f, break_table, break_cats, name):
     f.write(preamble)
 
     f.write("""
-import * as core from './core.js';
+import { bsearchUnicodeRange } from './core.js';
 
+/**
 """)
 
     inversed = {}
     for idx, cat in enumerate(break_cats):
         inversed[cat] = idx
-        f.write(f"export const {Name[0]}C_{cat} = {idx};\n")
+        f.write(" * @typedef {%d} %s\n" % (idx, f"{Name[0]}C_{cat}"))
 
     f.write("""
-/**
  * @typedef {(
 """)
     for cat in break_cats:
         f.write(f" *   | {Name[0]}C_{cat}\n")
-    f.write(" * )} %s\n" % type_name)
-    f.write(" */")
+    f.write(" * )} %s\n" % typename)
     f.write("""
-
-/**
- * @typedef {core.SearchResult<%s>} %sSearchResult
+ * @typedef {import('./core.js').SearchResult<%s>} %sSearchResult
+ * @typedef {import('./core.js').CategorizedUnicodeRange<%s>} %sRange
  */
 
-""" % (type_name, type_name))
+""" % (typename, Name, typename, Name))
 
     emit_table(f, f"{name}_cat_lookup", lookup_table,
                pfun=lambda x: "%d" % x)
 
     f.write("""
 /**
- * @type {Array<core.CategorizedUnicodeRange<%s>>}
+ * @type {%sRange[]}
  */
-""" % type_name)
+""" % Name)
 
     emit_table(f, f"{name}_cat_table", break_table,
                pfun=lambda x: f"[{escape_char(x[0])},{escape_char(x[1])},{inversed[x[2]]}]")
 
     f.write("""
 /**
- * @param {core.Uchar} ch
+ * @param {string} ch
  * @return {%sSearchResult}
  */
-export function %sCategoryOf(ch) {
+export function search%s(ch) {
   // Perform a quick O(1) lookup in a precomputed table to determine
   // the slice of the range table to search in.
   let lookup_table = %s_cat_lookup;
@@ -381,9 +378,9 @@ export function %sCategoryOf(ch) {
   // in the table slice - these bounds has to apply.
   let lower = idx * lookup_interval;
   let upper = lower + lookup_interval - 1;
-  core.bsearchUnicodeRange(ch, %s_cat_table, lower, upper, sliceFrom, sliceTo);
+  return bsearchUnicodeRange(ch, %s_cat_table, lower, upper, sliceFrom, sliceTo);
 }
-""" % (type_name, name, name, lookup_interval, j, len(break_table), name))
+""" % (Name, Name, name, lookup_interval, j, len(break_table), name))
 
 def emit_src(file, emit):
     __dir__ = os.path.dirname(os.path.realpath(__file__))
