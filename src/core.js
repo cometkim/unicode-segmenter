@@ -1,3 +1,5 @@
+// @ts-check
+
 /**
  * @typedef {[from: number, to: number]} UnicodeRange
  *

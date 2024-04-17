@@ -1,3 +1,5 @@
+// @ts-check
+
 import * as core from './core.js';
 import { graphemeSegments } from './grapheme.js';
 
@@ -17,7 +19,7 @@ export class Segmenter {
    *   granularity?: SegmentGranularity,
    * }} SegmenterOptions
    *
-   * @param {string} locale
+   * @param {string} [locale]
    * @param {SegmenterOptions} [options={}]
    */
   constructor(locale, options = {}) {

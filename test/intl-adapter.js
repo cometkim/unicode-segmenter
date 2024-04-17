@@ -1,3 +1,5 @@
+// @ts-check
+
 import { test } from 'node:test';
 import * as assert from 'node:assert/strict';
 import { Segmenter } from 'unicode-segmenter/intl-adapter';
@@ -71,6 +73,7 @@ test('containing', async _ => {
 test('unsupported options', async t => {
   await t.test('granularity: unknown', () => {
     assert.throws(
+      // @ts-expect-error
       () => new Segmenter('lang' , { granularity: 'unknown' }),
       RangeError,
     );
