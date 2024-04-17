@@ -2904,6 +2904,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"emoji-regex@npm:10.3.0":
+  version: 10.3.0
+  resolution: "emoji-regex@npm:10.3.0"
+  checksum: 10c0/b4838e8dcdceb44cf47f59abe352c25ff4fe7857acaf5fb51097c427f6f75b44d052eb907a7a3b86f86bc4eae3a93f5c2b7460abe79c407307e6212d65c91163
+  languageName: node
+  linkType: hard
+
 "emoji-regex@npm:^8.0.0":
   version: 8.0.0
   resolution: "emoji-regex@npm:8.0.0"
@@ -3507,7 +3514,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^10.2.2, glob@npm:^10.3.10":
+"glob@npm:^10.2.2, glob@npm:^10.3.10, glob@npm:^10.3.7":
   version: 10.3.12
   resolution: "glob@npm:10.3.12"
   dependencies:
@@ -5523,6 +5530,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rimraf@npm:^5.0.5":
+  version: 5.0.5
+  resolution: "rimraf@npm:5.0.5"
+  dependencies:
+    glob: "npm:^10.3.7"
+  bin:
+    rimraf: dist/esm/bin.mjs
+  checksum: 10c0/d50dbe724f33835decd88395b25ed35995077c60a50ae78ded06e0185418914e555817aad1b4243edbff2254548c2f6ad6f70cc850040bebb4da9e8cc016f586
+  languageName: node
+  linkType: hard
+
 "run-parallel@npm:^1.1.9":
   version: 1.2.0
   resolution: "run-parallel@npm:1.2.0"
@@ -6278,6 +6296,7 @@ __metadata:
     "@changesets/cli": "npm:^2.27.1"
     "@jazzer.js/core": "npm:^2.1.0"
     "@types/node": "npm:^20.12.7"
+    emoji-regex: "npm:10.3.0"
     esbuild: "npm:^0.20.2"
     fast-check: "npm:^3.17.1"
     grapheme-splitter: "npm:1.0.4"
@@ -6285,6 +6304,7 @@ __metadata:
     mitata: "npm:^0.1.11"
     parcel: "npm:^2.12.0"
     pretty-bytes: "npm:^6.1.1"
+    rimraf: "npm:^5.0.5"
     tinybench: "npm:^2.6.0"
     typescript: "npm:^5.4.5"
   languageName: unknown

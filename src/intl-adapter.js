@@ -70,7 +70,7 @@ class SegmentsAdapter {
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter/segment/Segments/containing
    *
    * @param {number} codeUnitIndex
-   * @return {core.SegmentOutput | undefined}
+   * @return {core.SegmentOutput<{}> | undefined}
    */
   containing(codeUnitIndex) {
     let offset = 0;

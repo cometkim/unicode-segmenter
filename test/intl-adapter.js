@@ -2,6 +2,9 @@
 
 import { test } from 'node:test';
 import * as assert from 'node:assert/strict';
+import { assertObjectContaining } from './_helper.js';
+
+import { GraphemeCategory } from 'unicode-segmenter/grapheme';
 import { Segmenter } from 'unicode-segmenter/intl-adapter';
 
 test('idempotency', async t => {
@@ -19,9 +22,9 @@ test('idempotency', async t => {
 
   for (let input of cases) {
     await t.test(input, () => {
-      assert.deepEqual(
-        [...intlSegmenter.segment(input)],
+      assertObjectContaining(
         [...segmenter.segment(input)],
+        [...intlSegmenter.segment(input)],
       );
     });
   }
@@ -33,39 +36,39 @@ test('containing', async _ => {
 
   assert.deepEqual(
     segments.containing(0),
-    { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n' },
+    { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.Extend },
   );
   assert.deepEqual(
     segments.containing(1),
-    { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n' },
+    { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.Extend },
   );
   assert.deepEqual(
     segments.containing(2),
-    { segment: 'é', index: 2, input: 'a̐éö̲\r\n' },
+    { segment: 'é', index: 2, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.Extend },
   );
   assert.deepEqual(
     segments.containing(3),
-    { segment: 'é', index: 2, input: 'a̐éö̲\r\n' },
+    { segment: 'é', index: 2, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.Extend },
   );
   assert.deepEqual(
     segments.containing(4),
-    { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n' },
+    { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.Extend },
   );
   assert.deepEqual(
     segments.containing(5),
-    { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n' },
+    { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.Extend },
   );
   assert.deepEqual(
     segments.containing(6),
-    { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n' },
+    { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.Extend },
   );
   assert.deepEqual(
     segments.containing(7),
-    { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n' },
+    { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.LF },
   );
   assert.deepEqual(
     segments.containing(8),
-    { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n' },
+    { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.LF  },
   );
   assert.equal(segments.containing(9), undefined);
 });

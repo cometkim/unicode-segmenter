@@ -1,6 +1,5 @@
 # unicode-segmenter
 [![Package Version](https://img.shields.io/npm/v/unicode-segmenter)](https://npm.im/unicode-segmenter)
-[![Bundle Size](https://img.shields.io/bundlephobia/minzip/unicode-segmenter)](https://bundlephobia.com/package/unicode-segmenter)
 [![Integration](https://github.com/cometkim/unicode-segmenter/actions/workflows/ci.yml/badge.svg)](https://github.com/cometkim/unicode-segmenter/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/cometkim/unicode-segmenter/graph/badge.svg?token=3rA29JEH4J)](https://codecov.io/gh/cometkim/unicode-segmenter)
 [![LICENSE - MIT](https://img.shields.io/github/license/cometkim/unicode-segmenter)](#license)
@@ -19,9 +18,32 @@ A lightweight and fast, pure JavaScript library for Unicode segmentation.
 
 ## Usage
 
+- Count graphemes:
+  ```js
+  import { countGrapheme } from 'unicode-segmenter/grapheme';
+  ```
+
 - Use grapheme segmenter:
   ```js
   import { graphemeSegments } from 'unicode-segmenter/grapheme';
+  ```
+
+- Use Unicode general property matchers:
+  ```js
+  import {
+    isLetter,       // \p{L}
+    isNumeric,      // \p{N}
+    isAlphabetic,   // \p{Alphabetic}
+    isAlphanumeric, // [\p{N}\p{Alphabetic}]
+  } from 'unicode-segmenter/general';
+  ```
+
+- Use Emoji matchers (`\p{Extended_Pictographic}` and `\p{Emoji_Presentation}`)
+  ```js
+  import {
+    isEmoji,             // \p{Extended_Pictographic}
+    isEmojiPresentation, // \p{Emoji_Presentation}
+  } from 'unicode-segmenter/emoji';
   ```
 
 - Use [`Intl.Segmenter`] adapter (only `granularity: "grapheme"` available):
@@ -42,49 +64,97 @@ A lightweight and fast, pure JavaScript library for Unicode segmentation.
 
 ### TypeScript
 
-No worry. Library is fully typed, and provides `.d.ts` file 😉.
+No worry. Library is fully typed, and provides `.d.ts` file for you 😉
 
-## Benchmark
+## Library benchmarks
 
-This library aims to be lighter and faster than other existing libraries in the ecosystem.
+This library aims to be lighter and faster than other existing Unicode libraries in the ecosystem.
 
-unicode-segmenter@latest vs:
+Look [benchmark](benchmark) to see how it works.
 
-- Node.js' built-in [`Intl.Segmenter`] (browser's version may vary)
+### Emojis
+
+`unicode-segmenter/emoji` vs:
+
+- built-in Unicode RegExp
+- [emoji-regex]@10.3.0 (101M weekly downloads on NPM)
+
+<details open>
+  <summary>Bundle stats</summary>
+
+  | Name                        | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
+  |-----------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
+  | `unicode-segmenter/emoji`   |    ✔️ |   3,780 |            2,580 |            1,020 |              751 |
+  | `emoji-regex`               |    ✔️ |  12,946 |           12,859 |            2,180 |            1,746 |
+
+</details>
+
+<details>
+  <summary>Runtime performance</summary>
+
+</details>
+
+### Unicode alpha + numeric
+
+`unicode-segmenter/general` vs:
+
+- built-in unicode RegExp
+
+<details open>
+  <summary>Bundle stats</summary>
+
+  | Name                        | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
+  |-----------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
+  | `unicode-segmenter/general` |    ✔️ |  27,937 |           20,928 |            5,772 |            3,559 |
+
+</details>
+
+<details>
+  <summary>Runtime performance</summary>
+
+</details>
+
+### Grapheme clusters
+
+`unicode-segmenter/grapheme` vs:
+
+- Node.js' [`Intl.Segmenter`] (browser's version may vary)
 - [graphemer]@1.4.0 (16.6M+ weekly downloads on NPM)
 - [grapheme-splitter]@1.0.4 (5.7M+ weekly downloads on NPM)
 
-### Bundle Stats
+<details open>
+  <summary>Bundle stats</summary>
 
-| Name                         | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
-|------------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-| `unicode-segmenter/grapheme` |    ✔️ |  44,230 |           29,858 |            9,225 |            5,081 |
-| `graphemer`                  |    ✖️ ️| 410,424 |           95,104 |           15,752 |           10,660 |
-| `grapheme-splitter`          |    ✖️ | 122,241 |           23,680 |            7,852 |            4,841 |
+  | Name                         | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
+  |------------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
+  | `unicode-segmenter/grapheme` |    ✔️ |  44,693 |           30,036 |            9,288 |            5,927 |
+  | `graphemer`                  |    ✖️ ️| 410,424 |           95,104 |           15,752 |           10,660 |
+  | `grapheme-splitter`          |    ✖️ | 122,241 |           23,680 |            7,852 |            4,841 |
 
-See [benchmark/bundle-stats.js](benchmark/bundle-stats.js) for more detail.
+</details>
 
-### Performance
+<details open>
+  <summary>Runtime performance</summary>
 
-```
-cpu: Apple M1 Pro
-runtime: node v21.7.1 (arm64-darwin)
+  ```
+  cpu: Apple M1 Pro
+  runtime: node v21.7.1 (arm64-darwin)
 
-benchmark              time (avg)             (min … max)       p75       p99      p999
---------------------------------------------------------- -----------------------------
-unicode-segmenter     475 ns/iter       (463 ns … 830 ns)    481 ns    561 ns    830 ns
-Intl.Segmenter      2'391 ns/iter   (1'556 ns … 3'428 ns)  2'613 ns  3'286 ns  3'428 ns
-graphemer           2'623 ns/iter   (2'574 ns … 2'914 ns)  2'633 ns  2'891 ns  2'914 ns
-grapheme-splitter   4'668 ns/iter     (4'208 ns … 263 µs)  4'334 ns  5'375 ns 54'625 ns
+  benchmark              time (avg)             (min … max)       p75       p99      p999
+  --------------------------------------------------------- -----------------------------
+  unicode-segmenter     475 ns/iter       (463 ns … 830 ns)    481 ns    561 ns    830 ns
+  Intl.Segmenter      2'391 ns/iter   (1'556 ns … 3'428 ns)  2'613 ns  3'286 ns  3'428 ns
+  graphemer           2'623 ns/iter   (2'574 ns … 2'914 ns)  2'633 ns  2'891 ns  2'914 ns
+  grapheme-splitter   4'668 ns/iter     (4'208 ns … 263 µs)  4'334 ns  5'375 ns 54'625 ns
 
-summary
-  unicode-segmenter
-   5.04x faster than Intl.Segmenter
-   5.52x faster than graphemer
-   9.83x faster than grapheme-splitter
-```
+  summary
+    unicode-segmenter
+      5.04x faster than Intl.Segmenter
+      5.52x faster than graphemer
+      9.83x faster than grapheme-splitter
+  ```
 
-See [benchmark/performance.js](benchmark/performance.js) for more detail.
+</details>
 
 ## LICENSE
 
@@ -96,3 +166,4 @@ See also [license](licenses/unicode-segmentation_MIT.txt) of the original code.
 [`Intl.Segmenter`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter
 [graphemer]: https://github.com/flmnt/graphemer
 [grapheme-splitter]: https://github.com/orling/grapheme-splitter
+[emoji-regex]: https://github.com/mathiasbynens/emoji-regex

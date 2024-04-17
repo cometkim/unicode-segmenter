@@ -4,7 +4,7 @@ import { searchGrapheme, GraphemeCategory } from './_grapheme_table.js';
 import { takeChar } from './utils.js';
 
 /**
- * @typedef {import('./core.js').Segmenter} Segmenter
+ * @typedef {import('./core.js').Segmenter<{ _cat: GraphemeCategory }>} Segmenter
  * @typedef {import('./_grapheme_table.js').GraphemeSearchResult} GraphemeSearchResult
  */
 
@@ -101,14 +101,14 @@ export function* graphemeSegments(input) {
 
     let index = cursor - segment.length;
 
-    if (cursor === len) {
-      yield { segment, input, index };
-      break;
-    }
-
     catBefore = catAfter;
     if (catBefore === null) {
       catBefore = categoryOf(ch);
+    }
+
+    if (cursor === len) {
+      yield { segment, input, index, _cat: catBefore };
+      break;
     }
 
     if (catBefore === 10 /* GC_Regional_Indicator*/) {
@@ -121,7 +121,7 @@ export function* graphemeSegments(input) {
     catAfter = categoryOf(ch);
 
     if (isBoundary(catBefore, catAfter)) {
-      yield { segment, input, index };
+      yield { segment, input, index, _cat: catBefore };
       segment = '';
     }
 

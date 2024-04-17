@@ -4,7 +4,8 @@ import { test } from 'node:test';
 import * as assert from 'node:assert/strict';
 import fc from 'fast-check';
 
-import { graphemeSegments, countGrapheme } from 'unicode-segmenter/grapheme';
+import { graphemeSegments, countGrapheme, GraphemeCategory } from 'unicode-segmenter/grapheme';
+import { assertObjectContaining } from './_helper.js';
 
 test('graphemeSegmentes', async t => {
   await t.test('empty string', () => {
@@ -15,12 +16,12 @@ test('graphemeSegmentes', async t => {
     assert.deepEqual(
       [...graphemeSegments('abc123')],
       [
-        { segment: 'a', index: 0, input: 'abc123' },
-        { segment: 'b', index: 1, input: 'abc123' },
-        { segment: 'c', index: 2, input: 'abc123' },
-        { segment: '1', index: 3, input: 'abc123' },
-        { segment: '2', index: 4, input: 'abc123' },
-        { segment: '3', index: 5, input: 'abc123' },
+        { segment: 'a', index: 0, input: 'abc123', _cat: GraphemeCategory.Any },
+        { segment: 'b', index: 1, input: 'abc123', _cat: GraphemeCategory.Any },
+        { segment: 'c', index: 2, input: 'abc123', _cat: GraphemeCategory.Any },
+        { segment: '1', index: 3, input: 'abc123', _cat: GraphemeCategory.Any },
+        { segment: '2', index: 4, input: 'abc123', _cat: GraphemeCategory.Any },
+        { segment: '3', index: 5, input: 'abc123', _cat: GraphemeCategory.Any },
       ],
     );
   });
@@ -29,10 +30,10 @@ test('graphemeSegmentes', async t => {
     assert.deepEqual(
       [...graphemeSegments('a̐éö̲\r\n')],
       [
-        { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n' },
-        { segment: 'é', index: 2, input: 'a̐éö̲\r\n' },
-        { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n' },
-        { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n' },
+        { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.Extend },
+        { segment: 'é', index: 2, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.Extend },
+        { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.Extend },
+        { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.LF },
       ],
     );
   });
@@ -41,8 +42,8 @@ test('graphemeSegmentes', async t => {
     assert.deepEqual(
       [...graphemeSegments('🇷🇸🇮🇴')],
       [
-        { segment: '🇷🇸', index: 0, input: '🇷🇸🇮🇴' },
-        { segment: '🇮🇴', index: 4, input: '🇷🇸🇮🇴' },
+        { segment: '🇷🇸', index: 0, input: '🇷🇸🇮🇴', _cat: GraphemeCategory.Regional_Indicator },
+        { segment: '🇮🇴', index: 4, input: '🇷🇸🇮🇴', _cat: GraphemeCategory.Regional_Indicator },
       ],
     );
   });
@@ -51,8 +52,8 @@ test('graphemeSegmentes', async t => {
     assert.deepEqual(
       [...graphemeSegments('🇷🇸🇮')],
       [
-        { segment: '🇷🇸', index: 0, input: '🇷🇸🇮' },
-        { segment: '🇮', index: 4, input: '🇷🇸🇮' },
+        { segment: '🇷🇸', index: 0, input: '🇷🇸🇮', _cat: GraphemeCategory.Regional_Indicator },
+        { segment: '🇮', index: 4, input: '🇷🇸🇮', _cat: GraphemeCategory.Regional_Indicator },
       ],
     );
   });
@@ -61,8 +62,8 @@ test('graphemeSegmentes', async t => {
     assert.deepEqual(
       [...graphemeSegments('👻👩‍👩‍👦‍👦')],
       [
-        { segment: '👻', index: 0, input: '👻👩‍👩‍👦‍👦' },
-        { segment: '👩‍👩‍👦‍👦', index: 2, input: '👻👩‍👩‍👦‍👦' },
+        { segment: '👻', index: 0, input: '👻👩‍👩‍👦‍👦', _cat: GraphemeCategory.Extended_Pictographic },
+        { segment: '👩‍👩‍👦‍👦', index: 2, input: '👻👩‍👩‍👦‍👦', _cat: GraphemeCategory.Extended_Pictographic },
       ],
     );
   });
@@ -91,9 +92,9 @@ test('spec compliant', async t => {
     fc.assert(
       // @ts-ignore
       fc.property(fc.asciiString(), (data) => {
-        assert.deepEqual(
-          [...intlSegmenter.segment(data)],
+        assertObjectContaining(
           [...graphemeSegments(data)],
+          [...intlSegmenter.segment(data)],
         );
       }),
     );
@@ -103,9 +104,9 @@ test('spec compliant', async t => {
     fc.assert(
       // @ts-ignore
       fc.property(fc.fullUnicodeString(), data => {
-        assert.deepEqual(
-          [...intlSegmenter.segment(data)],
+        assertObjectContaining(
           [...graphemeSegments(data)],
+          [...intlSegmenter.segment(data)],
         );
       }),
     );
@@ -115,9 +116,9 @@ test('spec compliant', async t => {
     fc.assert(
       // @ts-ignore
       fc.property(fc.string16bits(), data => {
-        assert.deepEqual(
-          [...intlSegmenter.segment(data)],
+        assertObjectContaining(
           [...graphemeSegments(data)],
+          [...intlSegmenter.segment(data)],
         );
       }),
     );
