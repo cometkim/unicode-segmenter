@@ -89,8 +89,36 @@ Look [benchmark](benchmark) to see how it works.
 
 </details>
 
-<details>
+<details open>
   <summary>Runtime performance</summary>
+
+  ```
+  cpu: Apple M1 Pro
+  runtime: node v21.7.1 (arm64-darwin)
+  
+  benchmark                    time (avg)             (min … max)       p75       p99      p999
+  --------------------------------------------------------------- -----------------------------
+  • checking if any emoji
+  --------------------------------------------------------------- -----------------------------
+  unicode-segmenter/emoji   98.11 ns/iter     (94.54 ns … 454 ns)  99.81 ns    120 ns    203 ns
+  RegExp w/ unicode         34.42 ns/iter        (32 ns … 176 ns)  34.12 ns   59.9 ns   83.6 ns
+  emoji-regex              error: not match
+  
+  summary for checking if any emoji
+    RegExp w/ unicode
+     2.85x faster than unicode-segmenter/emoji
+  
+  • match all emoji
+  --------------------------------------------------------------- -----------------------------
+  unicode-segmenter/emoji   2'197 ns/iter   (2'171 ns … 2'401 ns)  2'198 ns  2'295 ns  2'401 ns
+  RegExp w/ unicode         1'805 ns/iter   (1'784 ns … 2'051 ns)  1'806 ns  1'984 ns  2'051 ns
+  emoji-regex              11'824 ns/iter    (11'458 ns … 116 µs) 11'916 ns 12'833 ns 41'875 ns
+  
+  summary for match all emoji
+    RegExp w/ unicode
+     1.22x faster than unicode-segmenter/emoji
+     6.55x faster than emoji-regex
+  ```
 
 </details>
 
@@ -109,8 +137,33 @@ Look [benchmark](benchmark) to see how it works.
 
 </details>
 
-<details>
+<details open>
   <summary>Runtime performance</summary>
+
+  ```
+  cpu: Apple M1 Pro
+  runtime: node v21.7.1 (arm64-darwin)
+  
+  benchmark                      time (avg)             (min … max)       p75       p99      p999
+  ----------------------------------------------------------------- -----------------------------
+  • checking any alphanumeric
+  ----------------------------------------------------------------- -----------------------------
+  unicode-segmenter/general     229 ns/iter       (222 ns … 529 ns)    232 ns    289 ns    485 ns
+  RegExp w/ unicode             238 ns/iter       (233 ns … 314 ns)    240 ns    267 ns    301 ns
+  
+  summary for checking any alphanumeric
+    unicode-segmenter/general
+     1.04x faster than RegExp w/ unicode
+  
+  • match all alphanumeric
+  ----------------------------------------------------------------- -----------------------------
+  unicode-segmenter/general   2'649 ns/iter   (2'490 ns … 4'802 ns)  2'654 ns  4'419 ns  4'802 ns
+  RegExp w/ unicode           2'032 ns/iter   (2'017 ns … 2'168 ns)  2'041 ns  2'097 ns  2'168 ns
+  
+  summary for match all alphanumeric
+    RegExp w/ unicode
+     1.3x faster than unicode-segmenter/general
+  ```
 
 </details>
 
@@ -139,19 +192,19 @@ Look [benchmark](benchmark) to see how it works.
   ```
   cpu: Apple M1 Pro
   runtime: node v21.7.1 (arm64-darwin)
-
+  
   benchmark              time (avg)             (min … max)       p75       p99      p999
   --------------------------------------------------------- -----------------------------
-  unicode-segmenter     475 ns/iter       (463 ns … 830 ns)    481 ns    561 ns    830 ns
-  Intl.Segmenter      2'391 ns/iter   (1'556 ns … 3'428 ns)  2'613 ns  3'286 ns  3'428 ns
-  graphemer           2'623 ns/iter   (2'574 ns … 2'914 ns)  2'633 ns  2'891 ns  2'914 ns
-  grapheme-splitter   4'668 ns/iter     (4'208 ns … 263 µs)  4'334 ns  5'375 ns 54'625 ns
-
+  unicode-segmenter     460 ns/iter       (449 ns … 905 ns)    468 ns    537 ns    905 ns
+  Intl.Segmenter      2'455 ns/iter   (1'588 ns … 3'306 ns)  2'682 ns  3'209 ns  3'306 ns
+  graphemer           2'640 ns/iter   (2'576 ns … 3'185 ns)  2'618 ns  3'067 ns  3'185 ns
+  grapheme-splitter   4'663 ns/iter     (4'208 ns … 256 µs)  4'375 ns  5'000 ns 55'958 ns
+  
   summary
     unicode-segmenter
-      5.04x faster than Intl.Segmenter
-      5.52x faster than graphemer
-      9.83x faster than grapheme-splitter
+     5.33x faster than Intl.Segmenter
+     5.73x faster than graphemer
+     10.13x faster than grapheme-splitter
   ```
 
 </details>
