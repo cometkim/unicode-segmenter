@@ -54,6 +54,27 @@ import { bsearchUnicodeRange } from './core.js';
  * @typedef {import('./core.js').CategorizedUnicodeRange<GraphemeCategory>} GraphemeRange
  */
 
+/**
+ * @type {Record<string, GraphemeCategory>}
+ */
+export const GraphemeCategory = {
+  Any: 0,
+  CR: 1,
+  Control: 2,
+  Extend: 3,
+  Extended_Pictographic: 4,
+  L: 5,
+  LF: 6,
+  LV: 7,
+  LVT: 8,
+  Prepend: 9,
+  Regional_Indicator: 10,
+  SpacingMark: 11,
+  T: 12,
+  V: 13,
+  ZWJ: 14,
+};
+
 const grapheme_cat_lookup = [
   0, 5, 9, 9, 9, 9, 9, 10, 10, 10, 11, 11, 16, 21, 26, 29, 32, 37, 41, 53, 65, 75, 86, 97, 106, 116,
   131, 143, 153, 157, 161, 168, 173, 183, 188, 189, 191, 191, 191, 192, 192, 192, 192, 192, 192,

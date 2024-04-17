@@ -337,8 +337,17 @@ import { bsearchUnicodeRange } from './core.js';
  * @typedef {import('./core.js').SearchResult<%s>} %sSearchResult
  * @typedef {import('./core.js').CategorizedUnicodeRange<%s>} %sRange
  */
-
 """ % (typename, Name, typename, Name))
+
+    f.write("""
+/**
+ * @type {Record<string, %s>}
+ */
+export const %s = {
+""" % (typename, typename))
+    for cat in break_cats:
+        f.write(f"  {cat}: {inversed[cat]},\n")
+    f.write("};\n\n")
 
     emit_table(f, f"{name}_cat_lookup", lookup_table,
                pfun=lambda x: "%d" % x)

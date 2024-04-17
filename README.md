@@ -58,7 +58,7 @@ unicode-segmenter@latest vs:
 
 | Name                         | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
 |------------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-| `unicode-segmenter/grapheme` |    ✔️ |  43,756 |           29,569 |            9,010 |            5,662 |
+| `unicode-segmenter/grapheme` |    ✔️ |  43,893 |           29,642 |            9,050 |            5,699 |
 | `graphemer`                  |    ✖️ ️| 410,424 |           95,104 |           15,752 |           10,660 |
 | `grapheme-splitter`          |    ✖️ | 122,241 |           23,680 |            7,852 |            4,841 |
 
