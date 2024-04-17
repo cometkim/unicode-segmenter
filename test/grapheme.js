@@ -1,7 +1,9 @@
+// @ts-check
+
 import { test } from 'node:test';
 import * as assert from 'node:assert/strict';
 
-import { graphemeSegments, countGraphemes } from 'unicode-segmenter/grapheme';
+import { graphemeSegments, countGrapheme } from 'unicode-segmenter/grapheme';
 
 test('graphemeSegmentes', async t => {
   await t.test('empty string', () => {
@@ -67,10 +69,10 @@ test('graphemeSegmentes', async t => {
 
 test('countGrapheme', async t => {
   await t.test('flags', () => {
-    assert.equal(countGraphemes('🇷🇸🇮🇴'), 2);
+    assert.equal(countGrapheme('🇷🇸🇮🇴'), 2);
   });
 
   await t.test('emoji', () => {
-    assert.equal(countGraphemes('👻👩‍👩‍👦‍👦'), 2);
+    assert.equal(countGrapheme('👻👩‍👩‍👦‍👦'), 2);
   });
 });
