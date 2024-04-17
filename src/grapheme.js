@@ -142,7 +142,7 @@ export function* graphemeSegments(input) {
  * @param {string} str
  * @return number count of graphemes
  */
-export function countGraphemes(str) {
+export function countGrapheme(str) {
   let count = 0;
   for (let _ of graphemeSegments(str)) count += 1;
   return count;

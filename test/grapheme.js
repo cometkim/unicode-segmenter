@@ -65,7 +65,7 @@ test('graphemeSegmentes', async t => {
   });
 });
 
-test('countGraphemes', async t => {
+test('countGrapheme', async t => {
   await t.test('flags', () => {
     assert.equal(countGraphemes('🇷🇸🇮🇴'), 2);
   });

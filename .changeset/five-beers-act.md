@@ -2,4 +2,4 @@
 "unicode-segmenter": minor
 ---
 
-Add `countGraphemes` utility
+Add `countGrapheme` utility
