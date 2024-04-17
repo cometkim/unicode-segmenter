@@ -55,7 +55,12 @@ import { bsearchUnicodeRange } from './core.js';
  */
 
 /**
- * @type {Record<string, GraphemeCategory>}
+ * Grapheme category enum
+ *
+ * Note: The enum object is not actually `Object.freeze`
+ * because it increases 800 bytes of Brotli compression... Not sure why :P
+ *
+ * @type {Readonly<Record<string, GraphemeCategory>>}
  */
 export const GraphemeCategory = {
   Any: 0,

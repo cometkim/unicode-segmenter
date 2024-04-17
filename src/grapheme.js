@@ -1,4 +1,4 @@
-import { searchGrapheme } from './_grapheme_table.js';
+import { searchGrapheme, GraphemeCategory } from './_grapheme_table.js';
 
 /**
  * @typedef {import('./core.js').Segmenter} Segmenter
@@ -6,6 +6,11 @@ import { searchGrapheme } from './_grapheme_table.js';
  * @typedef {import('./_grapheme_table.js').GraphemeCategory} GraphemeCategory
  * @typedef {import('./_grapheme_table.js').GraphemeSearchResult} GraphemeSearchResult
  */
+
+export {
+  searchGrapheme,
+  GraphemeCategory,
+};
 
 /**
  * @param {string} input
