@@ -114,6 +114,7 @@ Look [benchmark](benchmark) to see how it works.
     RegExp w/ unicode
      2.85x faster than unicode-segmenter/emoji
   
+  ----------------------------------------------------------------- -----------------------------
   • match all emoji
   --------------------------------------------------------------- -----------------------------
   unicode-segmenter/emoji   2'197 ns/iter   (2'171 ns … 2'401 ns)  2'198 ns  2'295 ns  2'401 ns
@@ -161,6 +162,7 @@ Look [benchmark](benchmark) to see how it works.
     unicode-segmenter/general
      1.04x faster than RegExp w/ unicode
   
+  ----------------------------------------------------------------- -----------------------------
   • match all alphanumeric
   ----------------------------------------------------------------- -----------------------------
   unicode-segmenter/general   2'649 ns/iter   (2'490 ns … 4'802 ns)  2'654 ns  4'419 ns  4'802 ns
