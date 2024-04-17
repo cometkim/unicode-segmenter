@@ -46,6 +46,11 @@
         "import": "./grapheme.js",
         "require": "./grapheme.cjs"
       },
+      "./utils": {
+        "types": "./utils.d.ts",
+        "import": "./utils.js",
+        "require": "./utils.cjs"
+      },
       "./intl-adapter": {
         "types": "./intl-adapter.d.ts",
         "import": "./intl-adapter.js",

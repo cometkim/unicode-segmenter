@@ -1,4 +1,5 @@
 import { searchGrapheme, GraphemeCategory } from './_grapheme_table.js';
+import { takeChar } from './utils.js';
 
 /**
  * @typedef {import('./core.js').Segmenter} Segmenter
@@ -39,23 +40,6 @@ export function* graphemeSegments(input) {
 
   /** @type {number | null} The number of RIS codepoints preceding `cursor`. */
   let risCount = 0;
-
-  /**
-   * @return {string}
-   * Take a u32 char from the current cursor
-   */
-  let take = () => {
-    let hi = input.charCodeAt(cursor);
-    if (0xd800 <= hi && hi <= 0xdbff) {
-      if (cursor + 1 < len) {
-        let lo = input.charCodeAt(cursor + 1);
-        if (0xdc00 <= lo && lo <= 0xdfff) {
-          return String.fromCodePoint(((hi - 0xd800) << 10) + (lo - 0xdc00) + 0x10000);
-        }
-      }
-    }
-    return String.fromCodePoint(hi);
-  };
 
   /**
    * @param {string} ch
@@ -107,7 +91,7 @@ export function* graphemeSegments(input) {
     }
   };
 
-  let ch = take();
+  let ch = takeChar(input, cursor, len);
   let segment = ch;
 
   while (true) {
@@ -131,7 +115,7 @@ export function* graphemeSegments(input) {
       risCount = 0;
     }
 
-    ch = take();
+    ch = take(input, cursor, len);
     catAfter = categoryOf(ch);
 
     if (isBoundary(catBefore, catAfter)) {
