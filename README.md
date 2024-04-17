@@ -18,45 +18,51 @@ A lightweight and fast, pure JavaScript library for Unicode segmentation.
 
 ## Usage
 
+- Use Unicode general property matchers:
+  ```js
+  import {
+    isLetter,       // match w/ \p{L}
+    isNumeric,      // match w/ \p{N}
+    isAlphabetic,   // match w/ \p{Alphabetic}
+    isAlphanumeric, // match w/ [\p{N}\p{Alphabetic}]
+  } from 'unicode-segmenter/general';
+  ```
+
+- Use Emoji matchers
+  ```js
+  import {
+    isEmoji,             // match w/ \p{Extended_Pictographic}
+    isEmojiPresentation, // match w/ \p{Emoji_Presentation}
+  } from 'unicode-segmenter/emoji';
+  ```
+
 - Count graphemes:
   ```js
   import { countGrapheme } from 'unicode-segmenter/grapheme';
+
+  countGrapheme(input);
   ```
 
 - Use grapheme segmenter:
   ```js
   import { graphemeSegments } from 'unicode-segmenter/grapheme';
-  ```
 
-- Use Unicode general property matchers:
-  ```js
-  import {
-    isLetter,       // \p{L}
-    isNumeric,      // \p{N}
-    isAlphabetic,   // \p{Alphabetic}
-    isAlphanumeric, // [\p{N}\p{Alphabetic}]
-  } from 'unicode-segmenter/general';
-  ```
-
-- Use Emoji matchers (`\p{Extended_Pictographic}` and `\p{Emoji_Presentation}`)
-  ```js
-  import {
-    isEmoji,             // \p{Extended_Pictographic}
-    isEmojiPresentation, // \p{Emoji_Presentation}
-  } from 'unicode-segmenter/emoji';
+  for (const { index, segment } of graphemeSegments(input)) {
+    // ...
+  }
   ```
 
 - Use [`Intl.Segmenter`] adapter (only `granularity: "grapheme"` available):
   ```js
   import { Segmenter } from 'unicode-segmenter/intl-adapter';
 
-  // Same API with `Intl.Segmenter`!
+  // Same API with the `Intl.Segmenter`
   const segmenter = new Segmenter();
   ```
 
 - Use [`Intl.Segmenter`] polyfill (only `granularity: "grapheme"` available):
   ```js
-  // Apply polyfill!
+  // Apply polyfill to the `globalThis.Intl` object.
   import 'unicode-segmenter/intl-polyfill';
 
   const segmenter = new Intl.Segmenter();
