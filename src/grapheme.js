@@ -115,7 +115,7 @@ export function* graphemeSegments(input) {
       risCount = 0;
     }
 
-    ch = take(input, cursor, len);
+    ch = takeChar(input, cursor, len);
     catAfter = categoryOf(ch);
 
     if (isBoundary(catBefore, catAfter)) {
