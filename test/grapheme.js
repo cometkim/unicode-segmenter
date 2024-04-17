@@ -2,6 +2,7 @@
 
 import { test } from 'node:test';
 import * as assert from 'node:assert/strict';
+import fc from 'fast-check';
 
 import { graphemeSegments, countGrapheme } from 'unicode-segmenter/grapheme';
 
@@ -74,5 +75,51 @@ test('countGrapheme', async t => {
 
   await t.test('emoji', () => {
     assert.equal(countGrapheme('👻👩‍👩‍👦‍👦'), 2);
+  });
+});
+
+test('spec compliant', async t => {
+  fc.configureGlobal({
+    // Fix seed here for stable coverage report
+    seed: 1713140942000,
+    numRuns: 100_000,
+  });
+
+  let intlSegmenter = new Intl.Segmenter();
+
+  await t.test('ascii string', () => {
+    fc.assert(
+      // @ts-ignore
+      fc.property(fc.asciiString(), (data) => {
+        assert.deepEqual(
+          [...intlSegmenter.segment(data)],
+          [...graphemeSegments(data)],
+        );
+      }),
+    );
+  });
+
+  await t.test('unicode string', () => {
+    fc.assert(
+      // @ts-ignore
+      fc.property(fc.fullUnicodeString(), data => {
+        assert.deepEqual(
+          [...intlSegmenter.segment(data)],
+          [...graphemeSegments(data)],
+        );
+      }),
+    );
+  });
+
+  await t.test('16bits', () => {
+    fc.assert(
+      // @ts-ignore
+      fc.property(fc.string16bits(), data => {
+        assert.deepEqual(
+          [...intlSegmenter.segment(data)],
+          [...graphemeSegments(data)],
+        );
+      }),
+    );
   });
 });
