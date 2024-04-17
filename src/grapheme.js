@@ -139,6 +139,16 @@ export function* graphemeSegments(input) {
 }
 
 /**
+ * @param {string} str
+ * @return number count of graphemes
+ */
+export function countGraphemes(str) {
+  let count = 0;
+  for (let _ of graphemeSegments(str)) count += 1;
+  return count;
+}
+
+/**
  * @typedef {0} P_NotBreak
  * @typedef {1} P_Break
  * @typedef {2} P_Extended
