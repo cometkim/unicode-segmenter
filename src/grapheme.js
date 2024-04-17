@@ -1,10 +1,10 @@
+// @ts-check
+
 import { searchGrapheme, GraphemeCategory } from './_grapheme_table.js';
 import { takeChar } from './utils.js';
 
 /**
- * @typedef {import('./core.js').Segmenter} Segmenter
- *
- * @typedef {import('./_grapheme_table.js').GraphemeCategory} GraphemeCategory
+ * @typedef {import('./core.js').Segmenter<{ _cat: GraphemeCategory }>} Segmenter
  * @typedef {import('./_grapheme_table.js').GraphemeSearchResult} GraphemeSearchResult
  */
 
@@ -38,7 +38,7 @@ export function* graphemeSegments(input) {
   /** @type {GraphemeSearchResult} */
   let cache = [0, 0, 2 /* GC_Control */];
 
-  /** @type {number | null} The number of RIS codepoints preceding `cursor`. */
+  /** @type {number} The number of RIS codepoints preceding `cursor`. */
   let risCount = 0;
 
   /**
@@ -61,6 +61,8 @@ export function* graphemeSegments(input) {
         return 2 /* GC_Control */;
       }
     } else {
+      /** @type {number} */
+      // @ts-ignore ch is never empty
       let cp = ch.codePointAt(0);
       // If this char isn't within the cached range, update the cache to the
       // range that includes it.
@@ -99,14 +101,14 @@ export function* graphemeSegments(input) {
 
     let index = cursor - segment.length;
 
-    if (cursor === len) {
-      yield { segment, input, index };
-      break;
-    }
-
     catBefore = catAfter;
     if (catBefore === null) {
       catBefore = categoryOf(ch);
+    }
+
+    if (cursor === len) {
+      yield { segment, input, index, _cat: catBefore };
+      break;
     }
 
     if (catBefore === 10 /* GC_Regional_Indicator*/) {
@@ -115,11 +117,11 @@ export function* graphemeSegments(input) {
       risCount = 0;
     }
 
-    ch = take(input, cursor, len);
+    ch = takeChar(input, cursor, len);
     catAfter = categoryOf(ch);
 
     if (isBoundary(catBefore, catAfter)) {
-      yield { segment, input, index };
+      yield { segment, input, index, _cat: catBefore };
       segment = '';
     }
 

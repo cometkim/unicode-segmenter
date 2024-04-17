@@ -4,6 +4,7 @@
     "moduleResolution": "NodeNext",
     "strict": true,
     "allowJs": true,
+    "noImplicitAny": true,
     "noEmit": true
   }
 }

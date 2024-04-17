@@ -1,3 +1,5 @@
+// @ts-check
+
 import * as core from './core.js';
 import { graphemeSegments } from './grapheme.js';
 
@@ -17,7 +19,7 @@ export class Segmenter {
    *   granularity?: SegmentGranularity,
    * }} SegmenterOptions
    *
-   * @param {string} locale
+   * @param {string} [locale]
    * @param {SegmenterOptions} [options={}]
    */
   constructor(locale, options = {}) {
@@ -68,7 +70,7 @@ class SegmentsAdapter {
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter/segment/Segments/containing
    *
    * @param {number} codeUnitIndex
-   * @return {core.SegmentOutput | undefined}
+   * @return {core.SegmentOutput<{}> | undefined}
    */
   containing(codeUnitIndex) {
     let offset = 0;

@@ -38,6 +38,8 @@ let modules = await fs.readdir(srcDir);
 {
   let bundleEntryPoints = [
     src('index.js'),
+    src('emoji.js'),
+    src('general.js'),
     src('grapheme.js'),
     src('intl-adapter.js'),
     src('intl-polyfill.js'),

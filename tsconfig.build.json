@@ -5,6 +5,7 @@
     "rootDir": "src",
     "outDir": ".",
     "allowJs": true,
+    "noImplicitAny": true,
     "declaration": true,
     "emitDeclarationOnly": true
   },

@@ -23,6 +23,8 @@
   ],
   "exports": {
     ".": "./src/index.js",
+    "./emoji": "./src/emoji.js",
+    "./general": "./src/general.js",
     "./grapheme": "./src/grapheme.js",
     "./intl-adapter": "./src/intl-adapter.js"
   },
@@ -40,6 +42,16 @@
         "types": "./grapheme.d.ts",
         "import": "./index.js",
         "require": "./index.cjs"
+      },
+      "./emoji": {
+        "types": "./emoji.d.ts",
+        "import": "./emoji.js",
+        "require": "./emoji.cjs"
+      },
+      "./general": {
+        "types": "./general.d.ts",
+        "import": "./general.js",
+        "require": "./general.cjs"
       },
       "./grapheme": {
         "types": "./grapheme.d.ts",
@@ -73,14 +85,19 @@
     "/licenses"
   ],
   "scripts": {
-    "prepack": "yarn build",
+    "prepack": "yarn clean && yarn build",
+    "clean": "rimraf -g \"*.js\" \"*.cjs\" \"*.map\" \"*.d.ts\" \"bundle\"",
     "build": "node scripts/build-exports.js && tsc -p tsconfig.build.json",
     "test": "node --test --test-reporter spec --test-reporter-destination=stdout",
     "test:coverage": "yarn test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info",
     "fuzz": "jazzer fuzz/target.cjs",
-    "bundle-stats": "yarn build && node benchmark/bundle-stats.js",
-    "perf:node": "node benchmark/performance.js",
-    "perf:browser": "parcel benchmark/performance.html"
+    "bundle-stats:emoji": "node benchmark/bundle-stats-emoji.js",
+    "bundle-stats:general": "node benchmark/bundle-stats-general.js",
+    "bundle-stats:grapheme": "node benchmark/bundle-stats-grapheme.js",
+    "perf:emoji": "node benchmark/performance-emoji.js",
+    "perf:general": "node benchmark/performance-general.js",
+    "perf:grapheme": "node benchmark/performance-grapheme.js",
+    "perf:grapheme:browser": "parcel benchmark/performance-grapheme.html"
   },
   "alias": {
     "process": false
@@ -89,6 +106,7 @@
     "@changesets/cli": "^2.27.1",
     "@jazzer.js/core": "^2.1.0",
     "@types/node": "^20.12.7",
+    "emoji-regex": "10.3.0",
     "esbuild": "^0.20.2",
     "fast-check": "^3.17.1",
     "grapheme-splitter": "1.0.4",
@@ -96,6 +114,7 @@
     "mitata": "^0.1.11",
     "parcel": "^2.12.0",
     "pretty-bytes": "^6.1.1",
+    "rimraf": "^5.0.5",
     "tinybench": "^2.6.0",
     "typescript": "^5.4.5"
   },

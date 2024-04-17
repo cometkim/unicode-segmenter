@@ -8,8 +8,7 @@
 
 node_modules/
 
-*.txt
-!licenses/*.txt
+/scripts/unicode_data/
 
 /*.d.ts
 /*.js

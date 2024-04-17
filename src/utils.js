@@ -1,3 +1,5 @@
+// @ts-check
+
 /**
  * Take a UTF-8 char from the given input by cursor
  *
@@ -8,13 +10,35 @@
  */
 export function takeChar(input, cursor, length = input.length) {
   let hi = input.charCodeAt(cursor);
-  if (0xd800 <= hi && hi <= 0xdbff) {
+  if (isHighSurrogate(hi)) {
     if (cursor + 1 < length) {
       let lo = input.charCodeAt(cursor + 1);
-      if (0xdc00 <= lo && lo <= 0xdfff) {
-        return String.fromCodePoint(((hi - 0xd800) << 10) + (lo - 0xdc00) + 0x10000);
+      if (isLowSurrogate(lo)) {
+        return String.fromCodePoint(surrogatePairToCodePoint(hi, lo));
       }
     }
   }
   return String.fromCodePoint(hi);
+}
+
+/** 
+ * @param {number} c UTF-16 code
+ */
+export function isHighSurrogate(c) {
+  return 0xd800 <= c && c <= 0xdbff;
+}
+
+/** 
+ * @param {number} c UTF-16 code
+ */
+export function isLowSurrogate(c) {
+  return 0xdc00 <= c && c <= 0xdfff;
+}
+
+/** 
+ * @param {number} hi high surrogate
+ * @param {number} lo low surrogate
+ */
+export function surrogatePairToCodePoint(hi, lo) {
+  return ((hi - 0xd800) << 10) + (lo - 0xdc00) + 0x10000;
 }
