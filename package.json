@@ -26,7 +26,11 @@
     "./emoji": "./src/emoji.js",
     "./general": "./src/general.js",
     "./grapheme": "./src/grapheme.js",
-    "./intl-adapter": "./src/intl-adapter.js"
+    "./intl-adapter": {
+      "types": "./src/intl-adapter.js",
+      "import": "./src/intl-adapter.js",
+      "require": "./intl-adapter.cjs"
+    }
   },
   "sideEffects": [
     "./intl-polyfill.js",
