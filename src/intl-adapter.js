@@ -1,6 +1,5 @@
 // @ts-check
 
-import * as core from './core.js';
 import { graphemeSegments } from './grapheme.js';
 
 /**
@@ -10,17 +9,8 @@ import { graphemeSegments } from './grapheme.js';
  */
 export class Segmenter {
   /**
-   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter/Segmenter
-   *
-   * @typedef {'grapheme' | 'word' | 'sentence'} SegmentGranularity
-   * @typedef {'lookup' | 'best fit'} MatchingStrategy
-   * @typedef {{
-   *   localeMatcher?: MatchingStrategy,
-   *   granularity?: SegmentGranularity,
-   * }} SegmenterOptions
-   *
    * @param {string} [locale]
-   * @param {SegmenterOptions} [options={}]
+   * @param {Intl.SegmenterOptions} [options={}]
    */
   constructor(locale, options = {}) {
     let {
@@ -51,6 +41,7 @@ export class Segmenter {
 
 /**
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter/segment/Segments
+ * @implements {Intl.Segments}
  */
 class SegmentsAdapter {
   /**
@@ -61,16 +52,21 @@ class SegmentsAdapter {
     this.input = input;
   }
 
-  [Symbol.iterator]() {
+  /**
+   * @return {IterableIterator<Intl.SegmentData>}
+   */
+  *[Symbol.iterator]() {
     // only grapheme segmenter is currently provided
-    return graphemeSegments(this.input);
+    for (let { segment, index, input } of graphemeSegments(this.input)) {
+      yield { segment, index, input };
+    }
   }
 
   /**
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter/segment/Segments/containing
    *
    * @param {number} codeUnitIndex
-   * @return {core.SegmentOutput<{}> | undefined}
+   * @return {ReturnType<Intl.Segments["containing"]>} A resolved segment data
    */
   containing(codeUnitIndex) {
     let offset = 0;
@@ -81,5 +77,9 @@ class SegmentsAdapter {
         return x;
       }
     }
+    // FIXME mistyped upstream
+    // See https://github.com/microsoft/TypeScript/pull/58084
+    // @ts-ignore `Segments.prototype.containing()` can actually returns `undefined`.
+    return undefined;
   }
 }
