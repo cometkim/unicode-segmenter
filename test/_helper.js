@@ -1,5 +1,6 @@
 // @ts-check
 
+import { test } from 'node:test';
 import * as assert from 'node:assert/strict';
 
 /**
@@ -14,7 +15,7 @@ export function assertObjectContaining(val, exp, msg) {
   try {
     if (Array.isArray(val) !== Array.isArray(exp)) throw inv;
 
-    let valArr = Array.isArray(exp) ? exp : [exp];
+    let valArr = Array.isArray(val) ? val : [val];
     let expArr = Array.isArray(exp) ? exp : [exp];
     if (valArr.length !== expArr.length) throw inv;
 
@@ -37,3 +38,42 @@ export function assertObjectContaining(val, exp, msg) {
     }
   }
 }
+
+test('_helper:assertObjectContaining', () => {
+  assert.doesNotThrow(() => {
+    assertObjectContaining({ foo: 'bar', ext: 'baz' }, { foo: 'bar' })
+  });
+
+  assert.doesNotThrow(() => {
+    assertObjectContaining([{ foo: 'bar', ext: 'baz' }], [{ foo: 'bar' }])
+  });
+
+  assert.throws(() => {
+    // @ts-expect-error
+    assertObjectContaining({ foo: 'bar' }, { foo: 1 })
+  });
+
+  assert.throws(() => {
+    assertObjectContaining([1, 2], [3, 4, 5])
+  });
+
+  assert.throws(() => {
+    let target = { foo: 'bar' };
+    let shouldThrow = new Proxy(target, {
+      get() {
+        throw new Error();
+      },
+    });
+    assertObjectContaining(target, shouldThrow);
+  });
+
+  assert.throws(() => {
+    let target = { foo: 'bar' };
+    let shouldFail = new Proxy(target, {
+      get() {
+        assert.fail();
+      },
+    });
+    assertObjectContaining(target, shouldFail);
+  });
+});

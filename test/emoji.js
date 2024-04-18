@@ -37,7 +37,7 @@ test('isEmojiPresentation', async t => {
         /** @type {number} */
         // @ts-ignore
         let cp = data.codePointAt(0);
-        assert.equal(isEmoji(cp), /\p{Extended_Pictographic}/u.test(data));
+        assert.equal(isEmojiPresentation(cp), /\p{Emoji_Presentation}/u.test(data));
       }),
     );
   });
