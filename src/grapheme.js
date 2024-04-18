@@ -45,28 +45,25 @@ export function* graphemeSegments(input) {
   let emoji = false;
 
   /**
-   * @param {string} ch
+   * @param {number} cp
    * @return {GraphemeCategory}
    */
-  let categoryOf = (ch) => {
-    if (ch <= '\u{007e}') {
+  let categoryOf = (cp) => {
+    if (cp < 127) {
       // Special-case optimization for ascii, except U+007F.  This
       // improves performance even for many primarily non-ascii texts,
       // due to use of punctuation and white space characters from the
       // ascii range.
-      if (ch >= '\u{0020}') {
+      if (cp >= 32) {
         return 0 /* GC_Any */;
-      } else if (ch == '\n') {
+      } else if (cp === 10) {
         return 6 /* GC_LF */;
-      } else if (ch == '\r') {
+      } else if (cp === 13) {
         return 1 /* GC_CR */;
       } else {
         return 2 /* GC_Control */;
       }
     } else {
-      /** @type {number} */
-      // @ts-ignore ch is never empty
-      let cp = ch.codePointAt(0);
       // If this char isn't within the cached range, update the cache to the
       // range that includes it.
       if (cp < cache[0] || cp > cache[1]) {
@@ -108,7 +105,10 @@ export function* graphemeSegments(input) {
 
     catBefore = catAfter;
     if (catBefore === null) {
-      catBefore = categoryOf(ch);
+      /** @type {number} */
+      // @ts-ignore
+      let cp = ch.codePointAt(0);
+      catBefore = categoryOf(cp);
     }
 
     if (catBefore === 10 /* Regional_Indicator*/) {
@@ -119,7 +119,10 @@ export function* graphemeSegments(input) {
 
     if (cursor < len) {
       ch = takeChar(input, cursor, len);
-      catAfter = categoryOf(ch);
+      /** @type {number} */
+      // @ts-ignore
+      let cp = ch.codePointAt(0);
+      catAfter = categoryOf(cp);
     }
 
     if (catBefore === 4 /* Extended_Pictographic */ && catAfter === 14 /* ZWJ */) {
