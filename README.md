@@ -43,12 +43,16 @@ A lightweight and fast, pure JavaScript library for Unicode segmentation.
   countGrapheme(input);
   ```
 
-- Use grapheme segmenter:
+- Make an advanced grapheme matcher:
   ```js
-  import { graphemeSegments } from 'unicode-segmenter/grapheme';
+  import { graphemeSegments, GraphemeCategory } from 'unicode-segmenter/grapheme';
 
-  for (const { index, segment } of graphemeSegments(input)) {
-    // ...
+  function* matchEmoji(str) {
+    for (const { index, segment, _cat } of graphemeSegments(input)) {
+      if (_cat === GraphemeCategory.Extended_Pictographic) {
+        yield { emoji: segment, index };
+      }
+    }
   }
   ```
 
@@ -70,7 +74,7 @@ A lightweight and fast, pure JavaScript library for Unicode segmentation.
 
 ### TypeScript
 
-No worry. Library is fully typed, and provides `.d.ts` file for you 😉
+No worry. Library is fully typed, and provides `*.d.ts` file for you 😉
 
 ## Library benchmarks
 

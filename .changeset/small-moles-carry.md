@@ -6,15 +6,15 @@
 
   ```js
   import {
-    isLetter, // \p{L}
-    isNumeric, // \p{N}
-    isAlphabetic, // \p{Alpha}
-    isAlphanumeric, // [\p{N}\p{Alpha}]
-  } from "unicode-segmenter/general";
+    isLetter,       // match w/ \p{L}
+    isNumeric,      // match w/ \p{N}
+    isAlphabetic,   // match w/ \p{Alphabetic}
+    isAlphanumeric, // match w/ [\p{N}\p{Alphabetic}]
+  } from 'unicode-segmenter/general';
 
   import {
-    isEmoji, // \p{Extended_Pictographic}
-    isEmojiPresentation, // \p{Emoji_Presentation}
+    isEmoji,             // match w/ \p{Extended_Pictographic}
+    isEmojiPresentation, // match w/ \p{Emoji_Presentation}
   } from "unicode-segmenter/emoji";
   ```
 
