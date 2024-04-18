@@ -1,5 +1,11 @@
 # unicode-segmenter
 
+## 0.3.1
+
+### Patch Changes
+
+- 77af2ac: Fix CommonJS module resolutions
+
 ## 0.3.0
 
 ### Minor Changes
