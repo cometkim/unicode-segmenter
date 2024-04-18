@@ -1,5 +1,17 @@
 # unicode-segmenter
 
+## 0.3.2
+
+### Patch Changes
+
+- e0b910d: Fix `{Extend}`+`{Extended_Pictographic}` sequence
+
+  Counterexample:
+
+  - '👩‍🦰👩‍👩‍👦‍👦🏳️‍🌈' -> 3 graphemes
+
+  Reported from https://github.com/eslint/eslint/pull/18359
+
 ## 0.3.1
 
 ### Patch Changes
