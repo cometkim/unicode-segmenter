@@ -125,7 +125,10 @@ export function* graphemeSegments(input) {
       catAfter = categoryOf(cp);
     }
 
-    if (catBefore === 4 /* Extended_Pictographic */ && catAfter === 14 /* ZWJ */) {
+    if (
+      (catBefore === 3 /* Extend */ || catBefore === 4 /* Extended_Pictographic */)
+      && catAfter === 14 /* ZWJ */
+    ) {
       // begin emoji sequance
       emoji = true;
     }
@@ -133,6 +136,7 @@ export function* graphemeSegments(input) {
     if (isBoundary(catBefore, catAfter)) {
       yield { segment, index, input, _cat: catBefore };
 
+      // flush
       index = cursor;
       segment = '';
       emoji = false;

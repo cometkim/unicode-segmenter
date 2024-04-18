@@ -151,6 +151,7 @@ test('counter examples', async t => {
     '‍◻',
     '🇷‍◻',
     '🇷🇸A',
+    '👩‍🦰👩‍👩‍👦‍👦🏳️‍🌈',
   ];
 
   for (let counter of counterExamples) {
