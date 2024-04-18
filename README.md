@@ -190,7 +190,7 @@ Look [benchmark](benchmark) to see how it works.
 
   | Name                         | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
   |------------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-  | `unicode-segmenter/grapheme` |    ✔️ |  44,892 |           30,081 |            9,299 |            5,907 |
+  | `unicode-segmenter/grapheme` |    ✔️ |  44,913 |           30,090 |            9,304 |            5,995 |
   | `graphemer`                  |    ✖️ ️| 410,424 |           95,104 |           15,752 |           10,660 |
   | `grapheme-splitter`          |    ✖️ | 122,241 |           23,680 |            7,852 |            4,841 |
 
