@@ -87,7 +87,7 @@ Look [benchmark](benchmark) to see how it works.
 `unicode-segmenter/emoji` vs:
 
 - built-in Unicode RegExp
-- [emoji-regex]@10.3.0 (101M weekly downloads on NPM)
+- [emoji-regex]@10.3.0 (101M+ weekly downloads on NPM)
 
 <details open>
   <summary>Bundle stats</summary>
