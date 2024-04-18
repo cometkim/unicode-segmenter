@@ -13,6 +13,12 @@ await fs.mkdir(distDir, { recursive: true });
 let src = name => path.join(srcDir, name);
 let modules = await fs.readdir(srcDir);
 
+function rewriteCjs(content) {
+  return content.replace(/require\("(.*)\.js"\)/g, (_match, id) => {
+    return `require("${id}.cjs")`;
+  });
+}
+
 {
   let entryPoints = modules.map(src);
   await build({
@@ -24,15 +30,18 @@ let modules = await fs.readdir(srcDir);
     write: true,
     sourcemap: true,
   });
-  await build({
+  let { outputFiles: cjsOutputs } = await build({
     entryPoints,
     outdir: distDir,
     outExtension: { '.js': '.cjs' },
     format: 'cjs',
     treeShaking: true,
-    write: true,
+    write: false,
     sourcemap: true,
   });
+  for (let { path, text } of cjsOutputs) {
+    await fs.writeFile(path, rewriteCjs(text), 'utf8');
+  }
 }
 
 {
