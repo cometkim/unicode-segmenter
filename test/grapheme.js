@@ -100,6 +100,18 @@ test('spec compliant', async t => {
     );
   });
 
+  await t.test('BMP string', () => {
+    fc.assert(
+      // @ts-ignore
+      fc.property(fc.unicodeString(), data => {
+        assertObjectContaining(
+          [...graphemeSegments(data)],
+          [...intlSegmenter.segment(data)],
+        );
+      }),
+    );
+  });
+
   await t.test('unicode string', () => {
     fc.assert(
       // @ts-ignore
@@ -123,4 +135,30 @@ test('spec compliant', async t => {
       }),
     );
   });
+});
+
+test('counter examples', async t => {
+  let intlSegmenter = new Intl.Segmenter();
+
+  // Add here if you find somee counter exmaples
+  let counterExamples = [
+    '\udbfc',
+    '\udbf9',
+    ' ᯪ',
+    '܏ ',
+    '‍☀',
+    '  ‍◻',
+    '‍◻',
+    '🇷‍◻',
+    '🇷🇸A',
+  ];
+
+  for (let counter of counterExamples) {
+    await t.test(`Counterexample: ["${counter}"]`, () => {
+      assertObjectContaining(
+        [...graphemeSegments(counter)],
+        [...intlSegmenter.segment(counter)],
+      );
+    });
+  }
 });
