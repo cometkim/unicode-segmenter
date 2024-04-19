@@ -65,56 +65,6 @@ export function* graphemeSegments(input) {
   /** Emoji state */
   let emoji = false;
 
-  /**
-   * @param {number} cp
-   * @return {GraphemeCategory}
-   */
-  let categoryOf = (cp) => {
-    if (cp < 127) {
-      // Special-case optimization for ascii, except U+007F.  This
-      // improves performance even for many primarily non-ascii texts,
-      // due to use of punctuation and white space characters from the
-      // ascii range.
-      if (cp >= 32) {
-        return 0 /* GC_Any */;
-      } else if (cp === 10) {
-        return 6 /* GC_LF */;
-      } else if (cp === 13) {
-        return 1 /* GC_CR */;
-      } else {
-        return 2 /* GC_Control */;
-      }
-    } else {
-      // If this char isn't within the cached range, update the cache to the
-      // range that includes it.
-      if (cp < cache[0] || cp > cache[1]) {
-        cache = searchGraphemeCategory(cp);
-      }
-      return cache[2];
-    }
-  };
-
-  /**
-   * @param {GraphemeCategory} catBefore
-   * @param {GraphemeCategory | null} catAfter
-   * @return {boolean}
-   */
-  let isBoundary = (catBefore, catAfter) => {
-    switch (checkPair(catBefore, catAfter)) {
-      case 0 /* P_NotBreak */:
-      case 2 /* P_Extended */:
-        // Always handle extended characters
-        return false;
-      case 1 /* P_Break */:
-        return true;
-      case 3 /* P_Regional */:
-        return risCount % 2 === 0;
-      case 4 /* P_Emoji */:
-        // Here is always ZWJ + emoji combo
-        return !emoji;
-    }
-  };
-
   let cp = takeCodePoint(input, cursor, len);
   let ch = String.fromCodePoint(cp);
 
@@ -127,7 +77,7 @@ export function* graphemeSegments(input) {
 
     catBefore = catAfter;
     if (catBefore === null) {
-      catBefore = categoryOf(cp);
+      catBefore = cat(cp, cache);
     }
 
     if (catBefore === 10 /* Regional_Indicator*/) {
@@ -139,7 +89,7 @@ export function* graphemeSegments(input) {
     if (cursor < len) {
       cp = takeCodePoint(input, cursor, len);
       ch = String.fromCodePoint(cp);
-      catAfter = categoryOf(cp);
+      catAfter = cat(cp, cache);
     } else {
       yield { segment, index, input, _cat: catBefore };
       return;
@@ -153,7 +103,7 @@ export function* graphemeSegments(input) {
       emoji = true;
     }
 
-    if (isBoundary(catBefore, catAfter)) {
+    if (isBoundary(catBefore, catAfter, risCount, emoji)) {
       yield { segment, index, input, _cat: catBefore };
 
       // flush
@@ -173,6 +123,62 @@ export function countGrapheme(str) {
   for (let _ of graphemeSegments(str)) count += 1;
   return count;
 }
+
+/**
+ * @param {number} cp
+ * @param {import('./_grapheme_table.js').GraphemeCategoryRange} cache
+ * @return {GraphemeCategory}
+ */
+function cat(cp, cache) {
+  if (cp < 127) {
+    // Special-case optimization for ascii, except U+007F.  This
+    // improves performance even for many primarily non-ascii texts,
+    // due to use of punctuation and white space characters from the
+    // ascii range.
+    if (cp >= 32) {
+      return 0 /* GC_Any */;
+    } else if (cp === 10) {
+      return 6 /* GC_LF */;
+    } else if (cp === 13) {
+      return 1 /* GC_CR */;
+    } else {
+      return 2 /* GC_Control */;
+    }
+  } else {
+    // If this char isn't within the cached range, update the cache to the
+    // range that includes it.
+    if (cp < cache[0] || cp > cache[1]) {
+      let result =  searchGraphemeCategory(cp);
+      cache[0] = result[0];
+      cache[1] = result[1];
+      cache[2] = result[2];
+    }
+    return cache[2];
+  }
+};
+
+/**
+ * @param {GraphemeCategory} catBefore
+ * @param {GraphemeCategory | null} catAfter
+ * @param {number} risCount Regional_Indicator state
+ * @param {boolean} emoji Extended_Pictographic state
+ * @return {boolean}
+ */
+function isBoundary(catBefore, catAfter, risCount, emoji) {
+  switch (checkPair(catBefore, catAfter)) {
+    case 0 /* P_NotBreak */:
+    case 2 /* P_Extended */:
+      // Always handle extended characters
+      return false;
+    case 1 /* P_Break */:
+      return true;
+    case 3 /* P_Regional */:
+      return risCount % 2 === 0;
+    case 4 /* P_Emoji */:
+      // Here is always ZWJ + emoji combo
+      return !emoji;
+  }
+};
 
 /**
  * @typedef {0} P_NotBreak
