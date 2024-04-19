@@ -28,6 +28,8 @@ __dir__ = os.path.dirname(os.path.realpath(__file__))
 src_path = os.path.normpath(os.path.join(__dir__, "../src"))
 data_path = os.path.join(__dir__, "unicode_data")
 
+os.makedirs(data_path, exist_ok=True)
+
 preamble = '''// Copyright 2012-2018 The Rust Project Developers. See the COPYRIGHT
 // file at the top-level directory of this distribution and at
 // http://rust-lang.org/COPYRIGHT.
@@ -68,9 +70,8 @@ def is_surrogate(n):
     return surrogate_codepoints[0] <= n <= surrogate_codepoints[1]
 
 def fetch(f):
+    os.chdir(data_path)
     if not os.path.exists(os.path.basename(f)):
-        os.makedirs(data_path, exist_ok=True)
-        os.chdir(data_path)
         if "emoji" in f:
             os.system("curl -O https://www.unicode.org/Public/%s/ucd/emoji/%s"
                       % (UNICODE_VERSION_NUMBER, f))
