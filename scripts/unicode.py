@@ -205,7 +205,7 @@ def escape_char(c):
     return "%d" % c
 
 def emit_table(f, name, t_data, pfun=lambda x: f"[{escape_char(x[0])},{escape_char(x[1])}]"):
-    f.write("const %s = [\n" % name)
+    f.write("export const %s = [\n" % name)
     data = ""
     first = True
     for dat in t_data:
@@ -217,132 +217,60 @@ def emit_table(f, name, t_data, pfun=lambda x: f"[{escape_char(x[0])},{escape_ch
     f.write(",\n];\n")
 
 def emit_general_module(f):
-    f.write(preamble)
-    f.write("""
-// @ts-check
-
-import { bsearchRange } from './core.js';
-""")
-
     gencats = load_gencats("UnicodeData.txt")
     derived = load_properties("DerivedCoreProperties.txt", ["Alphabetic"])
 
-    f.write("""
-/**
- * @typedef {import('./core.js').UnicodeRange} UnicodeRange
- */
-""")
+    f.write("// @ts-check\n")
 
     f.write("""
 /**
- * @type {UnicodeRange[]}
+ * The Unicode `L` (Letter) property table
+ *
+ * @type {import('./core.js').UnicodeRange[]}
  */
 """)
     emit_table(f, "letter_table", gencats["L"])
 
     f.write("""
 /**
- * @type {UnicodeRange[]}
+ * The Unicode `N` (Number) property table
+ *
+ * @type {import('./core.js').UnicodeRange[]}
  */
 """)
     emit_table(f, "numeric_table", gencats["N"])
 
     f.write("""
 /**
- * @type {UnicodeRange[]}
+ * The Unicode `Alphabetic` property table
+ *
+ * @type {import('./core.js').UnicodeRange[]}
  */
 """)
     emit_table(f, "alphabetic_table", derived["Alphabetic"])
 
-    f.write("""
-/**
- * Check if the given code point is included in Unicode \\p{L} general property
- *
- * @param {number} cp
- * @return boolean
- */
-export function isLetter(cp) {
-  return bsearchRange(cp, letter_table) >= 0;
-}
-
-/**
- * Check if the given code point is included in Unicode \\p{Alphabetic} dervied property
- *
- * @param {number} cp
- * @return boolean
- */
-export function isAlphabetic(cp) {
-  return bsearchRange(cp, alphabetic_table) >= 0;
-}
-
-/**
- * Check if the given code point is included in Unicode \\p{N} general property
- *
- * @param {number} cp
- * @return boolean true if 
- */
-export function isNumeric(cp) {
-  return bsearchRange(cp, numeric_table) >= 0;
-}
-
-/**
- * @param {number} cp
- * @return boolean true
- */
-export function isAlphanumeric(cp) {
-  return isAlphabetic(cp) || isNumeric(cp);
-}
-""")
-
 def emit_emoji_module(f):
     emoji_props = load_properties("emoji-data.txt", ["Extended_Pictographic", "Emoji_Presentation"])
 
-    f.write("""
-// @ts-check
-
-import { bsearchRange } from './core.js';
-
-/**
- * @typedef {import('./core.js').UnicodeRange} UnicodeRange
- */
-""")
+    f.write("// @ts-check\n")
 
     f.write("""
 /**
- * @type {UnicodeRange[]}
+ * The Unicode `Extended_Pictographic` property table
+ *
+ * @type {import('./core.js').UnicodeRange[]}
  */
 """)
     emit_table(f, "emoji_table", emoji_props["Extended_Pictographic"])
 
     f.write("""
 /**
- * @type {UnicodeRange[]}
+ * The Unicode `Emoji_Presentation` property table
+ *
+ * @type {import('./core.js').UnicodeRange[]}
  */
 """)
     emit_table(f, "emoji_presentation_table", emoji_props["Emoji_Presentation"])
-
-    f.write("""
-/**
- * Check if the given code point is included in Unicode \\p{Extended_Pictographic} script property
- *
- * @param {number} cp
- * @return boolean
- */
-export function isEmoji(cp) {
-  return bsearchRange(cp, emoji_table) >= 0;
-}
-
-/**
- * Check if the given code point is included in Unicode \\p{Emoji_Presentation} script property
- *
- * @param {number} cp
- * @return boolean
- */
-export function isEmojiPresentation(cp) {
-  return bsearchRange(cp, emoji_presentation_table) >= 0;
-}
-""")
-
 
 def emit_break_module(f, break_table, break_cats, name):
     Name = name.capitalize()

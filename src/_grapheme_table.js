@@ -33,7 +33,6 @@ import { bsearchUnicodeRange } from './core.js';
  * @typedef {12} GC_T
  * @typedef {13} GC_V
  * @typedef {14} GC_ZWJ
-
  * @typedef {(
  *   | GC_Any
  *   | GC_CR
@@ -51,9 +50,12 @@ import { bsearchUnicodeRange } from './core.js';
  *   | GC_V
  *   | GC_ZWJ
  * )} GraphemeCategory
+ */
 
- * @typedef {import('./core.js').SearchResult<GraphemeCategory>} GraphemeSearchResult
- * @typedef {import('./core.js').CategorizedUnicodeRange<GraphemeCategory>} GraphemeRange
+/**
+ * @typedef {import('./core.js').CategorizedUnicodeRange<GraphemeCategory>} GraphemeCategoryRange
+ *
+ * NOTE: It might be garbage `from` and `to` values when the `category` is {@link GC_Any}.
  */
 
 /**
@@ -82,7 +84,7 @@ export const GraphemeCategory = {
   ZWJ: 14,
 };
 
-const grapheme_cat_lookup = [
+export const grapheme_cat_lookup = [
   0, 5, 9, 9, 9, 9, 9, 10, 10, 10, 11, 11, 16, 21, 26, 29, 32, 37, 41, 53, 65, 75, 86, 97, 106, 116,
   131, 143, 153, 157, 161, 168, 173, 183, 188, 189, 191, 191, 191, 192, 192, 192, 192, 192, 192,
   192, 192, 198, 206, 209, 211, 219, 219, 232, 233, 242, 258, 262, 270, 270, 271, 271, 271, 271,
@@ -146,9 +148,9 @@ const grapheme_cat_lookup = [
 ];
 
 /**
- * @type {GraphemeRange[]}
+ * @type {GraphemeCategoryRange[]}
  */
-const grapheme_cat_table = [
+export const grapheme_cat_table = [
   [0, 9, 2], [10, 10, 6], [11, 12, 2], [13, 13, 1], [14, 31, 2], [127, 159, 2], [169, 169, 4], [173,
   173, 2], [174, 174, 4], [768, 879, 3], [1155, 1161, 3], [1425, 1469, 3], [1471, 1471, 3], [1473,
   1474, 3], [1476, 1477, 3], [1479, 1479, 3], [1536, 1541, 9], [1552, 1562, 3], [1564, 1564, 2],
@@ -438,9 +440,9 @@ const grapheme_cat_table = [
 
 /**
  * @param {number} cp
- * @return {GraphemeSearchResult}
+ * @return An exact {@link GraphemeCategoryRange} if found, or garbage `start` and `from` values with {@link GC_Any} category.
  */
-export function searchGrapheme(cp) {
+export function searchGraphemeCategory(cp) {
   // Perform a quick O(1) lookup in a precomputed table to determine
   // the slice of the range table to search in.
   let lookup_table = grapheme_cat_lookup;

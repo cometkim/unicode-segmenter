@@ -1,16 +1,11 @@
-
 // @ts-check
 
-import { bsearchRange } from './core.js';
-
 /**
- * @typedef {import('./core.js').UnicodeRange} UnicodeRange
+ * The Unicode `Extended_Pictographic` property table
+ *
+ * @type {import('./core.js').UnicodeRange[]}
  */
-
-/**
- * @type {UnicodeRange[]}
- */
-const emoji_table = [
+export const emoji_table = [
   [169, 169], [174, 174], [8252, 8252], [8265, 8265], [8482, 8482], [8505, 8505], [8596, 8601],
   [8617, 8618], [8986, 8987], [9000, 9000], [9096, 9096], [9167, 9167], [9193, 9203], [9208, 9210],
   [9410, 9410], [9642, 9643], [9654, 9654], [9664, 9664], [9723, 9726], [9728, 9733], [9735, 9746],
@@ -27,9 +22,11 @@ const emoji_table = [
 ];
 
 /**
- * @type {UnicodeRange[]}
+ * The Unicode `Emoji_Presentation` property table
+ *
+ * @type {import('./core.js').UnicodeRange[]}
  */
-const emoji_presentation_table = [
+export const emoji_presentation_table = [
   [8986, 8987], [9193, 9196], [9200, 9200], [9203, 9203], [9725, 9726], [9748, 9749], [9800, 9811],
   [9855, 9855], [9875, 9875], [9889, 9889], [9898, 9899], [9917, 9918], [9924, 9925], [9934, 9934],
   [9940, 9940], [9962, 9962], [9970, 9971], [9973, 9973], [9978, 9978], [9981, 9981], [9989, 9989],
@@ -45,23 +42,3 @@ const emoji_presentation_table = [
   129338], [129340, 129349], [129351, 129535], [129648, 129660], [129664, 129672], [129680, 129725],
   [129727, 129733], [129742, 129755], [129760, 129768], [129776, 129784],
 ];
-
-/**
- * Check if the given code point is included in Unicode \p{Extended_Pictographic} script property
- *
- * @param {number} cp
- * @return boolean
- */
-export function isEmoji(cp) {
-  return bsearchRange(cp, emoji_table) >= 0;
-}
-
-/**
- * Check if the given code point is included in Unicode \p{Emoji_Presentation} script property
- *
- * @param {number} cp
- * @return boolean
- */
-export function isEmojiPresentation(cp) {
-  return bsearchRange(cp, emoji_presentation_table) >= 0;
-}
