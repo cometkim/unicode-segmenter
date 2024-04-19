@@ -1,21 +1,42 @@
+// Copyright 2012-2018 The Rust Project Developers. See the COPYRIGHT
+// file at the top-level directory of this distribution and at
+// http://rust-lang.org/COPYRIGHT.
+//
+// Licensed under the MIT license
+// <LICENSE-MIT or http://opensource.org/licenses/MIT>.
+//
+// Modified original Rust library [source code]
+// (https://github.com/unicode-rs/unicode-segmentation/blob/1f88570/src/grapheme.rs)
+//
+// to create JavaScript library [unicode-segmenter]
+// (https://github.com/cometkim/unicode-segmenter)
+
 // @ts-check
 
-import { searchGrapheme, GraphemeCategory } from './_grapheme_table.js';
 import { takeChar } from './utils.js';
+import {
+  searchGraphemeCategory,
+  GraphemeCategory,
+} from './_grapheme_table.js';
 
 /**
- * @typedef {import('./core.js').Segmenter<{ _cat: GraphemeCategory }>} Segmenter
- * @typedef {import('./_grapheme_table.js').GraphemeSearchResult} GraphemeSearchResult
+ * @typedef {import('./core.js').Segmenter<{ _cat: GraphemeCategory }>} GraphemeSegmenter
+ * @typedef {import('./_grapheme_table.js').GraphemeCategoryRange} GraphemeCategoryRange
  */
 
 export {
-  searchGrapheme,
+  /**
+   * @deprecated Use `searchGraphemeCategory` instead
+   */
+  searchGraphemeCategory as searchGrapheme,
+  searchGraphemeCategory,
   GraphemeCategory,
 };
 
+
 /**
  * @param {string} input
- * @return {Segmenter}
+ * @return {GraphemeSegmenter}
  */
 export function* graphemeSegments(input) {
   // do nothing on empty string
@@ -35,7 +56,7 @@ export function* graphemeSegments(input) {
   /** @type {GraphemeCategory | null} Category of codepoint immediately preceding cursor, if known. */
   let catAfter = null;
 
-  /** @type {GraphemeSearchResult} */
+  /** @type {import('./_grapheme_table.js').GraphemeCategoryRange} */
   let cache = [0, 0, 2 /* GC_Control */];
 
   /** @type {number} The number of RIS codepoints preceding `cursor`. */
@@ -67,7 +88,7 @@ export function* graphemeSegments(input) {
       // If this char isn't within the cached range, update the cache to the
       // range that includes it.
       if (cp < cache[0] || cp > cache[1]) {
-        cache = searchGrapheme(cp);
+        cache = searchGraphemeCategory(cp);
       }
       return cache[2];
     }
@@ -172,9 +193,7 @@ export function countGrapheme(str) {
  *   | P_Regional
  *   | P_Emoji
  * )} PairResult
- */
-
-/**
+ *
  * @param {GraphemeCategory} before
  * @param {GraphemeCategory | null} after
  * @return {PairResult}

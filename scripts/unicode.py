@@ -311,23 +311,23 @@ import { bsearchUnicodeRange } from './core.js';
 
 /**
 """)
-
     inversed = {}
     for idx, cat in enumerate(break_cats):
         inversed[cat] = idx
         f.write(" * @typedef {%d} %s\n" % (idx, f"{Name[0]}C_{cat}"))
-
-    f.write("""
- * @typedef {(
-""")
+    f.write(" * @typedef {(\n")
     for cat in break_cats:
         f.write(f" *   | {Name[0]}C_{cat}\n")
     f.write(" * )} %s\n" % typename)
+    f.write(" */\n")
+
     f.write("""
- * @typedef {import('./core.js').SearchResult<%s>} %sSearchResult
+/**
  * @typedef {import('./core.js').CategorizedUnicodeRange<%s>} %sRange
+ *
+ * NOTE: It might be garbage `from` and `to` values when the `category` is {@link %sC_Any}.
  */
-""" % (typename, Name, typename, Name))
+""" % (typename, typename, Name[0]))
 
     f.write("""
 /**
@@ -351,7 +351,7 @@ export const %s = {
 /**
  * @type {%sRange[]}
  */
-""" % Name)
+""" % typename)
 
     emit_table(f, f"{name}_cat_table", break_table,
                pfun=lambda x: f"[{escape_char(x[0])},{escape_char(x[1])},{inversed[x[2]]}]")
@@ -359,7 +359,7 @@ export const %s = {
     f.write("""
 /**
  * @param {number} cp
- * @return {%sSearchResult}
+ * @return An exact {@link %sRange} if found, or garbage `start` and `from` values with {@link %sC_Any} category.
  */
 export function search%s(cp) {
   // Perform a quick O(1) lookup in a precomputed table to determine
@@ -384,7 +384,7 @@ export function search%s(cp) {
   let upper = lower + lookup_interval - 1;
   return bsearchUnicodeRange(cp, %s_cat_table, lower, upper, sliceFrom, sliceTo);
 }
-""" % (Name, Name, name, lookup_interval, j, len(break_table), name))
+""" % (typename, Name[0], typename, name, lookup_interval, j, len(break_table), name))
 
 def emit_src(file, emit):
     r = os.path.join(src_path, file)

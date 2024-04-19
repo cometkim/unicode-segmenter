@@ -10,12 +10,9 @@
  * @template {number} T
  * @typedef {[from: number, to: number, category: T]} CategorizedUnicodeRange
  *
- * Encoded unicode range with category code
- */
-
-/**
- * @template {number} T
- * @typedef {[lower: number, upper: number, category: T]} SearchResult
+ * Encoded unicode range with category code.
+ *
+ * NOTE: It might be garbage `from` and `to` values when the `category` is `Any`.
  */
 
 /**
@@ -70,7 +67,7 @@ export function bsearchRange(x, table, sliceFrom = 0, sliceTo = table.length) {
  * @param {number} defaultUpper
  * @param {number} [sliceFrom]
  * @param {number} [sliceTo]
- * @return {SearchResult<T>}
+ * @return {CategorizedUnicodeRange<T>}
  */
 export function bsearchUnicodeRange(cp, table, defaultLower, defaultUpper, sliceFrom = 0, sliceTo = table.length) {
   let found = bsearchRange(cp, table, sliceFrom, sliceTo);
