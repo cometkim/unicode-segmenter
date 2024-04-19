@@ -149,21 +149,6 @@ def ungroup_cat(cat):
             lo += 1
     return cat_out
 
-def format_table_content(f, content, indent):
-    line = " "*indent
-    first = True
-    for chunk in content.split(","):
-        if len(line) + len(chunk) < 98:
-            if first:
-                line += chunk
-            else:
-                line += ", " + chunk
-            first = False
-        else:
-            f.write(line + ",\n")
-            line = " "*indent + chunk
-    f.write(line)
-
 def load_properties(f, interestingprops):
     fetch(f)
     props = {}
@@ -205,16 +190,13 @@ def escape_char(c):
     return "%d" % c
 
 def emit_table(f, name, t_data, pfun=lambda x: f"[{escape_char(x[0])},{escape_char(x[1])}]"):
-    f.write("export const %s = [\n" % name)
-    data = ""
+    f.write("export const %s = JSON.parse(`[" % name)
     first = True
-    for dat in t_data:
-        if not first:
-            data += ","
+    for data in t_data:
+        if first: f.write(pfun(data))
+        else: f.write("," + pfun(data))
         first = False
-        data += pfun(dat)
-    format_table_content(f, data, 2)
-    f.write(",\n];\n")
+    f.write("]`);\n")
 
 def emit_general_module(f):
     gencats = load_gencats("UnicodeData.txt")

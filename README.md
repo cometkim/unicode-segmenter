@@ -94,7 +94,7 @@ Look [benchmark](benchmark) to see how it works.
 
   | Name                        | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
   |-----------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-  | `unicode-segmenter/emoji`   |    ✔️ |   3,780 |            2,580 |            1,020 |              751 |
+  | `unicode-segmenter/emoji`   |    ✔️ |   3,058 |            2,611 |            1,041 |              751 |
   | `emoji-regex`               |    ✔️ |  12,946 |           12,859 |            2,180 |            1,746 |
 
 </details>
@@ -143,7 +143,7 @@ Look [benchmark](benchmark) to see how it works.
 
   | Name                        | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
   |-----------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-  | `unicode-segmenter/general` |    ✔️ |  27,937 |           20,928 |            5,772 |            3,559 |
+  | `unicode-segmenter/general` |    ✔️ |  21,505 |           20,972 |            5,792 |            3,564 |
 
 </details>
 
@@ -190,7 +190,7 @@ Look [benchmark](benchmark) to see how it works.
 
   | Name                         | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
   |------------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-  | `unicode-segmenter/grapheme` |    ✔️ |  44,913 |           30,090 |            9,304 |            5,995 |
+  | `unicode-segmenter/grapheme` |    ✔️ |  34,197 |           30,185 |            9,337 |            5,692 |
   | `graphemer`                  |    ✖️ ️| 410,424 |           95,104 |           15,752 |           10,660 |
   | `grapheme-splitter`          |    ✖️ | 122,241 |           23,680 |            7,852 |            4,841 |
 
