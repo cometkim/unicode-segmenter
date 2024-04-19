@@ -21,7 +21,6 @@
  *   segment: string,
  *   index: number,
  *   input: string,
- *   isWordLike?: boolean,
  * } & Ext} SegmentOutput
  */
 
