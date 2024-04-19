@@ -190,13 +190,13 @@ def escape_char(c):
     return "%d" % c
 
 def emit_table(f, name, t_data, pfun=lambda x: f"[{escape_char(x[0])},{escape_char(x[1])}]"):
-    f.write("export const %s = JSON.parse(`[" % name)
+    f.write("export const %s = JSON.parse('[" % name)
     first = True
     for data in t_data:
         if first: f.write(pfun(data))
         else: f.write("," + pfun(data))
         first = False
-    f.write("]`);\n")
+    f.write("]');\n")
 
 def emit_general_module(f):
     gencats = load_gencats("UnicodeData.txt")
