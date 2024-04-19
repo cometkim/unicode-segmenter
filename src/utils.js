@@ -1,6 +1,27 @@
 // @ts-check
 
 /**
+ * Take a Unicode code point from the given input by cursor
+ *
+ * @param {string} input
+ * @param {number} cursor
+ * @param {number} [length] length of input
+ * @return {number} a code point of the character
+ */
+export function takeCodePoint(input, cursor, length = input.length) {
+  let hi = input.charCodeAt(cursor);
+  if (isHighSurrogate(hi)) {
+    if (cursor + 1 < length) {
+      let lo = input.charCodeAt(cursor + 1);
+      if (isLowSurrogate(lo)) {
+        return surrogatePairToCodePoint(hi, lo);
+      }
+    }
+  }
+  return hi;
+}
+
+/**
  * Take a UTF-8 char from the given input by cursor
  *
  * @param {string} input
@@ -9,16 +30,8 @@
  * @return {string} a UTF-8 character (its `.length` will be 1 or 2)
  */
 export function takeChar(input, cursor, length = input.length) {
-  let hi = input.charCodeAt(cursor);
-  if (isHighSurrogate(hi)) {
-    if (cursor + 1 < length) {
-      let lo = input.charCodeAt(cursor + 1);
-      if (isLowSurrogate(lo)) {
-        return String.fromCodePoint(surrogatePairToCodePoint(hi, lo));
-      }
-    }
-  }
-  return String.fromCodePoint(hi);
+  let cp = takeCodePoint(input, cursor, length);
+  return String.fromCodePoint(cp);
 }
 
 /** 
