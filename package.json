@@ -26,6 +26,7 @@
     "./emoji": "./src/emoji.js",
     "./general": "./src/general.js",
     "./grapheme": "./src/grapheme.js",
+    "./utils": "./src/utils.js",
     "./intl-adapter": {
       "types": "./src/intl-adapter.js",
       "import": "./src/intl-adapter.js",
