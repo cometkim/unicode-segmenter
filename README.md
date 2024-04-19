@@ -190,7 +190,7 @@ Look [benchmark](benchmark) to see how it works.
 
   | Name                         | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
   |------------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-  | `unicode-segmenter/grapheme` |    ✔️ |  34,197 |           30,185 |            9,337 |            5,692 |
+  | `unicode-segmenter/grapheme` |    ✔️ |  34,197 |           30,190 |            9,342 |            5,677 |
   | `graphemer`                  |    ✖️ ️| 410,424 |           95,104 |           15,752 |           10,660 |
   | `grapheme-splitter`          |    ✖️ | 122,241 |           23,680 |            7,852 |            4,841 |
 
@@ -205,16 +205,16 @@ Look [benchmark](benchmark) to see how it works.
   
   benchmark              time (avg)             (min … max)       p75       p99      p999
   --------------------------------------------------------- -----------------------------
-  unicode-segmenter     399 ns/iter       (390 ns … 958 ns)    407 ns    426 ns    958 ns
-  Intl.Segmenter      2'512 ns/iter   (1'560 ns … 3'393 ns)  2'808 ns  3'296 ns  3'393 ns
-  graphemer           2'607 ns/iter   (2'577 ns … 2'946 ns)  2'603 ns  2'903 ns  2'946 ns
-  grapheme-splitter   4'621 ns/iter     (4'167 ns … 274 µs)  4'334 ns  4'792 ns 50'875 ns
+  unicode-segmenter     388 ns/iter       (377 ns … 923 ns)    396 ns    427 ns    923 ns
+  Intl.Segmenter      2'401 ns/iter   (1'581 ns … 3'134 ns)  2'637 ns  3'127 ns  3'134 ns
+  graphemer           2'604 ns/iter   (2'576 ns … 2'842 ns)  2'607 ns  2'781 ns  2'842 ns
+  grapheme-splitter   4'657 ns/iter     (4'208 ns … 308 µs)  4'334 ns  5'667 ns 55'542 ns
   
   summary
     unicode-segmenter
-     6.3x faster than Intl.Segmenter
-     6.54x faster than graphemer
-     11.59x faster than grapheme-splitter
+     6.18x faster than Intl.Segmenter
+     6.71x faster than graphemer
+     11.99x faster than grapheme-splitter
   ```
 
 </details>

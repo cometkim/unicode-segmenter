@@ -120,7 +120,7 @@ export function* graphemeSegments(input) {
   let segment = '';
   let index = cursor;
 
-  while (cursor < len) {
+  while (true) {
     cursor += ch.length;
     segment += ch;
 
@@ -144,6 +144,9 @@ export function* graphemeSegments(input) {
       // @ts-ignore
       let cp = ch.codePointAt(0);
       catAfter = categoryOf(cp);
+    } else {
+      yield { segment, index, input, _cat: catBefore };
+      return;
     }
 
     if (
@@ -162,11 +165,6 @@ export function* graphemeSegments(input) {
       segment = '';
       emoji = false;
     }
-  }
-
-  if (segment) {
-    // @ts-ignore
-    yield { segment, index, input, _cat: catBefore };
   }
 }
 
