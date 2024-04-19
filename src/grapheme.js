@@ -146,8 +146,8 @@ export function* graphemeSegments(input) {
     }
 
     if (
-      (catBefore === 3 /* Extend */ || catBefore === 4 /* Extended_Pictographic */)
-      && catAfter === 14 /* ZWJ */
+      catAfter === 14 /* ZWJ */
+      && (catBefore === 3 /* Extend */ || catBefore === 4 /* Extended_Pictographic */)
     ) {
       // begin emoji sequance
       emoji = true;
