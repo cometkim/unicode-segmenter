@@ -118,8 +118,8 @@ export function* graphemeSegments(input) {
   let cp = takeCodePoint(input, cursor, len);
   let ch = String.fromCodePoint(cp);
 
-  let segment = '';
   let index = 0;
+  let segment = '';
 
   while (true) {
     cursor += ch.length;
