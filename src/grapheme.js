@@ -13,7 +13,7 @@
 
 // @ts-check
 
-import { takeChar } from './utils.js';
+import { takeCodePoint } from './utils.js';
 import {
   searchGraphemeCategory,
   GraphemeCategory,
@@ -115,7 +115,8 @@ export function* graphemeSegments(input) {
     }
   };
 
-  let ch = takeChar(input, cursor, len);
+  let cp = takeCodePoint(input, cursor, len);
+  let ch = String.fromCodePoint(cp);
 
   let segment = '';
   let index = cursor;
@@ -126,9 +127,6 @@ export function* graphemeSegments(input) {
 
     catBefore = catAfter;
     if (catBefore === null) {
-      /** @type {number} */
-      // @ts-ignore
-      let cp = ch.codePointAt(0);
       catBefore = categoryOf(cp);
     }
 
@@ -139,10 +137,8 @@ export function* graphemeSegments(input) {
     }
 
     if (cursor < len) {
-      ch = takeChar(input, cursor, len);
-      /** @type {number} */
-      // @ts-ignore
-      let cp = ch.codePointAt(0);
+      cp = takeCodePoint(input, cursor, len);
+      ch = String.fromCodePoint(cp);
       catAfter = categoryOf(cp);
     } else {
       yield { segment, index, input, _cat: catBefore };
