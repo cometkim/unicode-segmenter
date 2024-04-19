@@ -119,7 +119,7 @@ export function* graphemeSegments(input) {
   let ch = String.fromCodePoint(cp);
 
   let segment = '';
-  let index = cursor;
+  let index = 0;
 
   while (true) {
     cursor += ch.length;
