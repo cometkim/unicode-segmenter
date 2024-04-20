@@ -102,7 +102,7 @@ Look [benchmark](benchmark) to see how it works.
 <details>
   <summary>
 
-  `unicode-segmenter/emoji` is a bit less than RegEx \w `u`, but is best in alternatives.
+  `unicode-segmenter/emoji` is a bit less than RegEx w/ `u`, but is best in alternatives.
 
   </summary>
 
