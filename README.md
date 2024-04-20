@@ -18,59 +18,86 @@ A lightweight and fast, pure JavaScript library for Unicode segmentation.
 
 ## Usage
 
-- Use Unicode general property matchers:
-  ```js
-  import {
-    isLetter,       // match w/ \p{L}
-    isNumeric,      // match w/ \p{N}
-    isAlphabetic,   // match w/ \p{Alphabetic}
-    isAlphanumeric, // match w/ [\p{N}\p{Alphabetic}]
-  } from 'unicode-segmenter/general';
-  ```
+You can find most of usecases from [test](test) and [benchmark](benchmark) directory!
 
-- Use Emoji matchers
-  ```js
-  import {
-    isEmoji,             // match w/ \p{Extended_Pictographic}
-    isEmojiPresentation, // match w/ \p{Emoji_Presentation}
-  } from 'unicode-segmenter/emoji';
-  ```
+### Examples
 
-- Count graphemes:
-  ```js
-  import { countGrapheme } from 'unicode-segmenter/grapheme';
+Count graphemes:
 
-  countGrapheme(input);
-  ```
+```js
+import * as assert from 'node:assert/strict';
+import { countGrapheme } from 'unicode-segmenter/grapheme';
 
-- Make an advanced grapheme matcher:
-  ```js
-  import { graphemeSegments, GraphemeCategory } from 'unicode-segmenter/grapheme';
+assert.equal('👋 안녕!', 6);
+assert.equal(countGrapheme('👋 안녕!'), 5);
 
-  function* matchEmoji(str) {
-    for (const { index, segment, _cat } of graphemeSegments(input)) {
-      if (_cat === GraphemeCategory.Extended_Pictographic) {
-        yield { emoji: segment, index };
-      }
+assert.equal('a̐éö̲'.length, 7);
+assert.equal(countGrapheme('a̐éö̲'), 3);
+```
+
+Get grapheme segments:
+
+```js
+import { graphemeSegments, GraphemeCategory } from 'unicode-segmenter/grapheme';
+
+[...graphemeSegments('a̐éö̲')];
+// 0: { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n' },
+// 1: { segment: 'é', index: 2, input: 'a̐éö̲\r\n' },
+// 2: { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n' },
+```
+
+Make an advanced grapheme matcher:
+
+```js
+import { graphemeSegments, GraphemeCategory } from 'unicode-segmenter/grapheme';
+
+function* matchEmoji(str) {
+  // internal field `_cat` is GraphemeCategory value of the match index
+  for (const { index, segment, _cat } of graphemeSegments(input)) {
+    if (_cat === GraphemeCategory.Extended_Pictographic) {
+      yield { emoji: segment, index };
     }
   }
-  ```
+}
+```
 
-- Use [`Intl.Segmenter`] adapter (only `granularity: "grapheme"` available):
-  ```js
-  import { Segmenter } from 'unicode-segmenter/intl-adapter';
+Use Unicode general property matchers:
 
-  // Same API with the `Intl.Segmenter`
-  const segmenter = new Segmenter();
-  ```
+```js
+import {
+  isLetter,       // match w/ \p{L}
+  isNumeric,      // match w/ \p{N}
+  isAlphabetic,   // match w/ \p{Alphabetic}
+  isAlphanumeric, // match w/ [\p{N}\p{Alphabetic}]
+} from 'unicode-segmenter/general';
+```
 
-- Use [`Intl.Segmenter`] polyfill (only `granularity: "grapheme"` available):
-  ```js
-  // Apply polyfill to the `globalThis.Intl` object.
-  import 'unicode-segmenter/intl-polyfill';
+Use Unicode emoji property matchers:
 
-  const segmenter = new Intl.Segmenter();
-  ```
+```js
+import {
+  isEmoji,             // match w/ \p{Extended_Pictographic}
+  isEmojiPresentation, // match w/ \p{Emoji_Presentation}
+} from 'unicode-segmenter/emoji';
+```
+
+Use [`Intl.Segmenter`] adapter (only `granularity: "grapheme"` available):
+
+```js
+import { Segmenter } from 'unicode-segmenter/intl-adapter';
+
+// Same API with the `Intl.Segmenter`
+const segmenter = new Segmenter();
+```
+
+Use [`Intl.Segmenter`] polyfill (only `granularity: "grapheme"` available):
+
+```js
+// Apply polyfill to the `globalThis.Intl` object.
+import 'unicode-segmenter/intl-polyfill';
+
+const segmenter = new Intl.Segmenter();
+```
 
 ### TypeScript
 
@@ -196,7 +223,7 @@ Runtime performance of `unicode-segmenter/emoji` is a bit less than RegEx w/ `u`
 
 `unicode-segmenter/grapheme` is 7~15x faster than alternatives (including the native [`Intl.Segmenter`]).
 
-The gap becomes larger depending on environment. On Intel(x64) machines it measures 8~20x
+The gap becomes larger depending on the environment. On Intel(x64) Linux machines it measures 8~20x.
 
 <details>
   <summary>Details</summary>
