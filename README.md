@@ -82,9 +82,7 @@ This library aims to be lighter and faster than other existing Unicode libraries
 
 Look [benchmark](benchmark) to see how it works.
 
-### Emojis
-
-`unicode-segmenter/emoji` vs:
+### `unicode-segmenter/emoji` vs
 
 - built-in Unicode RegExp
 - [emoji-regex]@10.3.0 (101M+ weekly downloads on NPM)
@@ -136,9 +134,7 @@ Look [benchmark](benchmark) to see how it works.
 
 </details>
 
-### Unicode alpha + numeric
-
-`unicode-segmenter/general` vs:
+### `unicode-segmenter/general` vs
 
 - built-in unicode RegExp
 
@@ -186,9 +182,7 @@ Look [benchmark](benchmark) to see how it works.
 
 </details>
 
-### Grapheme clusters
-
-`unicode-segmenter/grapheme` vs:
+### `unicode-segmenter/grapheme` vs
 
 - Node.js' [`Intl.Segmenter`] (browser's version may vary)
 - [graphemer]@1.4.0 (16.6M+ weekly downloads on NPM)
