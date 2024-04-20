@@ -6,6 +6,8 @@ import { graphemeSegments } from './grapheme.js';
  * Adapter for `Intl.Segmenter` API
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter
+ *
+ * @implements {Intl.Segmenter}
  */
 export class Segmenter {
   /**
@@ -26,9 +28,17 @@ export class Segmenter {
       default:
         throw new RangeError(`Value ${granularity} out of range for Intl.Segmenter options property granularity`);
     }
+
+    /** @type {string} */
+    this._locale = locale || 'en';
+
+    /** @type {Intl.ResolvedSegmenterOptions["granularity"]} */
+    this._granularity = granularity;
   }
 
   /**
+   * Impelements {@link Intl.Segmenter.segment}
+   *
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter/segment
    *
    * @param {string} input
@@ -36,6 +46,19 @@ export class Segmenter {
    */
   segment(input) {
     return new SegmentsAdapter(input);
+  }
+
+  /**
+   * Impelements {@link Intl.Segmenter.resolvedOptions}
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter/resolvedOptions
+   * @return {Intl.ResolvedSegmenterOptions}
+   */
+  resolvedOptions() {
+    return {
+      locale: this._locale,
+      granularity: this._granularity,
+    };
   }
 }
 
@@ -63,12 +86,14 @@ class SegmentsAdapter {
   }
 
   /**
+   * Impelements {@link Intl.Segments.containing}
+   *
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter/segment/Segments/containing
    *
-   * @param {number} codeUnitIndex
-   * @return {ReturnType<Intl.Segments["containing"]>} A resolved segment data
+   * @param {number} [codeUnitIndex=0]
+   * @return {Intl.SegmentData} A resolved segment data
    */
-  containing(codeUnitIndex) {
+  containing(codeUnitIndex = 0) {
     let offset = 0;
     // only grapheme segmenter is currently provided
     for (let x of graphemeSegments(this.input)) {
