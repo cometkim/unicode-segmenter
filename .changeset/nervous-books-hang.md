@@ -1,5 +1,5 @@
 ---
-"unicode-segmenter": patch
+"unicode-segmenter": minor
 ---
 
 Optimize perf again 🔥
