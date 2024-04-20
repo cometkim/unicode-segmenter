@@ -215,7 +215,7 @@ Runtime performance of `unicode-segmenter/emoji` is a bit less than RegEx w/ `u`
 
   | Name                         | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
   |------------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-  | `unicode-segmenter/grapheme` |    ✔️ |  34,117 |           30,197 |            9,314 |            5,645 |
+  | `unicode-segmenter/grapheme` |    ✔️ |  34,123 |           30,199 |            9,317 |            5,660 |
   | `graphemer`                  |    ✖️ ️| 410,424 |           95,104 |           15,752 |           10,660 |
   | `grapheme-splitter`          |    ✖️ | 122,241 |           23,680 |            7,852 |            4,841 |
 

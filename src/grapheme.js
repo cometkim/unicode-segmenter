@@ -80,12 +80,6 @@ export function* graphemeSegments(input) {
       catBefore = cat(cp, cache);
     }
 
-    if (catBefore === 10 /* Regional_Indicator*/) {
-      risCount += 1;
-    } else {
-      risCount = 0;
-    }
-
     if (cursor < len) {
       cp = takeCodePoint(input, cursor, len);
       ch = String.fromCodePoint(cp);
@@ -95,12 +89,16 @@ export function* graphemeSegments(input) {
       return;
     }
 
-    if (
-      catAfter === 14 /* ZWJ */
-      && (catBefore === 3 /* Extend */ || catBefore === 4 /* Extended_Pictographic */)
-    ) {
-      // begin emoji sequance
-      emoji = true;
+    if (catBefore === 10 /* Regional_Indicator*/) {
+      risCount += 1;
+    } else {
+      risCount = 0;
+      if (
+        catAfter === 14 /* ZWJ */
+        && (catBefore === 3 /* Extend */ || catBefore === 4 /* Extended_Pictographic */)
+      ) {
+        emoji = true;
+      }
     }
 
     if (isBoundary(catBefore, catAfter, risCount, emoji)) {
