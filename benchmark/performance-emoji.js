@@ -1,31 +1,34 @@
 import * as assert from 'node:assert/strict';
-import { group, bench, run } from 'mitata';
+import { group, baseline, bench, run } from 'mitata';
 import emojiRegex from 'emoji-regex';
 
-import { takeChar } from '../src/utils.js';
+import { takeCodePoint } from '../src/utils.js';
 import { isEmoji } from '../src/emoji.js';
-import { graphemeSegments, GraphemeCategory } from '../src/grapheme.js';
+
+let input = '🚀 새로운 유니코드 분할기 라이브러리 \'unicode-segmenter\'를 소개합니다! 🔍 각종 언어의 문자를 정확하게 구분해주는 강력한 도구입니다. Check it out! 👉 [https://github.com/cometkim/unicode-segmenter] #Unicode #Programming 🌐';
+
+// Note:
+// Seems emoji-regex does not fully comply with the `Extended_Pictographic` property
+// Even with the `Emoji_Presentation`...?
+//
+// let input = 'aaaaa😂💯♡⌨';
+// // '♡' never be matched
 
 group('checking if any emoji', () => {
   function anyEmoji(input) {
     let cursor = 0;
     let len = input.length;
     while (cursor < len) {
-      let ch = takeChar(input, cursor);
-      let cp = ch.codePointAt(0);
+      let cp = takeCodePoint(input, cursor, len);
       if (isEmoji(cp)) {
         return true;
       }
+      let ch = String.fromCodePoint(cp);
       cursor += ch.length;
     }
     return false;
   }
-
-  // emoji-regex does not fully comply with the Extended_Pictographic property
-  // let input = 'aaaaa😂💯♡⌨';
-  let input = 'aaaaa😂💯⌨';
-
-  bench('unicode-segmenter/emoji', () => {
+  baseline('unicode-segmenter/emoji', () => {
     assert.equal(anyEmoji(input), true);
   });
 
@@ -33,43 +36,52 @@ group('checking if any emoji', () => {
     assert.equal(/\p{Extended_Pictographic}/u.test(input), true);
   });
 
-  let e = emojiRegex();
+  // Should remove the `g` flag enabled by default.
+  let e = new RegExp(emojiRegex(), '');
   bench('emoji-regex', () => {
-    assert.equal(e.test(input), true, 'not match');
+    assert.equal(e.test(input), true);
   });
 });
 
 group('match all emoji', () => {
-  function *matchEmoji(str) {
-    for (let { index, segment, input, _cat } of graphemeSegments(str)) {
-      if (_cat === GraphemeCategory.Extended_Pictographic) {
-        yield Object.assign([segment], { index, input, groups: undefined });
+  function* allEmoji(input) {
+    let cursor = 0;
+    let len = input.length;
+    while (cursor < len) {
+      let cp = takeCodePoint(input, cursor, len);
+      let ch = String.fromCodePoint(cp);
+      if (isEmoji(cp)) {
+        yield ch;
       }
+      cursor += ch.length;
     }
   }
 
-  // emoji-regex does not fully comply with the Extended_Pictographic property
-  // let input = 'aaaaa😂💯♡⌨';
-  let input = 'aaaaa😂💯⌨';
-  let expected = [
-    Object.assign(['😂'], { index: 5, input, groups: undefined }),
-    Object.assign(['💯'], { index: 7, input, groups: undefined }),
-    // Object.assign(['♡'], { index: 9, input, groups: undefined }),
-    // Object.assign(['⌨'], { index: 10, input, groups: undefined }),
-    Object.assign(['⌨'], { index: 9, input, groups: undefined }),
-  ];
+  let expected = ['🚀', '🔍', '👉', '🌐'];
 
-  bench('unicode-segmenter/emoji', () => {
-    assert.deepEqual([...matchEmoji(input)], expected);
+  baseline('unicode-segmenter/emoji', () => {
+    assert.deepEqual(
+      [...allEmoji(input)]
+        .map(match => match), // iter for fair competition
+      expected,
+    );
   });
 
   bench('RegExp w/ unicode', () => {
-    assert.deepEqual([...input.matchAll(/\p{Extended_Pictographic}/ug)], expected);
+    assert.deepEqual(
+      [...input.matchAll(/\p{Extended_Pictographic}/ug)]
+        .map(match => match[0]),
+      expected,
+    );
   });
 
   let e = emojiRegex();
   bench('emoji-regex', () => {
-    assert.deepEqual([...input.matchAll(e)], expected);
+    assert.deepEqual(
+      [...input.matchAll(e)]
+        .map(match => match[0]),
+      expected,
+    );
   });
 });
 
