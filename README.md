@@ -40,10 +40,11 @@ Get grapheme segments:
 ```js
 import { graphemeSegments, GraphemeCategory } from 'unicode-segmenter/grapheme';
 
-[...graphemeSegments('a̐éö̲')];
+[...graphemeSegments('a̐éö̲\r\n')];
 // 0: { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n' },
 // 1: { segment: 'é', index: 2, input: 'a̐éö̲\r\n' },
 // 2: { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n' },
+// 3: { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n' },
 ```
 
 Make an advanced grapheme matcher:
