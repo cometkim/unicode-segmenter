@@ -97,12 +97,10 @@ Look [benchmark](benchmark) to see how it works.
 
 </details>
 
+Runtime performance of `unicode-segmenter/emoji` is a bit less than RegEx w/ `u`, but is best in alternatives.
+
 <details>
-  <summary>
-
-  `unicode-segmenter/emoji` is a bit less than RegEx w/ `u`, but is best in alternatives.
-
-  </summary>
+  <summary>Details</summary>
 
   ```
   cpu: Apple M1 Pro
@@ -147,13 +145,10 @@ Look [benchmark](benchmark) to see how it works.
 
 </details>
 
+`unicode-segmenter/general` is almost equivalent to RegExp w/ `u`.
 
 <details>
-  <summary>
-
-  `unicode-segmenter/general` is almost equivalent to RegExp w/ `u`.
-
-  </summary>
+  <summary>Details</summary>
 
   ```
   cpu: Apple M1 Pro
@@ -199,13 +194,12 @@ Look [benchmark](benchmark) to see how it works.
 
 </details>
 
+`unicode-segmenter/grapheme` is 7~15x faster than alternatives (including the native [`Intl.Segmenter`]).
+
+The gap becomes larger depending on environment. On Intel(x64) machines it measures 8~20x
 
 <details>
-  <summary>
-
-  `unicode-segmenter/grapheme` is 7~15x faster than alternatives (including the native [`Intl.Segmenter`]).
-
-  </summary>
+  <summary>Details</summary>
 
   ```
   cpu: Apple M1 Pro
