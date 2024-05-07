@@ -39,8 +39,7 @@
     "./bundle/intl-polyfill.js"
   ],
   "publishConfig": {
-    "type": "commonjs",
-    "main": "./index.cjs",
+    "main": "./index.js",
     "types": "./index.d.ts",
     "exports": {
       ".": {
