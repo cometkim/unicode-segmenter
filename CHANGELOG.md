@@ -1,5 +1,11 @@
 # unicode-segmenter
 
+## 0.5.0
+
+### Minor Changes
+
+- 06159a4: Fix ESM module resolution, and make ESM-first (still support CommonJS by condition)
+
 ## 0.4.0
 
 ### Minor Changes
