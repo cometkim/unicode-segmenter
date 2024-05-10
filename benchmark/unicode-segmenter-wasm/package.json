@@ -1,0 +1,15 @@
+{
+  "name": "unicode-segmenter-wasm",
+  "private": true,
+  "exports": {
+    "node": {
+      "types": "./module.d.ts",
+      "require": "./node.js",
+      "import": "./node.js"
+    },
+    "browser": {
+      "types": "./module.d.ts",
+      "import": "./browser.js"
+    }
+  }
+}

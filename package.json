@@ -101,7 +101,7 @@
     "perf:emoji": "node benchmark/performance-emoji.js",
     "perf:general": "node benchmark/performance-general.js",
     "perf:grapheme": "node benchmark/performance-grapheme.js",
-    "perf:grapheme:browser": "parcel benchmark/performance-grapheme.html"
+    "perf:grapheme:browser": "vite benchmark/performance-grapheme"
   },
   "alias": {
     "process": false
@@ -116,11 +116,13 @@
     "grapheme-splitter": "1.0.4",
     "graphemer": "1.4.0",
     "mitata": "^0.1.11",
-    "parcel": "^2.12.0",
+    "os-browserify": "^0.3.0",
     "pretty-bytes": "^6.1.1",
     "rimraf": "^5.0.5",
     "tinybench": "^2.6.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "unicode-segmenter-wasm": "portal:benchmark/unicode-segmenter-wasm",
+    "vite": "^5.2.11"
   },
   "packageManager": "yarn@4.1.1"
 }

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <style>
+      #status {
+        display: none;
+      }
+      *:disabled + #status {
+        display: block;
+      }
+    </style>
+    <button id="execute">Execute benchmark</button>
+    <div id="status">
+      Executing benchmark...
+      <button id="stop">Stop running benchmark</button>
+    </div>
+    <script type="module">
+      let worker = null;
+
+      const executeButton = document.getElementById('execute');
+      executeButton.addEventListener('click', executeBenchmark);
+
+      const stopButton = document.getElementById('stop');
+      stopButton.addEventListener('click', stopBenchmark);
+
+      function executeBenchmark() {
+        if (worker) return;
+        console.clear();
+        worker = new Worker(
+          new URL('../performance-grapheme.js', import.meta.url),
+          { type: 'module' },
+        );
+        worker.addEventListener('message', msg => {
+          if (msg === 'done') {
+            stopBenchmark();
+          }
+        });
+        executeButton.setAttribute('disabled', '');
+      }
+
+      function stopBenchmark() {
+        if (!worker) return;
+        worker.terminate();
+        worker = null;
+        executeButton.removeAttribute('disabled');
+      }
+    </script>
+  </body>
+</html>
