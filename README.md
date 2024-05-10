@@ -6,8 +6,7 @@
 
 A lightweight and fast, pure JavaScript library for Unicode segmentation.
 
-> [!NOTE]
-> The initial implementation was ported manually from Rust's [unicode-segmentation] library, which is licenced under the [MIT](licenses/unicode-segmentation_MIT.txt) license.
+Including to deal with **UTF-8** characters, **Extended Grapheme Clusters**, **Emojis**, **Unicode letters**, **Unicode numbers** and more!
 
 ## Unicode® version
 
@@ -18,11 +17,50 @@ A lightweight and fast, pure JavaScript library for Unicode segmentation.
 
 ## Usage
 
-You can find most of usecases from [test](test) and [benchmark](benchmark) directory!
+### Using TypeScript
 
-### Examples
+No worry. Library is fully typed, and provides `*.d.ts` for you 😉
 
-Count graphemes:
+### Export `unicode-segmenter/emoji`
+[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/emoji&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Femoji&treeshake=%5B*%5D#sharing)
+
+#### Example: Use Unicode emoji property matchers
+
+```js
+import {
+  isEmoji,             // match \p{Extended_Pictographic}
+  isEmojiPresentation, // match \p{Emoji_Presentation}
+} from 'unicode-segmenter/emoji';
+
+isEmoji('😍'.codePointAt(0));
+// => true
+isEmoji('♡'.codePointAt(0));
+// => true
+
+isEmojiPresentation('😍'.codePointAt(0));
+// => true
+isEmojiPresentation('♡'.codePointAt(0));
+// => false
+```
+
+### Export `unicode-segmenter/general`
+[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/general&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fgeneral&treeshake=%5B*%5D#sharing)
+
+#### Example: Use Unicode general property matchers
+
+```js
+import {
+  isLetter,       // match \p{L}
+  isNumeric,      // match \p{N}
+  isAlphabetic,   // match \p{Alphabetic}
+  isAlphanumeric, // match [\p{N}\p{Alphabetic}]
+} from 'unicode-segmenter/general';
+```
+
+### Export `unicode-segmenter/grapheme`
+[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/grapheme&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fgrapheme&treeshake=%5B*%5D#sharing)
+
+#### Example: Count graphemes
 
 ```js
 import * as assert from 'node:assert/strict';
@@ -35,54 +73,44 @@ assert.equal('a̐éö̲'.length, 7);
 assert.equal(countGrapheme('a̐éö̲'), 3);
 ```
 
-Get grapheme segments:
+#### Example: Get grapheme segments
 
 ```js
-import { graphemeSegments, GraphemeCategory } from 'unicode-segmenter/grapheme';
+import { graphemeSegments } from 'unicode-segmenter/grapheme';
 
 [...graphemeSegments('a̐éö̲\r\n')];
-// 0: { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n' },
-// 1: { segment: 'é', index: 2, input: 'a̐éö̲\r\n' },
-// 2: { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n' },
-// 3: { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n' },
+// 0: { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n' }
+// 1: { segment: 'é', index: 2, input: 'a̐éö̲\r\n' }
+// 2: { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n' }
+// 3: { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n' }
 ```
 
-Make an advanced grapheme matcher:
+#### Example: Build an advanced grapheme matcher
 
 ```js
 import { graphemeSegments, GraphemeCategory } from 'unicode-segmenter/grapheme';
 
 function* matchEmoji(str) {
   // internal field `_cat` is GraphemeCategory value of the match index
-  for (const { index, segment, _cat } of graphemeSegments(input)) {
+  for (const { segment, _cat } of graphemeSegments(input)) {
     if (_cat === GraphemeCategory.Extended_Pictographic) {
-      yield { emoji: segment, index };
+      yield segment;
     }
   }
 }
+
+[...matchEmoji('1🌷2🎁3💩4😜5👍')]
+// 0: 🌷
+// 1: 🎁
+// 2: 💩
+// 3: 😜
+// 4: 👍
 ```
 
-Use Unicode general property matchers:
+### Export `unicode-segmenter/intl-adapter`
+[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/intl-adapter&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fintl-adapter&treeshake=%5B*%5D#sharing)
 
-```js
-import {
-  isLetter,       // match w/ \p{L}
-  isNumeric,      // match w/ \p{N}
-  isAlphabetic,   // match w/ \p{Alphabetic}
-  isAlphanumeric, // match w/ [\p{N}\p{Alphabetic}]
-} from 'unicode-segmenter/general';
-```
-
-Use Unicode emoji property matchers:
-
-```js
-import {
-  isEmoji,             // match w/ \p{Extended_Pictographic}
-  isEmojiPresentation, // match w/ \p{Emoji_Presentation}
-} from 'unicode-segmenter/emoji';
-```
-
-Use [`Intl.Segmenter`] adapter (only `granularity: "grapheme"` available):
+[`Intl.Segmenter`] API adapter (only `granularity: "grapheme"` available yet)
 
 ```js
 import { Segmenter } from 'unicode-segmenter/intl-adapter';
@@ -91,7 +119,10 @@ import { Segmenter } from 'unicode-segmenter/intl-adapter';
 const segmenter = new Segmenter();
 ```
 
-Use [`Intl.Segmenter`] polyfill (only `granularity: "grapheme"` available):
+### Export `unicode-segmenter/intl-polyfill`
+[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/intl-polyfill&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fintl-polyfill&treeshake=%5B*%5D)
+
+[`Intl.Segmenter`] API polyfill (only `granularity: "grapheme"` available yet)
 
 ```js
 // Apply polyfill to the `globalThis.Intl` object.
@@ -100,11 +131,50 @@ import 'unicode-segmenter/intl-polyfill';
 const segmenter = new Intl.Segmenter();
 ```
 
-### TypeScript
+### Export `unicode-segmenter/utils`
+[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/utils&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Futils&treeshake=%5B*%5D)
 
-No worry. Library is fully typed, and provides `*.d.ts` file for you 😉
+You can access some internal utilities to deal with UTF-8 in string
 
-## Library benchmarks
+#### Example: Handle surrogate pairs
+
+```js
+import {
+  isHighSurrogate,
+  isLowSurrogate,
+  surrogatePairToCodePoint,
+} from 'unicode-segmenter/utils';
+
+const u32 = '😍';
+const hi = u32.charCodeAt(0);
+const lo = u32.charCodeAt(1);
+
+if (isHighSurrogate(hi) && isLowSurrogate(lo)) {
+  const codePoint = surrogatePairToCodePoint(hi, lo); // equivalent to u32.codePointAt(0)
+}
+```
+
+#### Example: Take UTF-8 character from a JS string
+
+```js
+import {
+  takeChar,
+  takeCodePoint,
+} from 'unicode-segmenter/utils';
+
+const str = '😍♡😍'; // .length = 5
+
+let ch = '';
+let cursor = 0;
+
+ch = takeChar(str, cursor);              // => '😍'
+ch = takeChar(str, cursor += ch.length); // => '♡'
+ch = takeChar(str, cursor += ch.length); // => '😍'
+
+// `takeCodePoint` does same, but returns Unicode code point
+```
+
+## Benchmarks
 
 This library aims to be lighter and faster than other existing Unicode libraries in the ecosystem.
 
@@ -115,50 +185,49 @@ Look [benchmark](benchmark) to see how it works.
 - built-in Unicode RegExp
 - [emoji-regex]@10.3.0 (101M+ weekly downloads on NPM)
 
-<details open>
-  <summary>Bundle stats</summary>
+#### Bundle stats
 
-  | Name                        | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
-  |-----------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-  | `unicode-segmenter/emoji`   |    ✔️ |   3,058 |            2,611 |            1,041 |              751 |
-  | `emoji-regex`               |    ✔️ |  12,946 |           12,859 |            2,180 |            1,746 |
+| Name                        | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
+|-----------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
+| `unicode-segmenter/emoji`   |    ✔️ |   3,058 |            2,611 |            1,041 |              751 |
+| `emoji-regex`               |    ✔️ |  12,946 |           12,859 |            2,180 |            1,746 |
 
-</details>
+#### Runtime performance
 
 The runtime performance of `unicode-segmenter/emoji` is enough to test the presence of emoji in a text.
 
-It's ~2.5x worse than RegExp w/ `u` for match-all performance, but that's useless examples in the real world because it doesn't care about grapheme clusters.
+It's ~2.5x worse than RegExp w/ `u` for match-all performance, but that's useless examples in the real world because others don't care about grapheme clusters.
 
 <details>
   <summary>Details</summary>
 
   ```
   cpu: Apple M1 Pro
-  runtime: node v21.7.1 (arm64-darwin)
+  runtime: node v20.13.1 (arm64-darwin)
   
   benchmark                    time (avg)             (min … max)       p75       p99      p999
   --------------------------------------------------------------- -----------------------------
   • checking if any emoji
   --------------------------------------------------------------- -----------------------------
-  unicode-segmenter/emoji   15.26 ns/iter     (14.81 ns … 314 ns)   15.4 ns  17.52 ns  33.06 ns
-  RegExp w/ unicode         18.31 ns/iter   (16.48 ns … 86.14 ns)  17.31 ns   37.7 ns  56.46 ns
-  emoji-regex               42.61 ns/iter     (41.87 ns … 100 ns)  43.17 ns  48.38 ns  68.09 ns
+  unicode-segmenter/emoji   16.11 ns/iter     (15.28 ns … 339 ns)  16.32 ns  18.66 ns  43.42 ns
+  RegExp w/ unicode         19.03 ns/iter     (16.52 ns … 185 ns)   17.9 ns  46.28 ns  74.85 ns
+  emoji-regex               43.15 ns/iter   (41.54 ns … 73.51 ns)  43.58 ns  47.93 ns  65.73 ns
   
   summary for checking if any emoji
     unicode-segmenter/emoji
-     1.2x faster than RegExp w/ unicode
-     2.79x faster than emoji-regex
-
+     1.18x faster than RegExp w/ unicode
+     2.68x faster than emoji-regex
+  
   • match all emoji
   --------------------------------------------------------------- -----------------------------
-  unicode-segmenter/emoji   3'034 ns/iter     (2'834 ns … 489 µs)  3'000 ns  3'459 ns 12'417 ns
-  RegExp w/ unicode         1'236 ns/iter   (1'208 ns … 1'437 ns)  1'250 ns  1'369 ns  1'437 ns
-  emoji-regex              11'364 ns/iter  (11'083 ns … 1'240 µs) 11'250 ns 11'750 ns 20'791 ns
+  unicode-segmenter/emoji   3'215 ns/iter     (2'958 ns … 189 µs)  3'208 ns  3'708 ns 11'833 ns
+  RegExp w/ unicode         1'285 ns/iter   (1'221 ns … 1'509 ns)  1'299 ns  1'449 ns  1'509 ns
+  emoji-regex              11'696 ns/iter    (11'125 ns … 239 µs) 11'667 ns 16'125 ns 20'375 ns
   
   summary for match all emoji
     unicode-segmenter/emoji
-     2.46x slower than RegExp w/ unicode
-     3.75x faster than emoji-regex
+     2.5x slower than RegExp w/ unicode
+     3.64x faster than emoji-regex
   ```
 
 </details>
@@ -167,14 +236,13 @@ It's ~2.5x worse than RegExp w/ `u` for match-all performance, but that's useles
 
 - built-in unicode RegExp
 
-<details open>
-  <summary>Bundle stats</summary>
+#### Bundle stats
 
-  | Name                        | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
-  |-----------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-  | `unicode-segmenter/general` |    ✔️ |  21,505 |           20,972 |            5,792 |            3,564 |
+| Name                        | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
+|-----------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
+| `unicode-segmenter/general` |    ✔️ |  21,505 |           20,972 |            5,792 |            3,564 |
 
-</details>
+#### Runtime performance
 
 `unicode-segmenter/general` is almost equivalent to RegExp w/ `u`.
 
@@ -183,27 +251,27 @@ It's ~2.5x worse than RegExp w/ `u` for match-all performance, but that's useles
 
   ```
   cpu: Apple M1 Pro
-  runtime: node v21.7.1 (arm64-darwin)
+  runtime: node v20.13.1 (arm64-darwin)
   
   benchmark                      time (avg)             (min … max)       p75       p99      p999
   ----------------------------------------------------------------- -----------------------------
   • checking any alphanumeric
   ----------------------------------------------------------------- -----------------------------
-  unicode-segmenter/general     229 ns/iter       (222 ns … 529 ns)    232 ns    289 ns    485 ns
-  RegExp w/ unicode             238 ns/iter       (233 ns … 314 ns)    240 ns    267 ns    301 ns
+  unicode-segmenter/general     236 ns/iter       (228 ns … 599 ns)    240 ns    311 ns    453 ns
+  RegExp w/ unicode             235 ns/iter       (233 ns … 285 ns)    235 ns    256 ns    271 ns
   
   summary for checking any alphanumeric
-    unicode-segmenter/general
-     1.04x faster than RegExp w/ unicode
+    RegExp w/ unicode
+     1x faster than unicode-segmenter/general
   
   • match all alphanumeric
   ----------------------------------------------------------------- -----------------------------
-  unicode-segmenter/general   2'649 ns/iter   (2'490 ns … 4'802 ns)  2'654 ns  4'419 ns  4'802 ns
-  RegExp w/ unicode           2'032 ns/iter   (2'017 ns … 2'168 ns)  2'041 ns  2'097 ns  2'168 ns
+  unicode-segmenter/general   2'480 ns/iter   (2'439 ns … 2'779 ns)  2'477 ns  2'736 ns  2'779 ns
+  RegExp w/ unicode           2'304 ns/iter   (2'076 ns … 7'742 ns)  2'110 ns  7'097 ns  7'742 ns
   
   summary for match all alphanumeric
     RegExp w/ unicode
-     1.3x faster than unicode-segmenter/general
+     1.08x faster than unicode-segmenter/general
   ```
 
 </details>
@@ -214,16 +282,15 @@ It's ~2.5x worse than RegExp w/ `u` for match-all performance, but that's useles
 - [graphemer]@1.4.0 (16.6M+ weekly downloads on NPM)
 - [grapheme-splitter]@1.0.4 (5.7M+ weekly downloads on NPM)
 
-<details open>
-  <summary>Bundle stats</summary>
+#### Bundle stats
 
-  | Name                         | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
-  |------------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-  | `unicode-segmenter/grapheme` |    ✔️ |  33,822 |           30,060 |            9,267 |            5,631 |
-  | `graphemer`                  |    ✖️ ️| 410,424 |           95,104 |           15,752 |           10,660 |
-  | `grapheme-splitter`          |    ✖️ | 122,241 |           23,680 |            7,852 |            4,841 |
+| Name                         | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
+|------------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
+| `unicode-segmenter/grapheme` |    ✔️ |  33,822 |           30,060 |            9,267 |            5,631 |
+| `graphemer`                  |    ✖️ ️| 410,424 |           95,104 |           15,752 |           10,660 |
+| `grapheme-splitter`          |    ✖️ | 122,241 |           23,680 |            7,852 |            4,841 |
 
-</details>
+#### Runtime performance
 
 `unicode-segmenter/grapheme` is 7~15x faster than alternatives (including the native [`Intl.Segmenter`]).
 
@@ -320,7 +387,8 @@ The gap becomes larger depending on the environment. On Intel(x64) Linux machine
 
 [MIT](LICENSE)
 
-See also [license](licenses/unicode-segmentation_MIT.txt) of the original code.
+> [!NOTE]
+> The initial implementation was ported manually from Rust's [unicode-segmentation] library, which is licenced under the [MIT](licenses/unicode-segmentation_MIT.txt) license.
 
 [unicode-segmentation]: https://github.com/unicode-rs/unicode-segmentation
 [`Intl.Segmenter`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter
