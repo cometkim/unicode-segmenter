@@ -22,7 +22,7 @@ Including to deal with **UTF-8** characters, **Extended Grapheme Clusters**, **E
 No worry. Library is fully typed, and provides `*.d.ts` for you 😉
 
 ### Export `unicode-segmenter/emoji`
-[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/emoji&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Femoji&treeshake=%5B*%5D#sharing)
+[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/emoji&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Femoji&treeshake=%5B*%5D)
 
 #### Example: Use Unicode emoji property matchers
 
@@ -44,7 +44,7 @@ isEmojiPresentation('♡'.codePointAt(0));
 ```
 
 ### Export `unicode-segmenter/general`
-[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/general&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fgeneral&treeshake=%5B*%5D#sharing)
+[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/general&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fgeneral&treeshake=%5B*%5D)
 
 #### Example: Use Unicode general property matchers
 
@@ -58,7 +58,7 @@ import {
 ```
 
 ### Export `unicode-segmenter/grapheme`
-[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/grapheme&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fgrapheme&treeshake=%5B*%5D#sharing)
+[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/grapheme&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fgrapheme&treeshake=%5B*%5D)
 
 #### Example: Count graphemes
 
@@ -108,7 +108,7 @@ function* matchEmoji(str) {
 ```
 
 ### Export `unicode-segmenter/intl-adapter`
-[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/intl-adapter&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fintl-adapter&treeshake=%5B*%5D#sharing)
+[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/intl-adapter&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fintl-adapter&treeshake=%5B*%5D)
 
 [`Intl.Segmenter`] API adapter (only `granularity: "grapheme"` available yet)
 
@@ -292,7 +292,7 @@ It's ~2.5x worse than RegExp w/ `u` for match-all performance, but that's useles
 
 #### Runtime performance
 
-`unicode-segmenter/grapheme` is 7~15x faster than alternatives (including the native [`Intl.Segmenter`]).
+`unicode-segmenter/grapheme` is 7~15x faster than JS alternatives (including the native [`Intl.Segmenter`], and 1.5~3x faster than WASM build of the Rust library.
 
 The gap becomes larger depending on the environment. On Intel(x64) Linux machines it measures 8~20x.
 
