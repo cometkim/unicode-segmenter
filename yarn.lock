@@ -4751,9 +4751,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unicode-segmenter-wasm@portal:benchmark/unicode-segmenter-wasm::locator=unicode-segmenter%40workspace%3A.":
+"unicode-segmentation-wasm@portal:benchmark/unicode-segmentation-wasm::locator=unicode-segmenter%40workspace%3A.":
   version: 0.0.0-use.local
-  resolution: "unicode-segmenter-wasm@portal:benchmark/unicode-segmenter-wasm::locator=unicode-segmenter%40workspace%3A."
+  resolution: "unicode-segmentation-wasm@portal:benchmark/unicode-segmentation-wasm::locator=unicode-segmenter%40workspace%3A."
   languageName: node
   linkType: soft
 
@@ -4775,7 +4775,7 @@ __metadata:
     rimraf: "npm:^5.0.5"
     tinybench: "npm:^2.6.0"
     typescript: "npm:^5.4.5"
-    unicode-segmenter-wasm: "portal:benchmark/unicode-segmenter-wasm"
+    unicode-segmentation-wasm: "portal:benchmark/unicode-segmentation-wasm"
     vite: "npm:^5.2.11"
   languageName: unknown
   linkType: soft

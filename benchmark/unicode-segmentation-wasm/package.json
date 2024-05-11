@@ -1,5 +1,5 @@
 {
-  "name": "unicode-segmenter-wasm",
+  "name": "unicode-segmentation-wasm",
   "private": true,
   "exports": {
     "node": {
