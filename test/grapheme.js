@@ -96,7 +96,7 @@ test('countGrapheme', async t => {
   });
 
   await t.test('Hindi', () => {
-    assert.equal(countGrapheme('अनुच्छेद'), 5);
+    assert.equal(countGrapheme('अनुच्छेद'), 4);
   });
 
   await t.test('demonic', () => {
@@ -177,6 +177,9 @@ test('counter examples', async t => {
     '🇷‍◻',
     '🇷🇸A',
     '👩‍🦰👩‍👩‍👦‍👦🏳️‍🌈',
+    'अनुच्छेद',
+    '് ',
+    '्क',
   ];
 
   for (let counter of counterExamples) {

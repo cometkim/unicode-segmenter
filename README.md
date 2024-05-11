@@ -10,10 +10,13 @@ Including utilities to deal with **Extended Grapheme Clusters**, **Emojis**, **U
 
 ## Unicode® version
 
-15.1.0 (2023 September 12)
+Unicode® 15.1.0 (2023 September 12)
 
 - https://www.unicode.org/versions/Unicode15.1.0/
-- https://www.unicode.org/Public/15.1.0/
+
+Unicode® Standard Annex #29 Revision 43 (2023-08-16)
+
+- https://www.unicode.org/reports/tr29/tr29-43.html
 
 ## Usage
 

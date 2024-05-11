@@ -155,35 +155,29 @@ def ungroup_cat(cat):
 def load_properties(f, interestingprops):
     fetch(f)
     props = {}
-    re1 = re.compile(r"^ *([0-9A-F]+) *; *(\w+)")
-    re2 = re.compile(r"^ *([0-9A-F]+)\.\.([0-9A-F]+) *; *(\w+)")
+
+    re_full = re.compile(r"^ *([0-9A-F]+)(?:\.\.([0-9A-F]+))? *; *(\w+)(?:; *(\w+))?")
 
     for line in fileinput.input(os.path.basename(f)):
-        prop = None
-        d_lo = 0
-        d_hi = 0
-        m = re1.match(line)
-        if m:
-            d_lo = m.group(1)
-            d_hi = m.group(1)
-            prop = m.group(2)
-        else:
-            m = re2.match(line)
-            if m:
-                d_lo = m.group(1)
-                d_hi = m.group(2)
-                prop = m.group(3)
-            else:
-                continue
-        if interestingprops and prop not in interestingprops:
+        m = re_full.match(line)
+        if not m:
+            continue
+
+        d_lo = m.group(1)
+        d_hi = m.group(2) if m.group(2) else m.group(1)
+        prop = m.group(3)
+        value = m.group(4)
+
+        prop_key = f"{prop}={value}" if value else prop
+        prop_value = value or prop
+
+        if interestingprops and not any(prop_key == p or prop == p for p in interestingprops):
             continue
         d_lo = int(d_lo, 16)
         d_hi = int(d_hi, 16)
-        if prop not in props:
-            props[prop] = []
-        props[prop].append((d_lo, d_hi))
-
-    # optimize if possible
+        if prop_value not in props:
+            props[prop_value] = []
+        props[prop_value].append((d_lo, d_hi))
     for prop in props:
         props[prop] = group_cat(ungroup_cat(props[prop]))
 
@@ -407,6 +401,20 @@ def emit_emoji_module(f):
  */
 """)
     emit_table_compressed(f, "emoji_presentation_table", emoji_props["Emoji_Presentation"])
+
+def emit_incb_module(f):
+    incb_props = load_properties("DerivedCoreProperties.txt", ["InCB=Consonant"])
+
+    f.write("// @ts-check\n")
+
+    f.write("""
+/**
+ * The Unicode `Indic_Conjunct_Break=Consonant` derived property table
+ *
+ * @type {import('./core.js').UnicodeRange[]}
+ */
+""")
+    emit_table_compressed(f, "consonant_table", incb_props["Consonant"])
 
 def emit_break_module(f, break_table, break_cats, name):
     Name = name.capitalize()
@@ -634,9 +642,8 @@ if __name__ == "__main__":
 
     # Control
     #  Note:
-    # This category also includes Cs (surrogate codepoints), but Rust's `char`s are
-    # Unicode Scalar Values only, and surrogates are thus invalid `char`s.
-    # Thus, we have to remove Cs from the Control category
+    # This category also includes Cs (surrogate codepoints).
+    # We have to remove Cs from the Control category
     grapheme_cats["Control"] = group_cat(list(
         set(ungroup_cat(grapheme_cats["Control"]))
         - set(ungroup_cat([surrogate_codepoints]))))
@@ -677,6 +684,11 @@ if __name__ == "__main__":
             list(grapheme_cats.keys()) + ["Extended_Pictographic"],
             "grapheme"
         )
+    )
+
+    emit_src(
+        "_incb_table.js",
+        emit_incb_module,
     )
 
     # NOTE:
