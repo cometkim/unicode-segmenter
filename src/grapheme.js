@@ -193,7 +193,7 @@ function isIndicConjunctCosonant(cp) {
  * @return {boolean}
  */
 function isIndicConjunctLinker(cp) {
-  return (cp === 0x094D || cp === 0x09CD || cp === 0xACD || cp === 0x0B4D || cp === 0x0C4D || cp === 0x0D4D);
+  return (cp === 0x094D || cp === 0x09CD || cp === 0x0ACD || cp === 0x0B4D || cp === 0x0C4D || cp === 0x0D4D);
 }
 
 /**
