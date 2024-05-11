@@ -6,7 +6,7 @@
 
 A lightweight and fast, pure JavaScript library for Unicode segmentation.
 
-Including to deal with **UTF-8** characters, **Extended Grapheme Clusters**, **Emojis**, **Unicode letters**, **Unicode numbers** and more!
+Including utilities to deal with **Extended Grapheme Clusters**, **Emojis**, **Unicode letters**, **Unicode numbers**, **UTF-8** characters and more!
 
 ## Unicode® version
 
