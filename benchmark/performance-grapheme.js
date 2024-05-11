@@ -2,12 +2,12 @@ import { group, bench, run } from 'mitata';
 
 import Graphemer from 'graphemer';
 import GraphemeSplitter from 'grapheme-splitter';
-import * as wasm from 'unicode-segmenter-wasm';
+import * as unicodeSegmentation from 'unicode-segmentation-wasm';
 
 import { graphemeSegments } from '../src/grapheme.js';
 
 if (typeof self === 'object') {
-  await wasm.default();
+  await unicodeSegmentation.default();
 }
 
 const intlSegmenter = new Intl.Segmenter();
@@ -70,8 +70,8 @@ for (const [title, input] of testcases) {
       void ([...graphemeSplitter.iterateGraphemes(input)]);
     });
 
-    bench('unicode-rs/unicode-segmenter (wasm-pack)', () => {
-      void wasm.collect(input);
+    bench('unicode-rs/unicode-segmentation (wasm-pack)', () => {
+      void unicodeSegmentation.collect(input);
     });
   });
 }

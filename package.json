@@ -121,7 +121,7 @@
     "rimraf": "^5.0.5",
     "tinybench": "^2.6.0",
     "typescript": "^5.4.5",
-    "unicode-segmenter-wasm": "portal:benchmark/unicode-segmenter-wasm",
+    "unicode-segmentation-wasm": "portal:benchmark/unicode-segmentation-wasm",
     "vite": "^5.2.11"
   },
   "packageManager": "yarn@4.2.2"
