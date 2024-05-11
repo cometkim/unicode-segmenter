@@ -6,17 +6,19 @@
 
 A lightweight and fast, pure JavaScript library for Unicode segmentation.
 
-Including utilities to deal with **Extended Grapheme Clusters**, **Emojis**, **Unicode letters**, **Unicode numbers**, **UTF-8** characters and more!
+## Features
+
+Library includes utilities to deal with:
+- Extended grapheme clusters
+- Emojis and pictographic
+- Non-Latin alphabets and numbers
+- UTF-8 characters
+
+With no dependencies, so you can use it even in places where built-in Unicode libraries aren't available, such as old browsers, edge runtimes, and embedded environments.
 
 ## Unicode® version
 
-Unicode® 15.1.0 (2023-08-12)
-
-- https://www.unicode.org/versions/Unicode15.1.0/
-
-Unicode® Standard Annex \#29 Revision 43 (2023-08-16)
-
-- https://www.unicode.org/reports/tr29/tr29-43.html
+Unicode® 15.1.0 Standard [Annex \#29 Revision 43](https://www.unicode.org/reports/tr29/tr29-43.html) (2023-08-16)
 
 ## Usage
 
