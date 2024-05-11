@@ -196,7 +196,7 @@ Look [benchmark](benchmark) to see how it works.
 
 The runtime performance of `unicode-segmenter/emoji` is enough to test the presence of emoji in a text.
 
-It's ~2.5x worse than RegExp w/ `u` for match-all performance, but that's useless examples in the real world because others don't care about grapheme clusters.
+It's \~2.5x worse than RegExp w/ `u` for match-all performance, but that's useless examples in the real world because others don't care about grapheme clusters.
 
 <details>
   <summary>Details</summary>
@@ -281,6 +281,7 @@ It's ~2.5x worse than RegExp w/ `u` for match-all performance, but that's useles
 - Node.js' [`Intl.Segmenter`] (browser's version may vary)
 - [graphemer]@1.4.0 (16.6M+ weekly downloads on NPM)
 - [grapheme-splitter]@1.0.4 (5.7M+ weekly downloads on NPM)
+- WebAssembly build of the Rust [unicode-segmentation] library
 
 #### Bundle stats
 
@@ -292,9 +293,9 @@ It's ~2.5x worse than RegExp w/ `u` for match-all performance, but that's useles
 
 #### Runtime performance
 
-`unicode-segmenter/grapheme` is 7~15x faster than JS alternatives (including the native [`Intl.Segmenter`], and 1.5~3x faster than WASM build of the Rust library.
+`unicode-segmenter/grapheme` is 7\~15x faster than JS alternatives (including the native [`Intl.Segmenter`], and 1.5\~3x faster than WASM build of the Rust [unicode-segmentation] library.
 
-The gap becomes larger depending on the environment. On Intel(x64) Linux machines it measures 8~20x.
+The gap becomes larger depending on the environment. On Intel(x64) Linux machines it measures 8\~20x.
 
 <details>
   <summary>Details</summary>
