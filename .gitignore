@@ -9,6 +9,7 @@
 node_modules/
 
 /scripts/unicode_data/
+/scripts/__pycache__/
 
 /*.d.ts
 /*.js

@@ -15,7 +15,9 @@
 # This script uses the following Unicode tables:
 # - DerivedCoreProperties.txt
 # - auxiliary/GraphemeBreakProperty.txt
+# - auxiliary/GraphemeBreakTest.txt
 # - auxiliary/WordBreakProperty.txt
+# - auxiliary/WordBreakTest.txt
 # - ReadMe.txt
 # - UnicodeData.txt
 #
@@ -26,6 +28,7 @@ import fileinput, re, os, sys
 
 __dir__ = os.path.dirname(os.path.realpath(__file__))
 src_path = os.path.normpath(os.path.join(__dir__, "../src"))
+test_path = os.path.normpath(os.path.join(__dir__, "../test"))
 data_path = os.path.join(__dir__, "unicode_data")
 
 os.makedirs(data_path, exist_ok=True)
@@ -186,10 +189,161 @@ def load_properties(f, interestingprops):
 
     return props
 
+def load_test_data(f, optsplit=[]):
+    testRe1 = re.compile(r"^÷\s+([^\s].*[^\s])\s+÷\s+#\s+÷\s+\[0.2\].*?([÷×].*)\s+÷\s+\[0.3\]\s*$")
+
+    fetch(f)
+    data = []
+    for line in fileinput.input(os.path.basename(f)):
+        # lines that include a test start with the ÷ character
+        if len(line) < 2 or not line.startswith('÷'):
+            continue
+
+        m = testRe1.match(line)
+        if not m:
+            print("error: no match on line where test was expected: %s" % line)
+            continue
+
+        # process the characters in this test case
+        chars = process_split_string(m.group(1))
+        # skip test case if it contains invalid characters (viz., surrogates)
+        if not chars:
+            continue
+
+        # now process test cases
+        (chars, info) = process_split_info(m.group(2), chars, optsplit)
+
+        # make sure that we have break info for each break!
+        assert len(chars) - 1 == len(info)
+
+        data.append((chars, info))
+
+    return data
+
+def process_split_info(s, c, o):
+    outcs = []
+    outis = []
+    workcs = c.pop(0)
+
+    # are we on a × or a ÷?
+    isX = False
+    if s.startswith('×'):
+        isX = True
+
+    # find each instance of '(÷|×) [x.y] '
+    while s:
+        # find the currently considered rule number
+        sInd = s.index('[') + 1
+        eInd = s.index(']')
+
+        # if it's '× [a.b]' where 'a.b' is in o, then
+        # we consider it a split even though it's not
+        # marked as one
+        # if it's ÷ then it's always a split
+        if not isX or s[sInd:eInd] in o:
+            outis.append(s[sInd:eInd])
+            outcs.append(workcs)
+            workcs = c.pop(0)
+        else:
+            workcs.extend(c.pop(0))
+
+        idx = 1
+        while idx < len(s):
+            if s[idx:].startswith('×'):
+                isX = True
+                break
+            if s[idx:].startswith('÷'):
+                isX = False
+                break
+            idx += 1
+        s = s[idx:]
+
+    outcs.append(workcs)
+    return (outcs, outis)
+
+def process_split_string(s):
+    outls = []
+    workls = []
+
+    inls = s.split()
+
+    for i in inls:
+        if i == '÷' or i == '×':
+            outls.append(workls)
+            workls = []
+            continue
+
+        ival = int(i,16)
+
+        if is_surrogate(ival):
+            return []
+
+        workls.append(ival)
+
+    if workls:
+        outls.append(workls)
+
+    return outls
+
 def escape_char(c):
+    return "\\u{%04x}" % c
+
+def numeric_char(c):
     return "%d" % c
 
-def emit_table(f, name, t_data, pfun=lambda x: f"[{escape_char(x[0])},{escape_char(x[1])}]"):
+def format_table_content(f, content, indent):
+    line = " "*indent
+    first = True
+    for chunk in content.split(","):
+        if len(line) + len(chunk) < 98:
+            if first:
+                line += chunk
+            else:
+                line += ", " + chunk
+            first = False
+        else:
+            f.write(line + ",\n")
+            line = " "*indent + chunk
+    f.write(line)
+
+def print_range(x):
+    return f"[{escape_char(x[0])},{escape_char(x[1])}]"
+
+def print_testcase(x):
+    outstr = '["'
+    for c in x[0]:
+        outstr += escape_char(c)
+    outstr += '",['
+    xfirst = True
+    for xx in x[1:]:
+        if not xfirst:
+            outstr += '],['
+        xfirst = False
+        sfirst = True
+        for sp in xx:
+            if not sfirst:
+                outstr += ','
+            sfirst = False
+            outstr += '"'
+            for c in sp:
+                outstr += escape_char(c)
+            outstr += '"'
+    outstr += ']]'
+    return outstr
+
+def emit_table_raw(f, name, t_data, pfun=lambda x: f"[{escape_char(x[0])},{escape_char(x[1])}]"):
+    f.write("export const %s = [\n" % name)
+    data = ""
+    first = True
+    for dat in t_data:
+        if not first:
+            data += ","
+        first = False
+        data += pfun(dat)
+    format_table_content(f, data, 2)
+    f.write(",\n];\n")
+
+def emit_table_compressed(f, name, t_data, pfun=lambda x: f"[{numeric_char(x[0])},{numeric_char(x[1])}]"):
     f.write("export const %s = JSON.parse('[" % name)
     first = True
     for data in t_data:
@@ -211,7 +365,7 @@ def emit_general_module(f):
  * @type {import('./core.js').UnicodeRange[]}
  */
 """)
-    emit_table(f, "letter_table", gencats["L"])
+    emit_table_compressed(f, "letter_table", gencats["L"])
 
     f.write("""
 /**
@@ -220,7 +374,7 @@ def emit_general_module(f):
  * @type {import('./core.js').UnicodeRange[]}
  */
 """)
-    emit_table(f, "numeric_table", gencats["N"])
+    emit_table_compressed(f, "numeric_table", gencats["N"])
 
     f.write("""
 /**
@@ -229,7 +383,7 @@ def emit_general_module(f):
  * @type {import('./core.js').UnicodeRange[]}
  */
 """)
-    emit_table(f, "alphabetic_table", derived["Alphabetic"])
+    emit_table_compressed(f, "alphabetic_table", derived["Alphabetic"])
 
 def emit_emoji_module(f):
     emoji_props = load_properties("emoji-data.txt", ["Extended_Pictographic", "Emoji_Presentation"])
@@ -243,7 +397,7 @@ def emit_emoji_module(f):
  * @type {import('./core.js').UnicodeRange[]}
  */
 """)
-    emit_table(f, "emoji_table", emoji_props["Extended_Pictographic"])
+    emit_table_compressed(f, "emoji_table", emoji_props["Extended_Pictographic"])
 
     f.write("""
 /**
@@ -252,7 +406,7 @@ def emit_emoji_module(f):
  * @type {import('./core.js').UnicodeRange[]}
  */
 """)
-    emit_table(f, "emoji_presentation_table", emoji_props["Emoji_Presentation"])
+    emit_table_compressed(f, "emoji_presentation_table", emoji_props["Emoji_Presentation"])
 
 def emit_break_module(f, break_table, break_cats, name):
     Name = name.capitalize()
@@ -326,7 +480,7 @@ export const %s = {
         f.write(f"  {cat}: {inversed[cat]},\n")
     f.write("};\n\n")
 
-    emit_table(f, f"{name}_cat_lookup", lookup_table,
+    emit_table_compressed(f, f"{name}_cat_lookup", lookup_table,
                pfun=lambda x: "%d" % x)
 
     f.write("""
@@ -335,8 +489,8 @@ export const %s = {
  */
 """ % typename)
 
-    emit_table(f, f"{name}_cat_table", break_table,
-               pfun=lambda x: f"[{escape_char(x[0])},{escape_char(x[1])},{inversed[x[2]]}]")
+    emit_table_compressed(f, f"{name}_cat_table", break_table,
+               pfun=lambda x: f"[{numeric_char(x[0])},{numeric_char(x[1])},{inversed[x[2]]}]")
 
     f.write("""
 /**
@@ -368,8 +522,106 @@ export function search%s(cp) {
 }
 """ % (typename, Name[0], typename, name, lookup_interval, j, len(break_table), name))
 
+def emit_testdata_module(f):
+    create_testcase_typedef(f)
+    f.write("\n")
+    create_grapheme_data(f)
+    # f.write("\n")
+    # create_words_data(f)
+    # f.write("\n")
+    # create_sentence_data(f)
+
+def create_testcase_typedef(f):
+    f.write("// @ts-check\n")
+    f.write("\n")
+    f.write("/**\n")
+    f.write(" * @typedef {[input: string, expected: string[]]} TestCase \n")
+    f.write(" */\n")
+
+def create_grapheme_data(f):
+    # rules 9.1 and 9.2 are for extended graphemes only
+    optsplits = ['9.1','9.2']
+    d = load_test_data("auxiliary/GraphemeBreakTest.txt", optsplits)
+
+    test = []
+
+    for (c, i) in d:
+        allchars = [cn for s in c for cn in s]
+        extgraphs = []
+        extwork = []
+
+        extwork.extend(c[0])
+        for n in range(0,len(i)):
+            if i[n] in optsplits:
+                extwork.extend(c[n+1])
+            else:
+                extgraphs.append(extwork)
+                extwork = []
+                extwork.extend(c[n+1])
+
+        # These are the extended grapheme clusters
+        # And the JS' segmenter only cares extended grapheme clusters
+        extgraphs.append(extwork)
+
+        if extgraphs == c:
+            test.append((allchars, c))
+        else:
+            test.append((allchars, extgraphs))
+
+    f.write("/**\n")
+    f.write(" * Official Unicode test data for extended grapheme clusters\n")
+    f.write(" *\n")
+    f.write(" * @see http://www.unicode.org/Public/%s/ucd/auxiliary/GraphemeBreakTest.txt\n" % UNICODE_VERSION_NUMBER)
+    f.write(" *\n")
+    f.write(" * @type {TestCase[]}\n")
+    f.write(" */\n")
+    emit_table_raw(f, "TESTDATA_GRAPHEME", test, print_testcase)
+
+def create_words_data(f):
+    d = load_test_data("auxiliary/WordBreakTest.txt")
+
+    test = []
+
+    for (c, i) in d:
+        allchars = [cn for s in c for cn in s]
+        test.append((allchars, c))
+
+    f.write("/**\n")
+    f.write(" * Official Unicode test data for word breaks\n")
+    f.write(" *\n")
+    f.write(" * @see http://www.unicode.org/Public/%s/ucd/auxiliary/WordBreakTest.txt\n" % UNICODE_VERSION_NUMBER)
+    f.write(" *\n")
+    f.write(" * @type {TestCase[]}\n")
+    f.write(" */\n")
+    emit_table_raw(f, "TESTDATA_WORD", test, print_testcase)
+
+def create_sentence_data(f):
+    d = load_test_data("auxiliary/SentenceBreakTest.txt")
+
+    test = []
+
+    for (c, i) in d:
+        allchars = [cn for s in c for cn in s]
+        test.append((allchars, c))
+
+    f.write("/**\n")
+    f.write(" * Official Unicode test data for sentence breaks\n")
+    f.write(" *\n")
+    f.write(" * @see http://www.unicode.org/Public/%s/ucd/auxiliary/SentenceBreakTest.txt\n" % UNICODE_VERSION_NUMBER)
+    f.write(" *\n")
+    f.write(" * @type {TestCase[]}\n")
+    f.write(" */\n")
+    emit_table_raw(f, "TESTDATA_SENTENCE", test, print_testcase)
+
 def emit_src(file, emit):
     r = os.path.join(src_path, file)
+    if os.path.exists(r):
+        os.remove(r)
+    with open(r, "w") as rf:
+        emit(rf)
+
+def emit_test(file, emit):
+    r = os.path.join(test_path, file)
     if os.path.exists(r):
         os.remove(r)
     with open(r, "w") as rf:
@@ -472,3 +724,7 @@ if __name__ == "__main__":
     #     )
     # )
 
+    emit_test(
+        "_unicode_testdata.js",
+        emit_testdata_module,
+    )

@@ -7,7 +7,7 @@ import fc from 'fast-check';
 import { graphemeSegments, countGrapheme, GraphemeCategory } from 'unicode-segmenter/grapheme';
 import { assertObjectContaining } from './_helper.js';
 
-test('graphemeSegmentes', async t => {
+test('graphemeSegments', async t => {
   await t.test('empty string', () => {
     assert.deepEqual([...graphemeSegments('')], []);
   });
