@@ -188,12 +188,18 @@ Look [benchmark](benchmark) to see how it works.
 - built-in Unicode RegExp
 - [emoji-regex]@10.3.0 (101M+ weekly downloads on NPM)
 
-#### Bundle stats
+#### Package stats
 
-| Name                        | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
-|-----------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-| `unicode-segmenter/emoji`   |    ✔️ |   3,058 |            2,611 |            1,041 |              751 |
-| `emoji-regex`               |    ✔️ |  12,946 |           12,859 |            2,180 |            1,746 |
+| Name                      | Unicode®      | ESM? | Size    | Size (min) | Size (min+gzip) | Size (min+br) |
+|---------------------------|--------------:|------|--------:|-----------:|----------------:|--------------:|
+| `unicode-segmenter/emoji` | 15.1.0        |    ✔️ |   3,058 |      2,611 |           1,041 |           751 |
+| `emoji-regex`*            | 15.1.0 (vary) |    ✔️ |  12,946 |     12,859 |           2,180 |         1,746 |
+| `RegExp` w/ `u`*          |             - |    - |       0 |          0 |               0 |             0 |
+
+* `emoji-regex` only supports `Emoji_Presentation` property, not `Extended_Pictographic`.
+* You can build your own `emoji-regex` using [emoji-test-regex-pattern](https://github.com/mathiasbynens/emoji-test-regex-pattern).
+* `RegExp` Unicode data is always kept up to date as the runtime support.
+* `RegExp` Unicode may not be available in [some old browsers](https://caniuse.com/mdn-javascript_builtins_regexp_unicode), edge runtimes, or embedded environments.
 
 #### Runtime performance
 
@@ -239,11 +245,15 @@ It's \~2.5x worse than RegExp w/ `u` for match-all performance, but that's usele
 
 - built-in unicode RegExp
 
-#### Bundle stats
+#### Package stats
 
-| Name                        | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
-|-----------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-| `unicode-segmenter/general` |    ✔️ |  21,505 |           20,972 |            5,792 |            3,564 |
+| Name                        | Unicode® | ESM? | Size    | Size (min) | Size (min+gzip) | Size (min+br) |
+|-----------------------------|---------:|------|--------:|-----------:|----------------:|--------------:|
+| `unicode-segmenter/general` |   15.1.0 |    ✔️ |  21,505 |     20,972 |           5,792 |         3,564 |
+| `RegExp` w/ `u`*            |        - |    - |       0 |          0 |               0 |             0 |
+
+* `RegExp` Unicode data is always kept up to date as the runtime support.
+* `RegExp` Unicode may not be available in [some old browsers](https://caniuse.com/mdn-javascript_builtins_regexp_unicode), edge runtimes, or embedded environments.
 
 #### Runtime performance
 
@@ -286,13 +296,19 @@ It's \~2.5x worse than RegExp w/ `u` for match-all performance, but that's usele
 - [grapheme-splitter]@1.0.4 (5.7M+ weekly downloads on NPM)
 - WebAssembly build of the Rust [unicode-segmentation] library
 
-#### Bundle stats
+#### Package stats
 
-| Name                         | ESM? | Size    | Size (min)       | Size (min+gzip)  | Size (min+br)    |
-|------------------------------|------|--------:|-----------------:|-----------------:|-----------------:|
-| `unicode-segmenter/grapheme` |    ✔️ |  33,822 |           30,060 |            9,267 |            5,631 |
-| `graphemer`                  |    ✖️ ️| 410,424 |           95,104 |           15,752 |           10,660 |
-| `grapheme-splitter`          |    ✖️ | 122,241 |           23,680 |            7,852 |            4,841 |
+| Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) |
+|------------------------------|---------:|------|----------:|-----------:|----------------:|--------------:|
+| `unicode-segmenter/grapheme` |   15.1.0 |    ✔️ |    35,364 |     30,743 |           9,562 |         5,843 |
+| `graphemer`                  |   15.0.0 |    ✖️ ️|   410,424 |     95,104 |          15,752 |        10,660 |
+| `grapheme-splitter`          |   10.0.0 |    ✖️ |   122,241 |     23,680 |           7,852 |         4,841 |
+| `unicode-segmentation`*      |   15.0.0 |    ✔️ |    51,251 |     51,251 |          22,545 |        16,614 |
+| `Intl.Segmenter`*            |        - |    - |         0 |          0 |               0 |             0 |
+
+* `unicode-segmentation` size contains only the minimum WASM binary. It will be larger by adding more bindings.
+* `Intl.Segmenter`'s Unicode data is always kept up to date as the runtime support.
+* `Intl.Segmenter` may not be available in [some old browsers](https://caniuse.com/mdn-javascript_builtins_intl_segmenter), edge runtimes, or embedded environments.
 
 #### Runtime performance
 
