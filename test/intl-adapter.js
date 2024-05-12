@@ -2,6 +2,7 @@
 
 import { test } from 'node:test';
 import * as assert from 'node:assert/strict';
+import fc from 'fast-check';
 import { assertObjectContaining } from './_helper.js';
 
 import { GraphemeCategory } from 'unicode-segmenter/grapheme';
@@ -71,6 +72,47 @@ test('containing', async _ => {
     { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.LF  },
   );
   assert.equal(segments.containing(9), undefined);
+});
+
+test('resolvedOptions', async t => {
+  await t.test('locale default', () => {
+    let segmenter = new Segmenter();
+    let { locale } = segmenter.resolvedOptions();
+    assert.equal(locale, 'en');
+  });
+
+  await t.test('locale as-is', () => {
+    fc.assert(
+      // @ts-ignore
+      fc.property(fc.asciiString({ minLength: 2 }), (inputLocale) => {
+        let segmenter = new Segmenter(inputLocale);
+        let { locale } = segmenter.resolvedOptions();
+        assert.equal(locale, inputLocale);
+      }),
+    );
+  });
+
+  await t.test('granularity default', () => {
+    assert.equal(
+      new Segmenter('locale').resolvedOptions().granularity,
+      'grapheme',
+    );
+  });
+
+  await t.test('granularity as-is', () => {
+    assert.equal(
+      new Segmenter('locale', { granularity: 'grapheme' }).resolvedOptions().granularity,
+      'grapheme',
+    );
+    // assert.equal(
+    //   new Segmenter('locale', { granularity: 'word' }).resolvedOptions().granularity,
+    //   'word',
+    // );
+    // assert.equal(
+    //   new Segmenter('locale', { granularity: 'sentence' }).resolvedOptions().granularity,
+    //   'sentence',
+    // );
+  });
 });
 
 test('unsupported options', async t => {
