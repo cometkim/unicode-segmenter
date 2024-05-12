@@ -27,13 +27,13 @@ group('checking any alphanumeric', () => {
     assert.equal(anyAlnum(input), true);
   });
 
-  bench('RegExp w/ unicode', () => {
-    assert.equal(/[\p{N}\p{Alpha}]/u.test(input), true);
-  });
-
   let xe = XRegExp('[\\pN\\p{Alphabetic}]', 'u');
   bench('XRegExp', () => {
     assert.equal(xe.test(input), true);
+  });
+
+  bench('RegExp w/ unicode', () => {
+    assert.equal(/[\p{N}\p{Alpha}]/u.test(input), true);
   });
 });
 
@@ -58,13 +58,13 @@ group('match all alphanumeric', () => {
     assert.deepEqual([...matchAlnum(input)], expected);
   });
 
-  bench('RegExp w/ unicode', () => {
-    assert.deepEqual([...input.matchAll(/[\p{N}\p{Alpha}]/ug)], expected);
-  });
-
   let xe = XRegExp('[\\pN\\p{Alphabetic}]', 'ug');
   bench('XRegExp', () => {
     assert.deepEqual([...input.matchAll(xe)], expected);
+  });
+
+  bench('RegExp w/ unicode', () => {
+    assert.deepEqual([...input.matchAll(/[\p{N}\p{Alpha}]/ug)], expected);
   });
 });
 
