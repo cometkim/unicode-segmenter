@@ -1,5 +1,11 @@
 # unicode-segmenter
 
+## 0.6.1
+
+### Patch Changes
+
+- 03e121c: Optimize grapheme cluster boundary check
+
 ## 0.6.0
 
 ### Minor Changes
