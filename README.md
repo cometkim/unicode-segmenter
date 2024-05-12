@@ -214,7 +214,7 @@ Look [benchmark](benchmark) to see how it works.
 
 The runtime performance of `unicode-segmenter/emoji` is enough to test the presence of emoji in a text.
 
-It's \~2.5x worse than RegExp w/ `u` for match-all performance, but that's useless examples in the real world because others don't care about grapheme clusters.
+It's \~2.5x worse than `RegExp` w/ `u` for match-all performance, but that's useless examples in the real world because others don't care about grapheme clusters.
 
 <details>
   <summary>Details</summary>
@@ -268,7 +268,7 @@ It's \~2.5x worse than RegExp w/ `u` for match-all performance, but that's usele
 
 #### Runtime performance
 
-`unicode-segmenter/general` is almost equivalent to RegExp w/ `u`.
+`unicode-segmenter/general` is almost equivalent to `RegExp` w/ `u`.
 
 <details>
   <summary>Details</summary>
@@ -327,9 +327,9 @@ It's \~2.5x worse than RegExp w/ `u` for match-all performance, but that's usele
 
 #### Runtime performance
 
-`unicode-segmenter/grapheme` is 7\~15x faster than JS alternatives (including the native [`Intl.Segmenter`]), and 1.5\~3x faster than WASM build of the Rust [unicode-segmentation] library.
+`unicode-segmenter/grapheme` is 7\~18x faster than other JS alternatives, 3\~8x faster than native [`Intl.Segmenter`]), and 1.5\~3x faster than WASM build of the Rust [unicode-segmentation] library.
 
-The gap becomes larger depending on the environment. On Intel(x64) Linux machines it measures 8\~20x.
+The gap may increase depending on the environment. Bindings for browsers generally appear to perform worse. In most environments, `unicode-segmenter/grapheme` is over 6x faster than `graphemer`. 
 
 <details>
   <summary>Details</summary>
@@ -402,18 +402,18 @@ The gap becomes larger depending on the environment. On Intel(x64) Linux machine
   
   • Code snippet (combined)
   ----------------------------------------------------------------------------------- -----------------------------
-  unicode-segmenter                            20'333 ns/iter    (19'583 ns … 208 µs) 20'000 ns 21'417 ns    140 µs
-  Intl.Segmenter                                  157 µs/iter       (148 µs … 332 µs)    158 µs    306 µs    324 µs
-  graphemer                                       164 µs/iter       (159 µs … 403 µs)    162 µs    287 µs    388 µs
-  grapheme-splitter                               350 µs/iter       (344 µs … 807 µs)    348 µs    491 µs    691 µs
-  unicode-rs/unicode-segmentation (wasm-pack)  57'287 ns/iter    (55'833 ns … 306 µs) 56'667 ns 62'625 ns    222 µs
+  unicode-segmenter                            20'311 ns/iter    (19'541 ns … 220 µs) 19'958 ns 23'375 ns    129 µs
+  Intl.Segmenter                                  170 µs/iter     (151 µs … 1'633 µs)    161 µs    513 µs  1'282 µs
+  graphemer                                       163 µs/iter       (159 µs … 410 µs)    161 µs    286 µs    367 µs
+  grapheme-splitter                               352 µs/iter       (346 µs … 710 µs)    350 µs    463 µs    672 µs
+  unicode-rs/unicode-segmentation (wasm-pack)  57'798 ns/iter    (56'083 ns … 326 µs) 57'208 ns 63'625 ns    203 µs
   
   summary for Code snippet (combined)
     unicode-segmenter
-     2.82x faster than unicode-rs/unicode-segmentation (wasm-pack)
-     7.7x faster than Intl.Segmenter
-     8.05x faster than graphemer
-     17.2x faster than grapheme-splitter
+     2.85x faster than unicode-rs/unicode-segmentation (wasm-pack)
+     8.04x faster than graphemer
+     8.37x faster than Intl.Segmenter
+     17.34x faster than grapheme-splitter
   ```
 
 </details>
