@@ -201,6 +201,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime-corejs3@npm:^7.16.5":
+  version: 7.24.5
+  resolution: "@babel/runtime-corejs3@npm:7.24.5"
+  dependencies:
+    core-js-pure: "npm:^3.30.2"
+    regenerator-runtime: "npm:^0.14.0"
+  checksum: 10c0/61a16b8031d312752676527746d6a70c759d578cadfdee8c7bea976e848793aa08361ba14602a9ebb3ed60af225bbdff316500b4961df91cb246f2055764f208
+  languageName: node
+  linkType: hard
+
 "@babel/runtime@npm:^7.20.1, @babel/runtime@npm:^7.5.5":
   version: 7.24.4
   resolution: "@babel/runtime@npm:7.24.4"
@@ -1014,6 +1024,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/xregexp@npm:^4.4.0":
+  version: 4.4.0
+  resolution: "@types/xregexp@npm:4.4.0"
+  dependencies:
+    xregexp: "npm:*"
+  checksum: 10c0/30da75f29946002ecaff6e5b2e1d0ab25cda18865bcbcda2a323a7db13a29e967716d036922b8a34c93695a5695d862062d24281d7f82cbbdd3c9ff8ef61fc7b
+  languageName: node
+  linkType: hard
+
 "abbrev@npm:^2.0.0":
   version: 2.0.0
   resolution: "abbrev@npm:2.0.0"
@@ -1528,6 +1547,13 @@ __metadata:
   version: 2.0.0
   resolution: "convert-source-map@npm:2.0.0"
   checksum: 10c0/8f2f7a27a1a011cc6cc88cc4da2d7d0cfa5ee0369508baae3d98c260bb3ac520691464e5bbe4ae7cdf09860c1d69ecc6f70c63c6e7c7f7e3f18ec08484dc7d9b
+  languageName: node
+  linkType: hard
+
+"core-js-pure@npm:^3.30.2":
+  version: 3.37.0
+  resolution: "core-js-pure@npm:3.37.0"
+  checksum: 10c0/0559e5f7862674136754cdef7b2386f9a19f29fd834008d3fa3fb3b3d9ec31180e4c0c6b3b7cef35933665832489236846cf39b11f1f8f003cd848e7f834357a
   languageName: node
   linkType: hard
 
@@ -4764,6 +4790,7 @@ __metadata:
     "@changesets/cli": "npm:^2.27.1"
     "@jazzer.js/core": "npm:^2.1.0"
     "@types/node": "npm:^20.12.7"
+    "@types/xregexp": "npm:^4.4.0"
     emoji-regex: "npm:10.3.0"
     esbuild: "npm:^0.20.2"
     fast-check: "npm:^3.17.1"
@@ -4777,6 +4804,7 @@ __metadata:
     typescript: "npm:^5.4.5"
     unicode-segmentation-wasm: "portal:benchmark/unicode-segmentation-wasm"
     vite: "npm:^5.2.11"
+    xregexp: "npm:5.1.1"
   languageName: unknown
   linkType: soft
 
@@ -5021,6 +5049,15 @@ __metadata:
   version: 1.0.2
   resolution: "wrappy@npm:1.0.2"
   checksum: 10c0/56fece1a4018c6a6c8e28fbc88c87e0fbf4ea8fd64fc6c63b18f4acc4bd13e0ad2515189786dd2c30d3eec9663d70f4ecf699330002f8ccb547e4a18231fc9f0
+  languageName: node
+  linkType: hard
+
+"xregexp@npm:*, xregexp@npm:5.1.1":
+  version: 5.1.1
+  resolution: "xregexp@npm:5.1.1"
+  dependencies:
+    "@babel/runtime-corejs3": "npm:^7.16.5"
+  checksum: 10c0/ae007c7898afd808e7664931228dc4bd38e65ebc24c66318416a038b4351cc73cc9b3b9cea1ab5ffd97933bf9b75afbf848f36e91d22b2416d6bd7d6fcfd2ee6
   languageName: node
   linkType: hard
 

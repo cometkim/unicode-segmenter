@@ -253,12 +253,14 @@ It's \~2.5x worse than RegExp w/ `u` for match-all performance, but that's usele
 ### `unicode-segmenter/general` vs
 
 - built-in unicode `RegExp`
+- [XRegExp]@5.1.1 (2.8M+ weekly downloads on NPM)
 
 #### Package stats
 
 | Name                        | Unicode® | ESM? | Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |-----------------------------|----------|------|--------:|-----------:|----------------:|--------------:|
 | `unicode-segmenter/general` |   15.1.0 |    ✔️ |  21,505 |     20,972 |           5,792 |         3,564 |
+| `XRegExp`                   |   14.0.0 |    ✖️ ️| 383,156 |    194,202 |          62,986 |        39,871 |
 | `RegExp` w/ `u`*            |        - |    - |       0 |          0 |               0 |             0 |
 
 * `RegExp` Unicode data is always kept up to date as the runtime support.
@@ -424,3 +426,4 @@ The gap becomes larger depending on the environment. On Intel(x64) Linux machine
 [graphemer]: https://github.com/flmnt/graphemer
 [grapheme-splitter]: https://github.com/orling/grapheme-splitter
 [emoji-regex]: https://github.com/mathiasbynens/emoji-regex
+[XRegExp]: https://xregexp.com/
