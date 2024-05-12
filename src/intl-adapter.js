@@ -2,6 +2,9 @@
 
 import { graphemeSegments } from './grapheme.js';
 
+const p_locale = Symbol();
+const p_granularity = Symbol();
+
 /**
  * Adapter for `Intl.Segmenter` API
  *
@@ -30,10 +33,10 @@ export class Segmenter {
     }
 
     /** @type {string} */
-    this._locale = locale || 'en';
+    this[p_locale] = locale || 'en';
 
     /** @type {Intl.ResolvedSegmenterOptions["granularity"]} */
-    this._granularity = granularity;
+    this[p_granularity] = granularity;
   }
 
   /**
@@ -56,8 +59,8 @@ export class Segmenter {
    */
   resolvedOptions() {
     return {
-      locale: this._locale,
-      granularity: this._granularity,
+      locale: this[p_locale],
+      granularity: this[p_granularity],
     };
   }
 }
