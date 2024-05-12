@@ -285,59 +285,38 @@ def escape_char(c):
 def numeric_char(c):
     return "%d" % c
 
-def format_table_content(f, content, indent):
-    line = " "*indent
-    first = True
-    for chunk in content.split(","):
-        if len(line) + len(chunk) < 98:
-            if first:
-                line += chunk
-            else:
-                line += ", " + chunk
-            first = False
-        else:
-            f.write(line + ",\n")
-            line = " "*indent + chunk
-    f.write(line)
-
 def print_range(x):
-    return f"[{escape_char(x[0])},{escape_char(x[1])}]"
+    return f"[{numeric_char(x[0])},{numeric_char(x[1])}]"
 
 def print_testcase(x):
-    outstr = '["'
+    outstr = "['"
     for c in x[0]:
         outstr += escape_char(c)
-    outstr += '",['
+    outstr += "', ["
     xfirst = True
     for xx in x[1:]:
         if not xfirst:
-            outstr += '],['
+            outstr += "], ["
         xfirst = False
         sfirst = True
         for sp in xx:
             if not sfirst:
-                outstr += ','
+                outstr += ", "
             sfirst = False
-            outstr += '"'
+            outstr += "'"
             for c in sp:
                 outstr += escape_char(c)
-            outstr += '"'
-    outstr += ']]'
+            outstr += "'"
+    outstr += "]]"
     return outstr
 
-def emit_table_raw(f, name, t_data, pfun=lambda x: f"[{escape_char(x[0])},{escape_char(x[1])}]"):
+def emit_table_raw(f, name, t_data, pfun):
     f.write("export const %s = [\n" % name)
-    data = ""
-    first = True
-    for dat in t_data:
-        if not first:
-            data += ","
-        first = False
-        data += pfun(dat)
-    format_table_content(f, data, 2)
-    f.write(",\n];\n")
+    for data in t_data:
+        f.write(f"  {pfun(data)},\n")
+    f.write("];\n")
 
-def emit_table_compressed(f, name, t_data, pfun=lambda x: f"[{numeric_char(x[0])},{numeric_char(x[1])}]"):
+def emit_table_compressed(f, name, t_data, pfun):
     f.write("export const %s = JSON.parse('[" % name)
     first = True
     for data in t_data:
@@ -359,7 +338,7 @@ def emit_general_module(f):
  * @type {import('./core.js').UnicodeRange[]}
  */
 """)
-    emit_table_compressed(f, "letter_table", gencats["L"])
+    emit_table_compressed(f, "letter_table", gencats["L"], print_range)
 
     f.write("""
 /**
@@ -368,7 +347,7 @@ def emit_general_module(f):
  * @type {import('./core.js').UnicodeRange[]}
  */
 """)
-    emit_table_compressed(f, "numeric_table", gencats["N"])
+    emit_table_compressed(f, "numeric_table", gencats["N"], print_range)
 
     f.write("""
 /**
@@ -377,7 +356,7 @@ def emit_general_module(f):
  * @type {import('./core.js').UnicodeRange[]}
  */
 """)
-    emit_table_compressed(f, "alphabetic_table", derived["Alphabetic"])
+    emit_table_compressed(f, "alphabetic_table", derived["Alphabetic"], print_range)
 
 def emit_emoji_module(f):
     emoji_props = load_properties("emoji-data.txt", ["Extended_Pictographic", "Emoji_Presentation"])
@@ -391,7 +370,7 @@ def emit_emoji_module(f):
  * @type {import('./core.js').UnicodeRange[]}
  */
 """)
-    emit_table_compressed(f, "emoji_table", emoji_props["Extended_Pictographic"])
+    emit_table_compressed(f, "emoji_table", emoji_props["Extended_Pictographic"], print_range)
 
     f.write("""
 /**
@@ -400,7 +379,7 @@ def emit_emoji_module(f):
  * @type {import('./core.js').UnicodeRange[]}
  */
 """)
-    emit_table_compressed(f, "emoji_presentation_table", emoji_props["Emoji_Presentation"])
+    emit_table_compressed(f, "emoji_presentation_table", emoji_props["Emoji_Presentation"], print_range)
 
 def emit_incb_module(f):
     incb_props = load_properties("DerivedCoreProperties.txt", ["InCB=Consonant"])
@@ -414,7 +393,7 @@ def emit_incb_module(f):
  * @type {import('./core.js').UnicodeRange[]}
  */
 """)
-    emit_table_compressed(f, "consonant_table", incb_props["Consonant"])
+    emit_table_compressed(f, "consonant_table", incb_props["Consonant"], print_range)
 
 def emit_break_module(f, break_table, break_cats, name):
     Name = name.capitalize()
