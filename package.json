@@ -110,6 +110,7 @@
     "@changesets/cli": "^2.27.1",
     "@jazzer.js/core": "^2.1.0",
     "@types/node": "^20.12.7",
+    "@types/xregexp": "^4.4.0",
     "emoji-regex": "10.3.0",
     "esbuild": "^0.20.2",
     "fast-check": "^3.17.1",
@@ -122,7 +123,8 @@
     "tinybench": "^2.6.0",
     "typescript": "^5.4.5",
     "unicode-segmentation-wasm": "portal:benchmark/unicode-segmentation-wasm",
-    "vite": "^5.2.11"
+    "vite": "^5.2.11",
+    "xregexp": "5.1.1"
   },
   "packageManager": "yarn@4.2.2"
 }

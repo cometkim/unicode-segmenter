@@ -253,12 +253,14 @@ It's \~2.5x worse than RegExp w/ `u` for match-all performance, but that's usele
 ### `unicode-segmenter/general` vs
 
 - built-in unicode `RegExp`
+- [XRegExp]@5.1.1 (2.8M+ weekly downloads on NPM)
 
 #### Package stats
 
 | Name                        | Unicode® | ESM? | Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |-----------------------------|----------|------|--------:|-----------:|----------------:|--------------:|
 | `unicode-segmenter/general` |   15.1.0 |    ✔️ |  21,505 |     20,972 |           5,792 |         3,564 |
+| `XRegExp`                   |   14.0.0 |    ✖️ ️| 383,156 |    194,202 |          62,986 |        39,871 |
 | `RegExp` w/ `u`*            |        - |    - |       0 |          0 |               0 |             0 |
 
 * `RegExp` Unicode data is always kept up to date as the runtime support.
@@ -279,21 +281,25 @@ It's \~2.5x worse than RegExp w/ `u` for match-all performance, but that's usele
   ----------------------------------------------------------------- -----------------------------
   • checking any alphanumeric
   ----------------------------------------------------------------- -----------------------------
-  unicode-segmenter/general     236 ns/iter       (228 ns … 599 ns)    240 ns    311 ns    453 ns
-  RegExp w/ unicode             235 ns/iter       (233 ns … 285 ns)    235 ns    256 ns    271 ns
+  unicode-segmenter/general     236 ns/iter       (229 ns … 579 ns)    233 ns    304 ns    552 ns
+  XRegExp                       243 ns/iter       (239 ns … 319 ns)    242 ns    285 ns    317 ns
+  RegExp w/ unicode             236 ns/iter       (233 ns … 312 ns)    237 ns    263 ns    299 ns
   
   summary for checking any alphanumeric
-    RegExp w/ unicode
-     1x faster than unicode-segmenter/general
+    unicode-segmenter/general
+     1x faster than RegExp w/ unicode
+     1.03x faster than XRegExp
   
   • match all alphanumeric
   ----------------------------------------------------------------- -----------------------------
-  unicode-segmenter/general   2'480 ns/iter   (2'439 ns … 2'779 ns)  2'477 ns  2'736 ns  2'779 ns
-  RegExp w/ unicode           2'304 ns/iter   (2'076 ns … 7'742 ns)  2'110 ns  7'097 ns  7'742 ns
+  unicode-segmenter/general   1'883 ns/iter   (1'851 ns … 2'105 ns)  1'880 ns  2'027 ns  2'105 ns
+  XRegExp                     3'135 ns/iter   (3'109 ns … 3'300 ns)  3'137 ns  3'273 ns  3'300 ns
+  RegExp w/ unicode           1'540 ns/iter   (1'520 ns … 1'655 ns)  1'544 ns  1'643 ns  1'655 ns
   
   summary for match all alphanumeric
     RegExp w/ unicode
-     1.08x faster than unicode-segmenter/general
+     1.22x faster than unicode-segmenter/general
+     2.04x faster than XRegExp
   ```
 
 </details>
@@ -424,3 +430,4 @@ The gap becomes larger depending on the environment. On Intel(x64) Linux machine
 [graphemer]: https://github.com/flmnt/graphemer
 [grapheme-splitter]: https://github.com/orling/grapheme-splitter
 [emoji-regex]: https://github.com/mathiasbynens/emoji-regex
+[XRegExp]: https://xregexp.com/

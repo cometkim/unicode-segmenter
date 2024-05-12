@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import { build } from 'esbuild';
 
 import { reportBundleStats } from './_helper.js';
 
@@ -21,7 +22,30 @@ let myEntry = await reportBundleStats(
   await fs.readFile(bundle('general.min.js')),
 );
 
-let otherEntries = [];
+let competitors = [
+  'xregexp',
+];
+
+let otherEntries = await Promise.all(
+  competitors.map(async (lib) => {
+    let result = await build({
+      write: false,
+      bundle: true,
+      entryPoints: [path.join(baseDir, `bundle-entry-${lib}.js`)],
+    });
+    let minResult = await build({
+      write: false,
+      bundle: true,
+      minify: true,
+      entryPoints: [path.join(baseDir, `bundle-entry-${lib}.js`)],
+    });
+    return await reportBundleStats(
+      lib,
+      result.outputFiles[0].contents,
+      minResult.outputFiles[0].contents,
+    );
+  }),
+);
 
 console.table([
   myEntry,

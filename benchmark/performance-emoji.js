@@ -1,6 +1,7 @@
 import * as assert from 'node:assert/strict';
 import { group, baseline, bench, run } from 'mitata';
 import emojiRegex from 'emoji-regex';
+import XRegExp from 'xregexp';
 
 import { takeCodePoint } from '../src/utils.js';
 import { isEmoji } from '../src/emoji.js';

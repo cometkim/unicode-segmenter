@@ -1,7 +1,6 @@
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-
 import { build } from 'esbuild';
 
 import { reportBundleStats } from './_helper.js';
