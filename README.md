@@ -336,32 +336,6 @@ The gap becomes larger depending on the environment. On Intel(x64) Linux machine
   ----------------------------------------------------------------------------------- -----------------------------
   • Lorem ipsum (ascii)
   ----------------------------------------------------------------------------------- -----------------------------
-  unicode-segmenter                             6'144 ns/iter     (5'625 ns … 178 µs)  5'958 ns  7'416 ns 62'292 ns
-  Intl.Segmenter                               51'439 ns/iter    (47'583 ns … 402 µs) 51'083 ns 57'208 ns    364 µs
-  graphemer                                    47'775 ns/iter    (46'417 ns … 202 µs) 47'083 ns 84'167 ns    129 µs
-  grapheme-splitter                            74'914 ns/iter    (73'292 ns … 287 µs) 73'875 ns 88'167 ns    215 µs
-  unicode-rs/unicode-segmentation (wasm-pack)  16'233 ns/iter    (15'750 ns … 166 µs) 16'125 ns 17'250 ns 87'375 ns
-  
-  summary for Lorem ipsum (ascii)
-    unicode-segmenter
-     2.64x faster than unicode-rs/unicode-segmentation (wasm-pack)
-     7.78x faster than graphemer
-     8.37x faster than Intl.Segmenter
-     12.19x faster than grapheme-splitter
-  
-  • Emojis
-  ----------------------------------------------------------------------------------- -----------------------------
-  unicode-segmenter                             2'059 ns/iter     (1'875 ns … 288 µs)  2'000 ns  2'459 ns  7'209 ns
-  Intl.Segmenter                               14'328 ns/iter  (12'125 ns … 2'330 µs) 13'417 ns 17'917 ns 45'083 ns
-  ^C%
-  ❯ yarn perf:grapheme
-  cpu: Apple M1 Pro
-  runtime: node v20.13.1 (arm64-darwin)
-  
-  benchmark                                        time (avg)             (min … max)       p75       p99      p999
-  ----------------------------------------------------------------------------------- -----------------------------
-  • Lorem ipsum (ascii)
-  ----------------------------------------------------------------------------------- -----------------------------
   unicode-segmenter                             6'147 ns/iter     (5'625 ns … 311 µs)  5'958 ns  7'167 ns 63'416 ns
   Intl.Segmenter                               51'010 ns/iter    (47'375 ns … 406 µs) 50'667 ns 58'333 ns    317 µs
   graphemer                                    49'381 ns/iter    (46'333 ns … 346 µs) 49'750 ns 97'083 ns    195 µs
