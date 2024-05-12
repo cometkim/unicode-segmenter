@@ -1,5 +1,12 @@
 # unicode-segmenter
 
+## 0.6.0
+
+### Minor Changes
+
+- 04455e0: Implement [GB9c rule](https://www.unicode.org/reports/tr29/#GB9c) from Unicode® Standard Annex \#29
+- f9d3dd1: Hide the internal fields of the Intl adapter to prevent auto-completion
+
 ## 0.5.0
 
 ### Minor Changes
