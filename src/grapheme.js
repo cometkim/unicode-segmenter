@@ -124,7 +124,7 @@ export function* graphemeSegments(input) {
       }
     }
 
-    if (isBoundary(catBefore, catAfter, risCount, emoji, incb)) {
+    if (isBoundaryHand(catBefore, catAfter, risCount, emoji, incb)) {
       yield { segment, index, input, _cat: catBefore };
 
       // flush
@@ -194,6 +194,56 @@ function isIndicConjunctCosonant(cp) {
  */
 function isIndicConjunctLinker(cp) {
   return (cp === 0x094D || cp === 0x09CD || cp === 0x0ACD || cp === 0x0B4D || cp === 0x0C4D || cp === 0x0D4D);
+}
+
+/**
+ * @param {GraphemeCategory} catBefore
+ * @param {GraphemeCategory} catAfter
+ * @param {number} risCount Regional_Indicator state
+ * @param {boolean} emoji Extended_Pictographic state
+ * @param {boolean} incb Indic_Conjunct_Break state
+ * @return {boolean}
+ */
+function isBoundaryHand(catBefore, catAfter, risCount, emoji, incb) {
+  if (catBefore === 1 && catAfter === 6) {
+    return false; // GB3
+  }
+  if (catBefore === 1 || catBefore === 2 || catBefore === 6) {
+    return true; // GB4
+  }
+  if (catAfter === 1 || catAfter === 2 || catAfter === 6) {
+    return true; // GB5
+  }
+  if (catBefore === 5 &&
+    (catAfter === 5 || catAfter === 13 || catAfter === 7 || catAfter === 8)
+  ) {
+    return false; // GB6
+  }
+  if (
+    (catBefore === 7 || catBefore === 13) &&
+    (catAfter === 12 || catAfter === 13)
+  ) {
+    return false; // GB7
+  }
+  if (catAfter === 12 && (catBefore === 8 || catBefore === 12)) {
+    return false; // GB8
+  }
+  if (catAfter === 3 || catAfter === 11 || catAfter === 14) {
+    return false; // GB9. GB9a
+  }
+  if (catBefore === 9) {
+    return false; // GB9b
+  }
+  if (catAfter === 0 && incb) {
+    return false; // GB9c
+  }
+  if (catBefore === 14 && catAfter === 4) {
+    return !emoji; // GB11
+  }
+  if (catBefore === 10 && catAfter === 10) {
+    return risCount % 2 === 0; // GB12, GB13
+  }
+  return true; // GB999
 }
 
 /**
