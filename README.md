@@ -8,11 +8,12 @@ A lightweight and fast, pure JavaScript library for Unicode segmentation.
 
 ## Features
 
-Library includes utilities to deal with:
-- Extended grapheme clusters
-- Emojis and pictographic
-- Non-Latin alphabets and numbers
-- UTF-8 characters
+The library includes utilities to deal with:
+- Emojis and pictographic [⤵](#export-unicode-segmenteremoji)
+- Extended grapheme clusters [⤵](#export-unicode-segmentergrapheme)
+- Non-Latin alphabets and numbers [⤵](#export-unicode-segmentergeneral)
+- UTF-8 characters and UTF-16 surrogates [⤵](#export-unicode-segmenterutils)
+- Polyfill [`Intl.Segmenter`] API [⤵](#export-unicode-segmenterintl-adapter)
 
 With no dependencies, so you can use it even in places where built-in Unicode libraries aren't available, such as old browsers, edge runtimes, and embedded environments.
 
@@ -29,7 +30,9 @@ No worry. Library is fully typed, and provides `*.d.ts` for you 😉
 ### Export `unicode-segmenter/emoji`
 [![](https://edge.bundlejs.com/badge?q=unicode-segmenter/emoji&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Femoji&treeshake=%5B*%5D)
 
-#### Example: Use Unicode emoji property matchers
+Utilities for matching emoji-like characters
+
+#### Example: Use Unicode emoji property matches
 
 ```js
 import {
@@ -51,6 +54,8 @@ isEmojiPresentation('♡'.codePointAt(0));
 ### Export `unicode-segmenter/general`
 [![](https://edge.bundlejs.com/badge?q=unicode-segmenter/general&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fgeneral&treeshake=%5B*%5D)
 
+Utilities for matching alphanumeric characters
+
 #### Example: Use Unicode general property matchers
 
 ```js
@@ -64,6 +69,8 @@ import {
 
 ### Export `unicode-segmenter/grapheme`
 [![](https://edge.bundlejs.com/badge?q=unicode-segmenter/grapheme&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fgrapheme&treeshake=%5B*%5D)
+
+Utilities for text segmentation by extended grapheme cluster rules
 
 #### Example: Count graphemes
 
@@ -139,9 +146,9 @@ const segmenter = new Intl.Segmenter();
 ### Export `unicode-segmenter/utils`
 [![](https://edge.bundlejs.com/badge?q=unicode-segmenter/utils&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Futils&treeshake=%5B*%5D)
 
-You can access some internal utilities to deal with UTF-8 in string
+You can access some internal utilities to deal with UTF-8 in the JavaScript
 
-#### Example: Handle surrogate pairs
+#### Example: Handle UTF-16 surrogate pairs
 
 ```js
 import {
@@ -159,7 +166,7 @@ if (isHighSurrogate(hi) && isLowSurrogate(lo)) {
 }
 ```
 
-#### Example: Take UTF-8 character from a JS string
+#### Example: Take a UTF-8 character from a JS string
 
 ```js
 import {
@@ -181,13 +188,13 @@ ch = takeChar(str, cursor += ch.length); // => '😍'
 
 ## Benchmarks
 
-This library aims to be lighter and faster than other existing Unicode libraries in the ecosystem.
+This library aims to be lighter and faster than alternatives in the ecosystem.
 
 Look [benchmark](benchmark) to see how it works.
 
 ### `unicode-segmenter/emoji` vs
 
-- built-in Unicode RegExp
+- built-in Unicode `RegExp`
 - [emoji-regex]@10.3.0 (101M+ weekly downloads on NPM)
 
 #### Package stats
@@ -245,7 +252,7 @@ It's \~2.5x worse than RegExp w/ `u` for match-all performance, but that's usele
 
 ### `unicode-segmenter/general` vs
 
-- built-in unicode RegExp
+- built-in unicode `RegExp`
 
 #### Package stats
 
