@@ -25,7 +25,7 @@ Unicode® 15.1.0 Standard [Annex \#29 Revision 43](https://www.unicode.org/repor
 
 `unicode-segmenter` uses most basic ES6+ features like [generators](https://caniuse.com/es6-generators), [modules](https://caniuse.com/es6-module) and [`String.prototype.codePointAt()`](https://caniuse.com/mdn-javascript_builtins_string_codepointat).
 
-Those are available in (not very) modern browsers as well as lightweight runtimes like [QuickJS](https://bellard.org/quickjs/). You can still use the library even in IE11 after transpile/polyfilling them using.
+Those are available in lightweight JS runtimes like [QuickJS](https://bellard.org/quickjs/) as well as (not very) modern browsers. You can still use the library even in IE11 after transpiling/polyfilling them using Babel, regenerator, etc.
 
 ## Usage
 
@@ -172,24 +172,15 @@ if (isHighSurrogate(hi) && isLowSurrogate(lo)) {
 }
 ```
 
-#### Example: Take a UTF-8 character from a JS string
+#### Example: Determine length of a character
 
 ```js
-import {
-  takeChar,
-  takeCodePoint,
-} from 'unicode-segmenter/utils';
+import { isBMP } from 'unicode-segmenter/utils';
 
-const str = '😍♡😍'; // .length = 5
+const char = '😍'; // .length = 2
+const cp = char.codePointAt(0);
 
-let ch = '';
-let cursor = 0;
-
-ch = takeChar(str, cursor);              // => '😍'
-ch = takeChar(str, cursor += ch.length); // => '♡'
-ch = takeChar(str, cursor += ch.length); // => '😍'
-
-// `takeCodePoint` does same, but returns Unicode code point
+char.length === isBMP(cp) ? 1 : 2;
 ```
 
 ## Benchmarks
