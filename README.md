@@ -21,11 +21,11 @@ With no dependencies, so you can use it even in places where built-in Unicode li
 
 Unicode® 15.1.0 Standard [Annex \#29 Revision 43](https://www.unicode.org/reports/tr29/tr29-43.html) (2023-08-16)
 
-## Compatibility
+## Runtime Compatibility
 
 `unicode-segmenter` uses most basic ES6+ features like [generators](https://caniuse.com/es6-generators), [modules](https://caniuse.com/es6-module) and [`String.prototype.codePointAt()`](https://caniuse.com/mdn-javascript_builtins_string_codepointat).
 
-Those are available in lightweight JS runtimes like [QuickJS](https://bellard.org/quickjs/) as well as (not very) modern browsers. You can still use the library even in IE11 after transpiling/polyfilling them using Babel, regenerator, etc.
+Those are available in lightweight JS runtimes like [QuickJS](https://bellard.org/quickjs/) as well as (not very) modern browsers. You can still use the library even in IE11 by transpiling/polyfilling them using Babel, regenerator, etc.
 
 ## Usage
 
