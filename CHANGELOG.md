@@ -1,5 +1,15 @@
 # unicode-segmenter
 
+## 0.7.0
+
+### Minor Changes
+
+- f1a43ff: - grapheme: Use `String.prototype.codePointAt`
+  - grapheme: Optimize character length checking, also reduce the size a bit
+  - utils: Add `isBMP` and `isSMP` util to check a codepoint number is being BMP(Basic Multilingual Plane) range
+  - utils: Deprecated `takeCodePoint` and `takeChar` in favor of ES6 `String.prototype.codePointAt` and `String.fromCodePoint`
+  - utils: `takeChar` is no longer depends on `String.fromCodePoint` internally
+
 ## 0.6.1
 
 ### Patch Changes
