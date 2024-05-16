@@ -81,14 +81,17 @@ Utilities for text segmentation by extended grapheme cluster rules
 #### Example: Count graphemes
 
 ```js
-import * as assert from 'node:assert/strict';
 import { countGrapheme } from 'unicode-segmenter/grapheme';
 
-assert.equal('👋 안녕!'.length, 6);
-assert.equal(countGrapheme('👋 안녕!'), 5);
+'👋 안녕!'.length;
+// => 6
+countGrapheme('👋 안녕!');
+// => 5
 
-assert.equal('a̐éö̲'.length, 7);
-assert.equal(countGrapheme('a̐éö̲'), 3);
+'a̐éö̲'.length;
+// => 7
+countGrapheme('a̐éö̲');
+// => 3
 ```
 
 #### Example: Get grapheme segments
@@ -168,11 +171,12 @@ const hi = u32.charCodeAt(0);
 const lo = u32.charCodeAt(1);
 
 if (isHighSurrogate(hi) && isLowSurrogate(lo)) {
-  const codePoint = surrogatePairToCodePoint(hi, lo); // equivalent to u32.codePointAt(0)
+  const codePoint = surrogatePairToCodePoint(hi, lo);
+  // => equivalent to u32.codePointAt(0)
 }
 ```
 
-#### Example: Determine length of a character
+#### Example: Determine the length of a character
 
 ```js
 import { isBMP } from 'unicode-segmenter/utils';
@@ -181,6 +185,7 @@ const char = '😍'; // .length = 2
 const cp = char.codePointAt(0);
 
 char.length === isBMP(cp) ? 1 : 2;
+// => true
 ```
 
 ## Benchmarks
