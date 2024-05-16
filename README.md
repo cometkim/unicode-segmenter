@@ -8,12 +8,12 @@ A lightweight and fast, pure JavaScript library for Unicode segmentation.
 
 ## Features
 
-The library includes utilities to deal with:
+`unicode-segmenter` includes utilities to deal with:
 - Emojis and pictographic [⤵](#export-unicode-segmenteremoji)
 - Extended grapheme clusters [⤵](#export-unicode-segmentergrapheme)
 - Non-Latin alphabets and numbers [⤵](#export-unicode-segmentergeneral)
 - UTF-8 characters and UTF-16 surrogates [⤵](#export-unicode-segmenterutils)
-- Polyfill [`Intl.Segmenter`] API [⤵](#export-unicode-segmenterintl-adapter)
+- [`Intl.Segmenter`] Polyfill [⤵](#export-unicode-segmenterintl-adapter)
 
 With no dependencies, so you can use it even in places where built-in Unicode libraries aren't available, such as old browsers, edge runtimes, and embedded environments.
 
@@ -21,11 +21,17 @@ With no dependencies, so you can use it even in places where built-in Unicode li
 
 Unicode® 15.1.0 Standard [Annex \#29 Revision 43](https://www.unicode.org/reports/tr29/tr29-43.html) (2023-08-16)
 
+## Compatibility
+
+`unicode-segmenter` uses most basic ES6+ features like [generators](https://caniuse.com/es6-generators), [modules](https://caniuse.com/es6-module) and [`String.prototype.codePointAt()`](https://caniuse.com/mdn-javascript_builtins_string_codepointat).
+
+Those are available in (not very) modern browsers as well as lightweight runtimes like [QuickJS](https://bellard.org/quickjs/). You can still use the library even in IE11 after transpile/polyfilling them using.
+
 ## Usage
 
 ### Using TypeScript
 
-No worry. Library is fully typed, and provides `*.d.ts` for you 😉
+No worry. The project is fully type-checked, and provides `*.d.ts` for you 😉
 
 ### Export `unicode-segmenter/emoji`
 [![](https://edge.bundlejs.com/badge?q=unicode-segmenter/emoji&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Femoji&treeshake=%5B*%5D)
@@ -188,7 +194,7 @@ ch = takeChar(str, cursor += ch.length); // => '😍'
 
 ## Benchmarks
 
-This library aims to be lighter and faster than alternatives in the ecosystem.
+`unicode-segmenter` aims to be lighter and faster than alternatives in the ecosystem while fully spec compliant. So the benchmark is tracking the performance, bundle size, and Unicode version compliance of several libraries.
 
 Look [benchmark](benchmark) to see how it works.
 
@@ -315,7 +321,7 @@ It's \~2.5x worse than `RegExp` w/ `u` for match-all performance, but that's use
 
 | Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|
-| `unicode-segmenter/grapheme` |   15.1.0 |    ✔️ |    33,594 |     29,915 |           9,454 |         5,776 |
+| `unicode-segmenter/grapheme` |   15.1.0 |    ✔️ |    33,045 |     29,667 |           9,343 |         5,658 |
 | `graphemer`                  |   15.0.0 |    ✖️ ️|   410,424 |     95,104 |          15,752 |        10,660 |
 | `grapheme-splitter`          |   10.0.0 |    ✖️ |   122,241 |     23,680 |           7,852 |         4,841 |
 | `unicode-segmentation`*      |   15.0.0 |    ✔️ |    51,251 |     51,251 |          22,545 |        16,614 |
@@ -342,78 +348,78 @@ The gap may increase depending on the environment. Bindings for browsers general
   ----------------------------------------------------------------------------------- -----------------------------
   • Lorem ipsum (ascii)
   ----------------------------------------------------------------------------------- -----------------------------
-  unicode-segmenter                             5'529 ns/iter     (5'166 ns … 188 µs)  5'334 ns  5'917 ns 50'584 ns
-  Intl.Segmenter                               50'420 ns/iter    (46'584 ns … 564 µs) 49'916 ns 57'667 ns    317 µs
-  graphemer                                    49'188 ns/iter    (46'833 ns … 395 µs) 47'959 ns 99'583 ns    221 µs
-  grapheme-splitter                            74'743 ns/iter    (73'292 ns … 229 µs) 73'917 ns 80'833 ns    192 µs
-  unicode-rs/unicode-segmentation (wasm-pack)  16'130 ns/iter    (15'625 ns … 292 µs) 16'000 ns 17'083 ns 86'042 ns
+  unicode-segmenter                             5'307 ns/iter     (4'708 ns … 252 µs)  5'125 ns  6'250 ns 68'625 ns
+  Intl.Segmenter                               51'373 ns/iter    (47'000 ns … 467 µs) 50'709 ns 58'583 ns    397 µs
+  graphemer                                    49'735 ns/iter  (46'416 ns … 1'739 µs) 47'042 ns    123 µs    342 µs
+  grapheme-splitter                            74'459 ns/iter    (73'292 ns … 211 µs) 73'834 ns 81'334 ns    169 µs
+  unicode-rs/unicode-segmentation (wasm-pack)  16'422 ns/iter    (15'625 ns … 325 µs) 16'375 ns 19'416 ns 89'125 ns
   
   summary for Lorem ipsum (ascii)
     unicode-segmenter
-     2.92x faster than unicode-rs/unicode-segmentation (wasm-pack)
-     8.9x faster than graphemer
-     9.12x faster than Intl.Segmenter
-     13.52x faster than grapheme-splitter
+     3.09x faster than unicode-rs/unicode-segmentation (wasm-pack)
+     9.37x faster than graphemer
+     9.68x faster than Intl.Segmenter
+     14.03x faster than grapheme-splitter
   
   • Emojis
   ----------------------------------------------------------------------------------- -----------------------------
-  unicode-segmenter                             1'693 ns/iter   (1'662 ns … 1'804 ns)  1'711 ns  1'787 ns  1'804 ns
-  Intl.Segmenter                               14'306 ns/iter  (12'209 ns … 1'277 µs) 13'500 ns 17'542 ns    776 µs
-  graphemer                                    13'101 ns/iter    (12'542 ns … 596 µs) 12'875 ns 15'417 ns    109 µs
-  grapheme-splitter                            27'259 ns/iter    (26'583 ns … 508 µs) 26'875 ns 31'500 ns 59'917 ns
-  unicode-rs/unicode-segmentation (wasm-pack)   5'590 ns/iter   (5'471 ns … 6'420 ns)  5'609 ns  6'361 ns  6'420 ns
+  unicode-segmenter                             1'820 ns/iter   (1'730 ns … 2'428 ns)  1'853 ns  2'228 ns  2'428 ns
+  Intl.Segmenter                               14'743 ns/iter  (12'166 ns … 2'454 µs) 13'875 ns 18'000 ns 39'834 ns
+  graphemer                                    13'406 ns/iter  (12'625 ns … 1'243 µs) 13'292 ns 15'208 ns    117 µs
+  grapheme-splitter                            27'827 ns/iter    (26'625 ns … 513 µs) 27'709 ns 32'208 ns 82'958 ns
+  unicode-rs/unicode-segmentation (wasm-pack)   5'591 ns/iter   (5'462 ns … 5'916 ns)  5'655 ns  5'845 ns  5'916 ns
   
   summary for Emojis
     unicode-segmenter
-     3.3x faster than unicode-rs/unicode-segmentation (wasm-pack)
-     7.74x faster than graphemer
-     8.45x faster than Intl.Segmenter
-     16.1x faster than grapheme-splitter
+     3.07x faster than unicode-rs/unicode-segmentation (wasm-pack)
+     7.37x faster than graphemer
+     8.1x faster than Intl.Segmenter
+     15.29x faster than grapheme-splitter
   
   • Demonic characters
   ----------------------------------------------------------------------------------- -----------------------------
-  unicode-segmenter                             1'742 ns/iter   (1'686 ns … 1'874 ns)  1'767 ns  1'867 ns  1'874 ns
-  Intl.Segmenter                                5'070 ns/iter   (3'498 ns … 9'027 ns)  8'009 ns  8'877 ns  9'027 ns
-  graphemer                                    27'235 ns/iter  (26'250 ns … 1'753 µs) 26'750 ns 29'416 ns    168 µs
-  grapheme-splitter                            19'988 ns/iter    (19'000 ns … 417 µs) 19'500 ns 24'000 ns    269 µs
-  unicode-rs/unicode-segmentation (wasm-pack)   2'518 ns/iter   (2'440 ns … 2'734 ns)  2'550 ns  2'641 ns  2'734 ns
+  unicode-segmenter                             1'789 ns/iter   (1'728 ns … 1'945 ns)  1'812 ns  1'905 ns  1'945 ns
+  Intl.Segmenter                                5'083 ns/iter   (3'505 ns … 9'451 ns)  7'867 ns  9'238 ns  9'451 ns
+  graphemer                                    27'906 ns/iter    (26'375 ns … 284 µs) 27'750 ns 30'917 ns    168 µs
+  grapheme-splitter                            20'428 ns/iter    (19'042 ns … 373 µs) 20'125 ns 23'833 ns    287 µs
+  unicode-rs/unicode-segmentation (wasm-pack)   2'513 ns/iter   (2'426 ns … 2'728 ns)  2'542 ns  2'693 ns  2'728 ns
   
   summary for Demonic characters
     unicode-segmenter
-     1.45x faster than unicode-rs/unicode-segmentation (wasm-pack)
-     2.91x faster than Intl.Segmenter
-     11.48x faster than grapheme-splitter
-     15.64x faster than graphemer
+     1.4x faster than unicode-rs/unicode-segmentation (wasm-pack)
+     2.84x faster than Intl.Segmenter
+     11.42x faster than grapheme-splitter
+     15.6x faster than graphemer
   
   • Tweet text (combined)
   ----------------------------------------------------------------------------------- -----------------------------
-  unicode-segmenter                             8'791 ns/iter     (8'125 ns … 268 µs)  8'750 ns  9'792 ns    122 µs
-  Intl.Segmenter                               72'326 ns/iter    (63'583 ns … 680 µs) 71'875 ns    111 µs    557 µs
-  graphemer                                    72'033 ns/iter    (66'791 ns … 357 µs) 71'875 ns    110 µs    300 µs
-  grapheme-splitter                               154 µs/iter       (147 µs … 501 µs)    157 µs    194 µs    480 µs
-  unicode-rs/unicode-segmentation (wasm-pack)  24'444 ns/iter    (23'666 ns … 355 µs) 24'083 ns 27'542 ns    179 µs
+  unicode-segmenter                             8'170 ns/iter     (7'666 ns … 370 µs)  8'042 ns  9'125 ns    110 µs
+  Intl.Segmenter                               67'951 ns/iter    (63'542 ns … 664 µs) 67'875 ns 73'667 ns    359 µs
+  graphemer                                    68'831 ns/iter    (66'542 ns … 349 µs) 69'083 ns 78'500 ns    197 µs
+  grapheme-splitter                               151 µs/iter       (145 µs … 624 µs)    150 µs    183 µs    445 µs
+  unicode-rs/unicode-segmentation (wasm-pack)  24'231 ns/iter    (23'625 ns … 252 µs) 24'000 ns 26'250 ns    133 µs
   
   summary for Tweet text (combined)
     unicode-segmenter
-     2.78x faster than unicode-rs/unicode-segmentation (wasm-pack)
-     8.19x faster than graphemer
-     8.23x faster than Intl.Segmenter
-     17.55x faster than grapheme-splitter
+     2.97x faster than unicode-rs/unicode-segmentation (wasm-pack)
+     8.32x faster than Intl.Segmenter
+     8.42x faster than graphemer
+     18.43x faster than grapheme-splitter
   
   • Code snippet (combined)
   ----------------------------------------------------------------------------------- -----------------------------
-  unicode-segmenter                            20'311 ns/iter    (19'541 ns … 220 µs) 19'958 ns 23'375 ns    129 µs
-  Intl.Segmenter                                  170 µs/iter     (151 µs … 1'633 µs)    161 µs    513 µs  1'282 µs
-  graphemer                                       163 µs/iter       (159 µs … 410 µs)    161 µs    286 µs    367 µs
-  grapheme-splitter                               352 µs/iter       (346 µs … 710 µs)    350 µs    463 µs    672 µs
-  unicode-rs/unicode-segmentation (wasm-pack)  57'798 ns/iter    (56'083 ns … 326 µs) 57'208 ns 63'625 ns    203 µs
+  unicode-segmenter                            19'604 ns/iter    (18'291 ns … 239 µs) 19'375 ns 27'709 ns    139 µs
+  Intl.Segmenter                                  160 µs/iter       (148 µs … 406 µs)    159 µs    309 µs    385 µs
+  graphemer                                       165 µs/iter       (159 µs … 377 µs)    165 µs    267 µs    351 µs
+  grapheme-splitter                               353 µs/iter     (340 µs … 1'264 µs)    354 µs    541 µs  1'136 µs
+  unicode-rs/unicode-segmentation (wasm-pack)  58'236 ns/iter    (55'958 ns … 905 µs) 58'333 ns 65'125 ns    199 µs
   
   summary for Code snippet (combined)
     unicode-segmenter
-     2.85x faster than unicode-rs/unicode-segmentation (wasm-pack)
-     8.04x faster than graphemer
-     8.37x faster than Intl.Segmenter
-     17.34x faster than grapheme-splitter
+     2.97x faster than unicode-rs/unicode-segmentation (wasm-pack)
+     8.16x faster than Intl.Segmenter
+     8.39x faster than graphemer
+     17.98x faster than grapheme-splitter
   ```
 
 </details>

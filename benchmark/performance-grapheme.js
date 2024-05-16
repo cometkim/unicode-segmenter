@@ -6,7 +6,7 @@ import * as unicodeSegmentation from 'unicode-segmentation-wasm';
 
 import { graphemeSegments } from '../src/grapheme.js';
 
-if (typeof self === 'object') {
+if (globalThis.origin) {
   await unicodeSegmentation.default();
 }
 
