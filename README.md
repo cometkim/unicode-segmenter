@@ -21,7 +21,7 @@ With no dependencies, so you can use it even in places where built-in Unicode li
 
 Unicode® 15.1.0 Standard [Annex \#29 Revision 43](https://www.unicode.org/reports/tr29/tr29-43.html) (2023-08-16)
 
-## Runtime Compatibility
+## Runtime compatibility
 
 `unicode-segmenter` uses most basic ES6+ features like [generators](https://caniuse.com/es6-generators), [modules](https://caniuse.com/es6-module) and [`String.prototype.codePointAt()`](https://caniuse.com/mdn-javascript_builtins_string_codepointat).
 
