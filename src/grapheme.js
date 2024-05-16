@@ -14,7 +14,7 @@
 // @ts-check
 
 import { bsearchRange } from './core.js';
-import { takeCodePoint } from './utils.js';
+import { isSMP } from './utils.js';
 import {
   searchGraphemeCategory,
   GraphemeCategory,
@@ -78,15 +78,18 @@ export function* graphemeSegments(input) {
   /** InCB=Consonant InCB=Linker x InCB=Consonant */
   let incb = false;
 
-  let cp = takeCodePoint(input, cursor, len);
-  let ch = String.fromCodePoint(cp);
+  /** @type number */
+  // @ts-ignore
+  let cp = input.codePointAt(cursor);
 
   let index = 0;
   let segment = '';
 
   while (true) {
-    cursor += ch.length;
-    segment += ch;
+    segment += input[cursor++];
+    if (isSMP(cp)) {
+      segment += input[cursor++];
+    }
 
     catBefore = catAfter;
     if (catBefore === null) {
@@ -100,8 +103,8 @@ export function* graphemeSegments(input) {
     }
 
     if (cursor < len) {
-      cp = takeCodePoint(input, cursor, len);
-      ch = String.fromCodePoint(cp);
+      // @ts-ignore
+      cp = input.codePointAt(cursor);
       catAfter = cat(cp, cache);
     } else {
       yield { segment, index, input, _cat: catBefore };
@@ -171,7 +174,7 @@ function cat(cp, cache) {
     // If this char isn't within the cached range, update the cache to the
     // range that includes it.
     if (cp < cache[0] || cp > cache[1]) {
-      let result =  searchGraphemeCategory(cp);
+      let result = searchGraphemeCategory(cp);
       cache[0] = result[0];
       cache[1] = result[1];
       cache[2] = result[2];
