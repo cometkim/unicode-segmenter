@@ -42,19 +42,19 @@ Utilities for matching emoji-like characters
 
 ```js
 import {
-  isEmoji,             // match \p{Extended_Pictographic}
-  isEmojiPresentation, // match \p{Emoji_Presentation}
+  isEmojiPresentation,    // match \p{Emoji_Presentation}
+  isExtendedPictographic, // match \p{Extended_Pictographic}
 } from 'unicode-segmenter/emoji';
-
-isEmoji('😍'.codePointAt(0));
-// => true
-isEmoji('♡'.codePointAt(0));
-// => true
 
 isEmojiPresentation('😍'.codePointAt(0));
 // => true
 isEmojiPresentation('♡'.codePointAt(0));
 // => false
+
+isExtendedPictographic('😍'.codePointAt(0));
+// => true
+isExtendedPictographic('♡'.codePointAt(0));
+// => true
 ```
 
 ### Export `unicode-segmenter/general`
