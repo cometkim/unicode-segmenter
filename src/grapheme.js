@@ -24,7 +24,8 @@ import {
 } from './_incb_table.js';
 
 /**
- * @typedef {import('./core.js').Segmenter<{ _cat: GraphemeCategory }>} GraphemeSegmenter
+ * @typedef {import('./core.js').Segmenter<{ _cat: GraphemeCategoryNum }>} GraphemeSegmenter
+ * @typedef {import('./_grapheme_table.js').GraphemeCategoryNum} GraphemeCategoryNum
  * @typedef {import('./_grapheme_table.js').GraphemeCategoryRange} GraphemeCategoryRange
  */
 
@@ -54,10 +55,10 @@ export function* graphemeSegments(input) {
   /** @type {number} Total length of the input string. */
   let len = input.length;
 
-  /** @type {GraphemeCategory | null} Category of codepoint immediately preceding cursor, if known. */
+  /** @type {GraphemeCategoryNum | null} Category of codepoint immediately preceding cursor, if known. */
   let catBefore = null;
 
-  /** @type {GraphemeCategory | null} Category of codepoint immediately preceding cursor, if known. */
+  /** @type {GraphemeCategoryNum | null} Category of codepoint immediately preceding cursor, if known. */
   let catAfter = null;
 
   /** @type {import('./_grapheme_table.js').GraphemeCategoryRange} */
@@ -153,7 +154,7 @@ export function countGrapheme(str) {
 /**
  * @param {number} cp
  * @param {import('./_grapheme_table.js').GraphemeCategoryRange} cache
- * @return {GraphemeCategory}
+ * @return {GraphemeCategoryNum}
  */
 function cat(cp, cache) {
   if (cp < 127) {
@@ -200,8 +201,8 @@ function isIndicConjunctLinker(cp) {
 }
 
 /**
- * @param {GraphemeCategory} catBefore
- * @param {GraphemeCategory} catAfter
+ * @param {GraphemeCategoryNum} catBefore
+ * @param {GraphemeCategoryNum} catAfter
  * @param {number} risCount Regional_Indicator state
  * @param {boolean} emoji Extended_Pictographic state
  * @param {boolean} incb Indic_Conjunct_Break state
