@@ -365,21 +365,21 @@ def emit_emoji_module(f):
 
     f.write("""
 /**
- * The Unicode `Extended_Pictographic` property table
- *
- * @type {import('./core.js').UnicodeRange[]}
- */
-""")
-    emit_table_compressed(f, "emoji_table", emoji_props["Extended_Pictographic"], print_range)
-
-    f.write("""
-/**
  * The Unicode `Emoji_Presentation` property table
  *
  * @type {import('./core.js').UnicodeRange[]}
  */
 """)
     emit_table_compressed(f, "emoji_presentation_table", emoji_props["Emoji_Presentation"], print_range)
+
+    f.write("""
+/**
+ * The Unicode `Extended_Pictographic` property table
+ *
+ * @type {import('./core.js').UnicodeRange[]}
+ */
+""")
+    emit_table_compressed(f, "extended_pictographic_table", emoji_props["Extended_Pictographic"], print_range)
 
 def emit_incb_module(f):
     incb_props = load_properties("DerivedCoreProperties.txt", ["InCB=Consonant"])
