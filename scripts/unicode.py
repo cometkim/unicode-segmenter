@@ -397,7 +397,9 @@ def emit_incb_module(f):
 
 def emit_break_module(f, break_table, break_cats, name):
     Name = name.capitalize()
-    typename = f"{Name}Category"
+    TypeName = f"{Name}Category"
+    KeyTypeName = f"{TypeName}Key"
+    NumTypeName = f"{TypeName}Num"
 
     # We don't want the lookup table to be too large so choose a reasonable
     # cutoff. 0x20000 is selected because most of the range table entries are
@@ -441,7 +443,7 @@ import { bsearchUnicodeRange } from './core.js';
     f.write(" * @typedef {(\n")
     for cat in break_cats:
         f.write(f" *   | {Name[0]}C_{cat}\n")
-    f.write(" * )} %s\n" % typename)
+    f.write(" * )} %s\n" % f"{NumTypeName}")
     f.write(" */\n")
 
     f.write("""
@@ -450,7 +452,16 @@ import { bsearchUnicodeRange } from './core.js';
  *
  * NOTE: It might be garbage `from` and `to` values when the `category` is {@link %sC_Any}.
  */
-""" % (typename, typename, Name[0]))
+""" % (NumTypeName, TypeName, Name[0]))
+
+    f.write("""
+/**
+ * @typedef {(
+""")
+    for cat in break_cats:
+        f.write(f" *   | '{cat}'\n")
+    f.write(" * )} %s\n" % KeyTypeName)
+    f.write(" */\n")
 
     f.write("""
 /**
@@ -459,10 +470,10 @@ import { bsearchUnicodeRange } from './core.js';
  * Note: The enum object is not actually `Object.freeze`
  * because it increases 800 bytes of Brotli compression... Not sure why :P
  *
- * @type {Readonly<Record<string, %s>>}
+ * @type {Readonly<Record<%s, %s>>}
  */
 export const %s = {
-""" % (typename, typename))
+""" % (KeyTypeName, NumTypeName, TypeName))
     for cat in break_cats:
         f.write(f"  {cat}: {inversed[cat]},\n")
     f.write("};\n\n")
@@ -474,7 +485,7 @@ export const %s = {
 /**
  * @type {%sRange[]}
  */
-""" % typename)
+""" % TypeName)
 
     emit_table_compressed(f, f"{name}_cat_table", break_table,
                pfun=lambda x: f"[{numeric_char(x[0])},{numeric_char(x[1])},{inversed[x[2]]}]")
@@ -507,7 +518,7 @@ export function search%s(cp) {
   let upper = lower + lookup_interval - 1;
   return bsearchUnicodeRange(cp, %s_cat_table, lower, upper, sliceFrom, sliceTo);
 }
-""" % (typename, Name[0], typename, name, lookup_interval, j, len(break_table), name))
+""" % (TypeName, Name[0], TypeName, name, lookup_interval, j, len(break_table), name))
 
 def emit_testdata_module(f):
     create_testcase_typedef(f)

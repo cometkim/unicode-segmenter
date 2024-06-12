@@ -49,13 +49,33 @@ import { bsearchUnicodeRange } from './core.js';
  *   | GC_T
  *   | GC_V
  *   | GC_ZWJ
- * )} GraphemeCategory
+ * )} GraphemeCategoryNum
  */
 
 /**
- * @typedef {import('./core.js').CategorizedUnicodeRange<GraphemeCategory>} GraphemeCategoryRange
+ * @typedef {import('./core.js').CategorizedUnicodeRange<GraphemeCategoryNum>} GraphemeCategoryRange
  *
  * NOTE: It might be garbage `from` and `to` values when the `category` is {@link GC_Any}.
+ */
+
+/**
+ * @typedef {(
+ *   | 'Any'
+ *   | 'CR'
+ *   | 'Control'
+ *   | 'Extend'
+ *   | 'Extended_Pictographic'
+ *   | 'L'
+ *   | 'LF'
+ *   | 'LV'
+ *   | 'LVT'
+ *   | 'Prepend'
+ *   | 'Regional_Indicator'
+ *   | 'SpacingMark'
+ *   | 'T'
+ *   | 'V'
+ *   | 'ZWJ'
+ * )} GraphemeCategoryKey
  */
 
 /**
@@ -64,7 +84,7 @@ import { bsearchUnicodeRange } from './core.js';
  * Note: The enum object is not actually `Object.freeze`
  * because it increases 800 bytes of Brotli compression... Not sure why :P
  *
- * @type {Readonly<Record<string, GraphemeCategory>>}
+ * @type {Readonly<Record<GraphemeCategoryKey, GraphemeCategoryNum>>}
  */
 export const GraphemeCategory = {
   Any: 0,
