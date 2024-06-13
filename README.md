@@ -462,3 +462,4 @@ The gap may increase depending on the environment. Bindings for browsers general
 [grapheme-splitter]: https://github.com/orling/grapheme-splitter
 [emoji-regex]: https://github.com/mathiasbynens/emoji-regex
 [XRegExp]: https://xregexp.com/
+[@formatjs/intl-segmenter]: https://formatjs.io/docs/polyfills/intl-segmenter/
