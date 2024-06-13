@@ -108,6 +108,7 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
+    "@formatjs/intl-segmenter": "11.5.7",
     "@jazzer.js/core": "^2.1.0",
     "@types/node": "^20.12.7",
     "@types/xregexp": "^4.4.0",

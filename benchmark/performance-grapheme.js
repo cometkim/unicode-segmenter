@@ -1,8 +1,10 @@
+import * as assert from 'node:assert/strict';
 import { group, bench, run } from 'mitata';
 
 import Graphemer from 'graphemer';
 import GraphemeSplitter from 'grapheme-splitter';
 import * as unicodeSegmentation from 'unicode-segmentation-wasm';
+import { Segmenter as FormatjsSegmenter } from '@formatjs/intl-segmenter/src/segmenter.js';
 
 import { graphemeSegments } from '../src/grapheme.js';
 
@@ -13,6 +15,7 @@ if (globalThis.origin) {
 const intlSegmenter = new Intl.Segmenter();
 const graphemer = new (Graphemer.default || Graphemer)();
 const graphemeSplitter = new (GraphemeSplitter.default || GraphemeSplitter)();
+const formatjsSegmenter = new FormatjsSegmenter();
 
 let testcases = [
   [
@@ -53,6 +56,14 @@ const 테스트문자열 = "안녕하세요! Welcome to the unicode-segementer l
 ];
 
 for (const [title, input] of testcases) {
+  const expected = [...intlSegmenter.segment(input)].map(({ segment }) => segment);
+
+  assert.deepEqual([...graphemeSegments(input)].map(({ segment }) => segment), expected);
+  assert.deepEqual([...graphemer.iterateGraphemes(input)], expected);
+  assert.deepEqual([...graphemeSplitter.iterateGraphemes(input)], expected);
+  assert.deepEqual([...unicodeSegmentation.collect(input)], expected);
+  assert.deepEqual([...formatjsSegmenter.segment(input)].map(({ segment }) => segment), expected);
+
   group(title, () => {
     bench('unicode-segmenter', () => {
       void ([...graphemeSegments(input)]);
@@ -73,6 +84,10 @@ for (const [title, input] of testcases) {
     bench('unicode-rs/unicode-segmentation (wasm-pack)', () => {
       // Note: This is not an exact binding to iteration, but it is more efficient.
       void [...unicodeSegmentation.collect(input)];
+    });
+
+    bench('@formatjs/intl-segmenter', () => {
+      void ([...formatjsSegmenter.segment(input)]);
     });
   });
 }
