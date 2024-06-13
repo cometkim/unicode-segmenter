@@ -71,7 +71,8 @@ for (const [title, input] of testcases) {
     });
 
     bench('unicode-rs/unicode-segmentation (wasm-pack)', () => {
-      void unicodeSegmentation.collect(input);
+      // Note: This is not an exact binding to iteration, but it is more efficient.
+      void [...unicodeSegmentation.collect(input)];
     });
   });
 }
