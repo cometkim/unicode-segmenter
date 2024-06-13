@@ -191,3 +191,24 @@ test('counter examples', async t => {
     });
   }
 });
+
+test('break category', async t => {
+  let cats = {
+    Extended_Pictographic: [
+      '🏴',
+    ],
+  };
+
+  for (let [cat, cases] of Object.entries(cats)) {
+    for (let case_ of cases) {
+      // @ts-ignore
+      let expected = GraphemeCategory[cat];
+      await t.test(`cat(${case_}) = ${cat} (${expected})`, () => {
+        assert.equal(
+          graphemeSegments(case_).next().value._cat,
+          expected,
+        );
+      });
+    }
+  }
+})
