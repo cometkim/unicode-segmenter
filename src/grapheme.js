@@ -24,9 +24,14 @@ import {
 } from './_incb_table.js';
 
 /**
- * @typedef {import('./core.js').Segmenter<{ _cat: GraphemeCategoryNum }>} GraphemeSegmenter
  * @typedef {import('./_grapheme_table.js').GraphemeCategoryNum} GraphemeCategoryNum
  * @typedef {import('./_grapheme_table.js').GraphemeCategoryRange} GraphemeCategoryRange
+ *
+ * @typedef {object} GraphemeSegmentExtra
+ * @property {GraphemeCategoryNum} _catBegin Beginning Grapheme_Cluster_Break category of the segment
+ * @property {GraphemeCategoryNum} _catEnd Ending Grapheme_Cluster_Break category of the segment
+ *
+ * @typedef {import('./core.js').Segmenter<GraphemeSegmentExtra>} GraphemeSegmenter
  */
 
 export {
@@ -61,6 +66,9 @@ export function* graphemeSegments(input) {
   /** @type {GraphemeCategoryNum | null} Category of codepoint immediately preceding cursor, if known. */
   let catAfter = null;
 
+  /** @type {GraphemeCategoryNum | null} Beginning category of a segment */
+  let catBegin = null;
+
   /** @type {import('./_grapheme_table.js').GraphemeCategoryRange} */
   let cache = [0, 0, 2 /* GC_Control */];
 
@@ -92,10 +100,8 @@ export function* graphemeSegments(input) {
       segment += input[cursor++];
     }
 
-    catBefore = catAfter;
-    if (catBefore === null) {
-      catBefore = cat(cp, cache);
-    }
+    catBefore = catAfter ?? cat(cp, cache);
+    catBegin ??= catBefore;
 
     if (!consonant && catBefore === 0) {
       consonant = isIndicConjunctCosonant(cp);
@@ -108,7 +114,8 @@ export function* graphemeSegments(input) {
       cp = input.codePointAt(cursor);
       catAfter = cat(cp, cache);
     } else {
-      yield { segment, index, input, _cat: catBefore };
+      // console.log({ segment, catBefore, catBegin, risCount });
+      yield { segment, index, input, _catBegin: catBegin, _catEnd: catBefore };
       return;
     }
 
@@ -128,8 +135,9 @@ export function* graphemeSegments(input) {
       }
     }
 
+    // console.log({ catBefore, catAfter, emoji, risCount });
     if (isBoundary(catBefore, catAfter, risCount, emoji, incb)) {
-      yield { segment, index, input, _cat: catBefore };
+      yield { segment, index, input, _catBegin: catBegin, _catEnd: catBefore };
 
       // flush
       index = cursor;
@@ -137,6 +145,7 @@ export function* graphemeSegments(input) {
       emoji = false;
       consonant = false;
       linker = false;
+      catBegin = catAfter;
     }
   }
 }
@@ -152,6 +161,10 @@ export function countGrapheme(str) {
 }
 
 /**
+ * `Grapheme_Cluster_Break` property value of a given codepoint
+ *
+ * @see https://www.unicode.org/reports/tr29/tr29-43.html#Default_Grapheme_Cluster_Table
+ *
  * @param {number} cp
  * @param {import('./_grapheme_table.js').GraphemeCategoryRange} cache
  * @return {GraphemeCategoryNum}

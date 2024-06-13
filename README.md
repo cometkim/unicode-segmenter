@@ -108,13 +108,17 @@ import { graphemeSegments } from 'unicode-segmenter/grapheme';
 
 #### Example: Build an advanced grapheme matcher
 
+`graphemeSegments()` exposes some knowledge identified in the middle of the process to support some useful cases.
+
+For example, knowing the [Grapheme_Cluster_Break](https://www.unicode.org/reports/tr29/tr29-43.html#Default_Grapheme_Cluster_Table) category at the beginning and end of a segment can help approximately infer the applied boundary rule.
+
 ```js
 import { graphemeSegments, GraphemeCategory } from 'unicode-segmenter/grapheme';
 
 function* matchEmoji(str) {
-  // internal field `_cat` is GraphemeCategory value of the match index
-  for (const { segment, _cat } of graphemeSegments(input)) {
-    if (_cat === GraphemeCategory.Extended_Pictographic) {
+  for (const { segment, _catBegin } of graphemeSegments(input)) {
+    // `_catBegin` identified as Extended_Pictographic means the segment is emoji
+    if (_catBegin === GraphemeCategory.Extended_Pictographic) {
       yield segment;
     }
   }
