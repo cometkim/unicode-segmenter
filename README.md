@@ -286,7 +286,7 @@ You can handle emojis in between grapheme processing by `unicode-segmenter/graph
 
 #### Runtime performance
 
-`unicode-segmenter/general` is almost equivalent to `RegExp` w/ `u`.
+Depending on your usage, `unicode-segmenter/general` may be slightly faster than `RegExp` w/ `u` and suitable for more advanced use cases.
 
 <details>
   <summary>Details</summary>
@@ -299,25 +299,25 @@ You can handle emojis in between grapheme processing by `unicode-segmenter/graph
   ----------------------------------------------------------------- -----------------------------
   • checking any alphanumeric
   ----------------------------------------------------------------- -----------------------------
-  unicode-segmenter/general     236 ns/iter       (229 ns … 579 ns)    233 ns    304 ns    552 ns
-  XRegExp                       243 ns/iter       (239 ns … 319 ns)    242 ns    285 ns    317 ns
-  RegExp w/ unicode             236 ns/iter       (233 ns … 312 ns)    237 ns    263 ns    299 ns
+  unicode-segmenter/general     212 ns/iter       (206 ns … 413 ns)    215 ns    231 ns    272 ns
+  XRegExp                       243 ns/iter       (237 ns … 394 ns)    245 ns    293 ns    320 ns
+  RegExp w/ unicode             235 ns/iter       (232 ns … 398 ns)    236 ns    259 ns    335 ns
   
   summary for checking any alphanumeric
     unicode-segmenter/general
-     1x faster than RegExp w/ unicode
-     1.03x faster than XRegExp
+     1.11x faster than RegExp w/ unicode
+     1.15x faster than XRegExp
   
   • match all alphanumeric
   ----------------------------------------------------------------- -----------------------------
-  unicode-segmenter/general   1'883 ns/iter   (1'851 ns … 2'105 ns)  1'880 ns  2'027 ns  2'105 ns
-  XRegExp                     3'135 ns/iter   (3'109 ns … 3'300 ns)  3'137 ns  3'273 ns  3'300 ns
-  RegExp w/ unicode           1'540 ns/iter   (1'520 ns … 1'655 ns)  1'544 ns  1'643 ns  1'655 ns
+  unicode-segmenter/general     340 ns/iter       (330 ns … 992 ns)    351 ns    389 ns    992 ns
+  XRegExp                     1'928 ns/iter   (1'900 ns … 2'014 ns)  1'938 ns  2'007 ns  2'014 ns
+  RegExp w/ unicode             431 ns/iter       (420 ns … 513 ns)    441 ns    488 ns    513 ns
   
   summary for match all alphanumeric
-    RegExp w/ unicode
-     1.22x faster than unicode-segmenter/general
-     2.04x faster than XRegExp
+    unicode-segmenter/general
+     1.27x faster than RegExp w/ unicode
+     5.67x faster than XRegExp
   ```
 
 </details>

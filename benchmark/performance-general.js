@@ -1,70 +1,80 @@
 import * as assert from 'node:assert/strict';
-import { group, bench, run } from 'mitata';
+import { group, baseline, bench, run } from 'mitata';
 import XRegExp from 'xregexp';
 
-import { takeChar } from '../src/utils.js';
+import { isBMP } from '../src/utils.js';
 import { isAlphanumeric } from '../src/general.js';
-import { graphemeSegments } from '../src/grapheme.js';
 
 group('checking any alphanumeric', () => {
   function anyAlnum(input) {
     let cursor = 0;
     let len = input.length;
     while (cursor < len) {
-      let ch = takeChar(input, cursor);
-      let cp = ch.codePointAt(0);
+      let cp = input.codePointAt(cursor);
       if (isAlphanumeric(cp)) {
         return true;
       }
-      cursor += ch.length;
+      cursor += isBMP(cp) ? 1 : 2;
     }
     return false;
   }
 
+  let REGEXP_U = /[\p{N}\p{Alpha}]/u;
+  let XREGEXP_U = XRegExp('[\\pN\\p{Alphabetic}]', 'u');
+
   let input = '😂_@!$💯𐅩X六';
 
-  bench('unicode-segmenter/general', () => {
-    assert.equal(anyAlnum(input), true);
+  assert.equal(anyAlnum(input), true);
+  assert.equal(REGEXP_U.test(input), true);
+  assert.equal(XREGEXP_U.test(input), true);
+
+  baseline('unicode-segmenter/general', () => {
+    void anyAlnum(input);
   });
 
-  let xe = XRegExp('[\\pN\\p{Alphabetic}]', 'u');
   bench('XRegExp', () => {
-    assert.equal(xe.test(input), true);
+    void XREGEXP_U.test(input);
   });
 
   bench('RegExp w/ unicode', () => {
-    assert.equal(/[\p{N}\p{Alpha}]/u.test(input), true);
+    void REGEXP_U.test(input);
   });
 });
 
 group('match all alphanumeric', () => {
-  function *matchAlnum(input) {
-    for (let { index, segment } of graphemeSegments(input)) {
-      if (isAlphanumeric(input.codePointAt(index))) {
-        yield Object.assign([segment], { index, input, groups: undefined });
+  function *matchAllAlnum(input) {
+    let cursor = 0;
+    let len = input.length;
+    while (cursor < len) {
+      let cp = input.codePointAt(cursor);
+      let ch = String.fromCodePoint(cp);
+      if (isAlphanumeric(cp)) {
+        yield ch;
       }
+      cursor += ch.length;
     }
   }
 
-  let input = '😂_@!$💯X六';
-  let expected = [
-    // XRegExp has very old Unicode version
-    // Object.assign(['𐅩'], { index: 8, input, groups: undefined }),
-    Object.assign(['X'], { index: 8, input, groups: undefined }),
-    Object.assign(['六'], { index: 9, input, groups: undefined }),
-  ];
+  let REGEXP_UG = /[\p{N}\p{Alpha}]/ug;
+  let XREGEXP_UG = XRegExp('[\\pN\\p{Alphabetic}]', 'ug');
 
-  bench('unicode-segmenter/general', () => {
-    assert.deepEqual([...matchAlnum(input)], expected);
+  let input = '😂_@!$💯X六';
+  let expected = ['X', '六'];
+
+  assert.deepEqual([...matchAllAlnum(input)], expected);
+  assert.deepEqual([...input.matchAll(REGEXP_UG)].map(match => match[0]), expected);
+  assert.deepEqual([...input.matchAll(XREGEXP_UG)].map(match => match[0]), expected);
+
+  baseline('unicode-segmenter/general', () => {
+    void [...matchAllAlnum(input)];
   });
 
-  let xe = XRegExp('[\\pN\\p{Alphabetic}]', 'ug');
   bench('XRegExp', () => {
-    assert.deepEqual([...input.matchAll(xe)], expected);
+    void [...input.matchAll(XREGEXP_UG)];
   });
 
   bench('RegExp w/ unicode', () => {
-    assert.deepEqual([...input.matchAll(/[\p{N}\p{Alpha}]/ug)], expected);
+    void [...input.matchAll(REGEXP_UG)];
   });
 });
 
