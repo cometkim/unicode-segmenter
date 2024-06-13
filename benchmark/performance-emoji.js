@@ -32,8 +32,8 @@ group('checking if any emoji', () => {
   }
 
   function anyEmojiByGrapheme(input) {
-    for (const { _cat } of graphemeSegments(input)) {
-      if (_cat === GraphemeCategory.Extended_Pictographic) {
+    for (const { _catBegin } of graphemeSegments(input)) {
+      if (_catBegin === GraphemeCategory.Extended_Pictographic) {
         return true;
       }
     }
@@ -89,8 +89,8 @@ group('match all emoji', () => {
   }
 
   function* allEmojisByGrapheme(input) {
-    for (const { segment, _cat } of graphemeSegments(input)) {
-      if (_cat === GraphemeCategory.Extended_Pictographic) {
+    for (const { segment, _catBegin } of graphemeSegments(input)) {
+      if (_catBegin === GraphemeCategory.Extended_Pictographic) {
         yield segment;
       }
     }

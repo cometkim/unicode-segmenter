@@ -239,35 +239,35 @@ You can handle emojis in between grapheme processing by `unicode-segmenter/graph
   ------------------------------------------------------------------ -----------------------------
   • checking if any emoji
   ------------------------------------------------------------------ -----------------------------
-  unicode-segmenter/emoji       13.8 ns/iter     (13.39 ns … 224 ns)  13.85 ns  16.68 ns  32.08 ns
-  unicode-segmenter/grapheme   86.36 ns/iter     (74.81 ns … 505 ns)  93.34 ns    114 ns    275 ns
-  RegExp w/ unicode            15.13 ns/iter    (14.87 ns … 73.3 ns)  15.01 ns  18.09 ns  27.38 ns
-  emoji-regex                  41.29 ns/iter     (40.59 ns … 103 ns)  40.79 ns  47.73 ns  59.51 ns
-  emojibase-regex                109 ns/iter       (108 ns … 161 ns)    108 ns    118 ns    128 ns
-  emojibase-regex/emoji        71.03 ns/iter      (68.4 ns … 114 ns)  72.84 ns  82.78 ns    101 ns
+  unicode-segmenter/emoji       14.2 ns/iter     (13.41 ns … 213 ns)  14.26 ns  17.09 ns   36.7 ns
+  unicode-segmenter/grapheme   88.82 ns/iter     (76.01 ns … 479 ns)  94.75 ns    117 ns    282 ns
+  RegExp w/ unicode            15.19 ns/iter   (14.87 ns … 78.88 ns)  15.04 ns  18.62 ns  30.84 ns
+  emoji-regex                  40.85 ns/iter   (40.53 ns … 73.79 ns)  40.67 ns  45.49 ns  53.63 ns
+  emojibase-regex                110 ns/iter       (109 ns … 163 ns)    110 ns    123 ns    142 ns
+  emojibase-regex/emoji        69.45 ns/iter      (68.4 ns … 125 ns)  69.32 ns  79.35 ns    106 ns
   
   summary for checking if any emoji
     unicode-segmenter/emoji
-     1.1x faster than RegExp w/ unicode
-     2.99x faster than emoji-regex
-     5.15x faster than emojibase-regex/emoji
-     6.26x faster than unicode-segmenter/grapheme
-     7.87x faster than emojibase-regex
+     1.07x faster than RegExp w/ unicode
+     2.88x faster than emoji-regex
+     4.89x faster than emojibase-regex/emoji
+     6.25x faster than unicode-segmenter/grapheme
+     7.78x faster than emojibase-regex
   
   • match all emoji
   ------------------------------------------------------------------ -----------------------------
-  unicode-segmenter/emoji      2'873 ns/iter     (2'584 ns … 277 µs)  2'875 ns  3'708 ns 14'833 ns
-  unicode-segmenter/grapheme   7'585 ns/iter   (7'406 ns … 8'134 ns)  7'721 ns  7'971 ns  8'134 ns
-  RegExp w/ unicode              962 ns/iter     (932 ns … 1'121 ns)    973 ns  1'073 ns  1'121 ns
-  emoji-regex                 11'302 ns/iter    (10'875 ns … 241 µs) 11'375 ns 12'375 ns 25'834 ns
-  emojibase-regex             16'503 ns/iter    (16'083 ns … 220 µs) 16'459 ns 17'834 ns 26'750 ns
+  unicode-segmenter/emoji      2'754 ns/iter     (2'583 ns … 495 µs)  2'709 ns  3'000 ns 10'500 ns
+  unicode-segmenter/grapheme   7'718 ns/iter   (7'557 ns … 9'363 ns)  7'740 ns  8'729 ns  9'363 ns
+  RegExp w/ unicode              959 ns/iter     (932 ns … 1'196 ns)    967 ns  1'074 ns  1'196 ns
+  emoji-regex                 11'171 ns/iter    (10'875 ns … 292 µs) 11'167 ns 12'209 ns 27'333 ns
+  emojibase-regex             16'427 ns/iter    (16'125 ns … 289 µs) 16'334 ns 17'750 ns 32'000 ns
   
   summary for match all emoji
     unicode-segmenter/emoji
-     2.99x slower than RegExp w/ unicode
-     2.64x faster than unicode-segmenter/grapheme
-     3.93x faster than emoji-regex
-     5.74x faster than emojibase-regex
+     2.87x slower than RegExp w/ unicode
+     2.8x faster than unicode-segmenter/grapheme
+     4.06x faster than emoji-regex
+     5.96x faster than emojibase-regex
   ```
 
 </details>
