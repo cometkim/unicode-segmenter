@@ -16,12 +16,12 @@ test('graphemeSegments', async t => {
     assert.deepEqual(
       [...graphemeSegments('abc123')],
       [
-        { segment: 'a', index: 0, input: 'abc123', _cat: GraphemeCategory.Any },
-        { segment: 'b', index: 1, input: 'abc123', _cat: GraphemeCategory.Any },
-        { segment: 'c', index: 2, input: 'abc123', _cat: GraphemeCategory.Any },
-        { segment: '1', index: 3, input: 'abc123', _cat: GraphemeCategory.Any },
-        { segment: '2', index: 4, input: 'abc123', _cat: GraphemeCategory.Any },
-        { segment: '3', index: 5, input: 'abc123', _cat: GraphemeCategory.Any },
+        { segment: 'a', index: 0, input: 'abc123', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Any },
+        { segment: 'b', index: 1, input: 'abc123', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Any },
+        { segment: 'c', index: 2, input: 'abc123', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Any },
+        { segment: '1', index: 3, input: 'abc123', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Any },
+        { segment: '2', index: 4, input: 'abc123', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Any },
+        { segment: '3', index: 5, input: 'abc123', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Any },
       ],
     );
   });
@@ -30,10 +30,10 @@ test('graphemeSegments', async t => {
     assert.deepEqual(
       [...graphemeSegments('a̐éö̲\r\n')],
       [
-        { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.Extend },
-        { segment: 'é', index: 2, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.Extend },
-        { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.Extend },
-        { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n', _cat: GraphemeCategory.LF },
+        { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
+        { segment: 'é', index: 2, input: 'a̐éö̲\r\n', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
+        { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
+        { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n', _catBegin: GraphemeCategory.CR, _catEnd: GraphemeCategory.LF },
       ],
     );
   });
@@ -42,8 +42,8 @@ test('graphemeSegments', async t => {
     assert.deepEqual(
       [...graphemeSegments('🇷🇸🇮🇴')],
       [
-        { segment: '🇷🇸', index: 0, input: '🇷🇸🇮🇴', _cat: GraphemeCategory.Regional_Indicator },
-        { segment: '🇮🇴', index: 4, input: '🇷🇸🇮🇴', _cat: GraphemeCategory.Regional_Indicator },
+        { segment: '🇷🇸', index: 0, input: '🇷🇸🇮🇴', _catBegin: GraphemeCategory.Regional_Indicator, _catEnd: GraphemeCategory.Regional_Indicator },
+        { segment: '🇮🇴', index: 4, input: '🇷🇸🇮🇴', _catBegin: GraphemeCategory.Regional_Indicator, _catEnd: GraphemeCategory.Regional_Indicator },
       ],
     );
   });
@@ -52,8 +52,8 @@ test('graphemeSegments', async t => {
     assert.deepEqual(
       [...graphemeSegments('🇷🇸🇮')],
       [
-        { segment: '🇷🇸', index: 0, input: '🇷🇸🇮', _cat: GraphemeCategory.Regional_Indicator },
-        { segment: '🇮', index: 4, input: '🇷🇸🇮', _cat: GraphemeCategory.Regional_Indicator },
+        { segment: '🇷🇸', index: 0, input: '🇷🇸🇮', _catBegin: GraphemeCategory.Regional_Indicator, _catEnd: GraphemeCategory.Regional_Indicator },
+        { segment: '🇮', index: 4, input: '🇷🇸🇮', _catBegin: GraphemeCategory.Regional_Indicator, _catEnd: GraphemeCategory.Regional_Indicator },
       ],
     );
   });
@@ -62,8 +62,8 @@ test('graphemeSegments', async t => {
     assert.deepEqual(
       [...graphemeSegments('👻👩‍👩‍👦‍👦')],
       [
-        { segment: '👻', index: 0, input: '👻👩‍👩‍👦‍👦', _cat: GraphemeCategory.Extended_Pictographic },
-        { segment: '👩‍👩‍👦‍👦', index: 2, input: '👻👩‍👩‍👦‍👦', _cat: GraphemeCategory.Extended_Pictographic },
+        { segment: '👻', index: 0, input: '👻👩‍👩‍👦‍👦', _catBegin: GraphemeCategory.Extended_Pictographic, _catEnd: GraphemeCategory.Extended_Pictographic },
+        { segment: '👩‍👩‍👦‍👦', index: 2, input: '👻👩‍👩‍👦‍👦', _catBegin: GraphemeCategory.Extended_Pictographic, _catEnd: GraphemeCategory.Extended_Pictographic },
       ],
     );
   });
@@ -162,7 +162,7 @@ test('spec compliant', async t => {
   });
 });
 
-test('counter examples', async t => {
+test('counterexamples', async t => {
   let intlSegmenter = new Intl.Segmenter();
 
   // Add here if you find somee counter exmaples
@@ -196,6 +196,9 @@ test('break category', async t => {
   let cats = {
     Extended_Pictographic: [
       '🏴',
+      '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+      '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+      '🏴󠁧󠁢󠁷󠁬󠁳󠁿',
     ],
   };
 
@@ -205,7 +208,7 @@ test('break category', async t => {
       let expected = GraphemeCategory[cat];
       await t.test(`cat(${case_}) = ${cat} (${expected})`, () => {
         assert.equal(
-          graphemeSegments(case_).next().value._cat,
+          graphemeSegments(case_).next().value._catBegin,
           expected,
         );
       });
