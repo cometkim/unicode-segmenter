@@ -7,6 +7,7 @@ import fc from 'fast-check';
 import {
   isEmoji,
   isEmojiPresentation,
+  isExtendedPictographic,
 } from 'unicode-segmenter/emoji';
 
 fc.configureGlobal({
@@ -23,7 +24,7 @@ test('isEmoji', async t => {
         /** @type {number} */
         // @ts-ignore
         let cp = data.codePointAt(0);
-        assert.equal(isEmoji(cp), /\p{Extended_Pictographic}/u.test(data));
+        assert.equal(isEmoji(cp), isExtendedPictographic(cp));
       }),
     );
   });
@@ -38,6 +39,20 @@ test('isEmojiPresentation', async t => {
         // @ts-ignore
         let cp = data.codePointAt(0);
         assert.equal(isEmojiPresentation(cp), /\p{Emoji_Presentation}/u.test(data));
+      }),
+    );
+  });
+});
+
+test('isExtendedPictographic', async t => {
+  await t.test('should match \\p{Extended_Pictographic}', () => {
+    fc.assert(
+      // @ts-ignore
+      fc.property(fc.fullUnicode(), data => {
+        /** @type {number} */
+        // @ts-ignore
+        let cp = data.codePointAt(0);
+        assert.equal(isExtendedPictographic(cp), /\p{Extended_Pictographic}/u.test(data));
       }),
     );
   });
