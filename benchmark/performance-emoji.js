@@ -1,8 +1,7 @@
 import * as assert from 'node:assert/strict';
 import { group, baseline, bench, run } from 'mitata';
 import emojiRegex from 'emoji-regex';
-import EMOJIBASE_REGEX_EXT from 'emojibase-regex';
-import EMOJIBASE_REGEX from 'emojibase-regex/emoji.js';
+import EMOJIBASE_REGEX from 'emojibase-regex';
 
 import { isBMP } from '../src/utils.js';
 import { isExtendedPictographic } from '../src/emoji.js';
@@ -17,7 +16,7 @@ let input = '🚀 새로운 유니코드 분할기 라이브러리 \'unicode-seg
 // let input = 'aaaaa😂💯♡⌨';
 // // '♡' never be matched
 
-group('checking if any emoji', () => {
+group('checking if any emoji (Extended_Pictographic)', () => {
   function anyEmoji(input) {
     let cursor = 0;
     let len = input.length;
@@ -66,15 +65,11 @@ group('checking if any emoji', () => {
   });
 
   bench('emojibase-regex', () => {
-    void EMOJIBASE_REGEX_EXT.test(input);
-  });
-
-  bench('emojibase-regex/emoji', () => {
     void EMOJIBASE_REGEX.test(input);
   });
 });
 
-group('match all emoji', () => {
+group('match all emoji (Extended_Pictographic)', () => {
   function* allEmojis(input) {
     let cursor = 0;
     let len = input.length;
@@ -99,17 +94,13 @@ group('match all emoji', () => {
   let REGEXP_U = /\p{Extended_Pictographic}/ug;
   let EMOJI_REGEX = emojiRegex();
   let EMOJIBASE_REGEX_G = new RegExp(EMOJIBASE_REGEX, 'g');
-  let EMOJIBASE_REGEX_EXT_G = new RegExp(EMOJIBASE_REGEX_EXT, 'g');
 
   let expected = ['🚀', '🔍', '👉', '🌐'];
   assert.deepEqual([...allEmojis(input)], expected);
   assert.deepEqual([...allEmojisByGrapheme(input)], expected);
   assert.deepEqual([...input.matchAll(REGEXP_U)].map(match => match[0]), expected);
   assert.deepEqual([...input.matchAll(EMOJI_REGEX)].map(match => match[0]), expected);
-  assert.deepEqual([...input.matchAll(EMOJIBASE_REGEX_EXT_G)].map(match => match[0]), expected);
-
-  // Note: It doesn't match Extended_Pictographic
-  // assert.deepEqual([...input.matchAll(EMOJIBASE_REGEX_G)].map(match => match[0]), expected);
+  assert.deepEqual([...input.matchAll(EMOJIBASE_REGEX_G)].map(match => match[0]), expected);
 
   baseline('unicode-segmenter/emoji', () => {
     void [...allEmojis(input)];
@@ -128,7 +119,7 @@ group('match all emoji', () => {
   });
 
   bench('emojibase-regex', () => {
-    void [...input.matchAll(EMOJIBASE_REGEX_EXT_G)];
+    void [...input.matchAll(EMOJIBASE_REGEX_G)];
   });
 });
 
