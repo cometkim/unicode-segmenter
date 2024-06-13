@@ -327,8 +327,8 @@ Depending on your usage, `unicode-segmenter/general` may be slightly faster than
 - Node.js' [`Intl.Segmenter`] (browser's version may vary)
 - [graphemer]@1.4.0 (16.6M+ weekly downloads on NPM)
 - [grapheme-splitter]@1.0.4 (5.7M+ weekly downloads on NPM)
-- WebAssembly build of the Rust [unicode-segmentation] library
 - [@formatjs/intl-segmenter]@11.5.7 (5.4K+ weekly downloads on NPM)
+- WebAssembly build of the Rust [unicode-segmentation] library
 
 #### Package stats
 
