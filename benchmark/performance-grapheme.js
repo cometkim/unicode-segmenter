@@ -8,7 +8,12 @@ import { Segmenter as FormatjsSegmenter } from '@formatjs/intl-segmenter/src/seg
 
 import { graphemeSegments } from '../src/grapheme.js';
 
-if (globalThis.origin) {
+// Browser-like env
+const isWebWorker = typeof self === 'object';
+// Node.js, Deno, Bun
+const isSystemRuntime = typeof process === 'object';
+
+if (isWebWorker) {
   await unicodeSegmentation.default();
 }
 
@@ -58,11 +63,13 @@ const 테스트문자열 = "안녕하세요! Welcome to the unicode-segementer l
 for (const [title, input] of testcases) {
   const expected = [...intlSegmenter.segment(input)].map(({ segment }) => segment);
 
-  assert.deepEqual([...graphemeSegments(input)].map(({ segment }) => segment), expected);
-  assert.deepEqual([...graphemer.iterateGraphemes(input)], expected);
-  assert.deepEqual([...graphemeSplitter.iterateGraphemes(input)], expected);
-  assert.deepEqual([...unicodeSegmentation.collect(input)], expected);
-  assert.deepEqual([...formatjsSegmenter.segment(input)].map(({ segment }) => segment), expected);
+  if (isSystemRuntime) {
+    assert.deepEqual([...graphemeSegments(input)].map(({ segment }) => segment), expected);
+    assert.deepEqual([...graphemer.iterateGraphemes(input)], expected);
+    assert.deepEqual([...graphemeSplitter.iterateGraphemes(input)], expected);
+    assert.deepEqual([...unicodeSegmentation.collect(input)], expected);
+    assert.deepEqual([...formatjsSegmenter.segment(input)].map(({ segment }) => segment), expected);
+  }
 
   group(title, () => {
     baseline('unicode-segmenter/grapheme', () => {
@@ -94,6 +101,6 @@ for (const [title, input] of testcases) {
 
 await run();
 
-if (typeof self === 'object') {
+if (isWebWorker) {
   self.postMessage('done');
 }
