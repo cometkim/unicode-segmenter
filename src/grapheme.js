@@ -100,8 +100,13 @@ export function* graphemeSegments(input) {
       segment += input[cursor++];
     }
 
-    catBefore = catAfter ?? cat(cp, cache);
-    catBegin ??= catBefore;
+    // Note: Of course the nullish coalescing is useful here,
+    // but avoid it for aggressive compatibility and perf claim
+    catBefore = catAfter;
+    if (catBefore === null) {
+      catBefore = cat(cp, cache);
+      catBegin = catBefore;
+    }
 
     if (!consonant && catBefore === 0) {
       consonant = isIndicConjunctCosonant(cp);
@@ -115,7 +120,14 @@ export function* graphemeSegments(input) {
       catAfter = cat(cp, cache);
     } else {
       // console.log({ segment, catBefore, catBegin, risCount });
-      yield { segment, index, input, _catBegin: catBegin, _catEnd: catBefore };
+      yield {
+        segment,
+        index,
+        input,
+        // @ts-ignore
+        _catBegin: catBegin,
+        _catEnd: catBefore,
+      };
       return;
     }
 
@@ -137,7 +149,14 @@ export function* graphemeSegments(input) {
 
     // console.log({ catBefore, catAfter, emoji, risCount });
     if (isBoundary(catBefore, catAfter, risCount, emoji, incb)) {
-      yield { segment, index, input, _catBegin: catBegin, _catEnd: catBefore };
+      yield {
+        segment,
+        index,
+        input,
+        // @ts-ignore
+        _catBegin: catBegin,
+        _catEnd: catBefore,
+      };
 
       // flush
       index = cursor;
