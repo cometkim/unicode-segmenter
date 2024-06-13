@@ -1,5 +1,5 @@
 import * as assert from 'node:assert/strict';
-import { group, bench, run } from 'mitata';
+import { group, baseline, bench, run } from 'mitata';
 
 import Graphemer from 'graphemer';
 import GraphemeSplitter from 'grapheme-splitter';
@@ -65,7 +65,7 @@ for (const [title, input] of testcases) {
   assert.deepEqual([...formatjsSegmenter.segment(input)].map(({ segment }) => segment), expected);
 
   group(title, () => {
-    bench('unicode-segmenter', () => {
+    baseline('unicode-segmenter/grapheme', () => {
       void ([...graphemeSegments(input)]);
     });
 
