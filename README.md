@@ -202,17 +202,17 @@ Look [benchmark](benchmark) to see how it works.
 
 #### Package stats
 
-| Name                      | Unicode®      | ESM? | Size    | Size (min) | Size (min+gzip) | Size (min+br) |
-|---------------------------|---------------|------|--------:|-----------:|----------------:|--------------:|
-| `unicode-segmenter/emoji` | 15.1.0        |    ✔️ |   3,058 |      2,611 |           1,041 |           751 |
-| `emoji-regex`             | 15.1.0 (vary) |    ✔️ |  12,946 |     12,859 |           2,180 |         1,746 |
-| `emojibase-regex`*        | 15.1.0        |    ✖️ |  17,711 |     16,595 |           2,870 |         2,317 |
-| `emojibase-regex/emoji`*  | 15.1.0        |    ✖️ |  13,550 |     12,458 |           2,835 |         2,210 |
-| `RegExp` w/ `u`*          |             - |    - |       0 |          0 |               0 |             0 |
+| Name                      | Unicode®       | ESM? | Size    | Size (min) | Size (min+gzip) | Size (min+br) |
+|---------------------------|----------------|------|--------:|-----------:|----------------:|--------------:|
+| `unicode-segmenter/emoji` | 15.1.0         |    ✔️ |   3,058 |      2,611 |           1,041 |           751 |
+| `emoji-regex`             | 15.1.0 (vary)* |    ✔️ |  12,946 |     12,859 |           2,180 |         1,746 |
+| `emojibase-regex`*        | 15.1.0         |    ✖️ |  17,711 |     16,595 |           2,870 |         2,317 |
+| `emojibase-regex/emoji`*  | 15.1.0         |    ✖️ |  13,550 |     12,458 |           2,835 |         2,210 |
+| `RegExp` w/ `u`*          |              - |    - |       0 |          0 |               0 |             0 |
 
+* You can build your own `emoji-regex` using [emoji-test-regex-pattern](https://github.com/mathiasbynens/emoji-test-regex-pattern).
 * `emojibase-regex` matches `Extended_Pictographic` property.
 * `emojibase-regex/emoji` matches only `Emoji_Presentation` property.
-* You can build your own `emoji-regex` using [emoji-test-regex-pattern](https://github.com/mathiasbynens/emoji-test-regex-pattern).
 * `RegExp` Unicode data is always kept up to date as the runtime support.
 * `RegExp` Unicode may not be available in [some old browsers](https://caniuse.com/mdn-javascript_builtins_regexp_unicode), edge runtimes, or embedded environments.
 
