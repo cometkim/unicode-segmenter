@@ -84,6 +84,7 @@
   "files": [
     "/*.js",
     "/*.cjs",
+    "/*.cjs.map",
     "/*.d.ts",
     "/src",
     "/licenses"

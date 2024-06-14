@@ -11,6 +11,7 @@ let bundleDir = path.join(distDir, 'bundle');
 await fs.mkdir(distDir, { recursive: true });
 
 let src = name => path.join(srcDir, name);
+let dist = name => path.join(distDir, name);
 let modules = await fs.readdir(srcDir);
 
 function rewriteCjs(content) {
@@ -20,18 +21,15 @@ function rewriteCjs(content) {
 }
 
 {
-  let entryPoints = modules.map(src);
-  await build({
-    entryPoints,
-    outdir: distDir,
-    outExtension: { '.js': '.js' },
-    format: 'esm',
-    treeShaking: true,
-    write: true,
-    sourcemap: true,
-  });
+  // use source modules as is
+  await Promise.all(
+    modules.map(
+      module => fs.copyFile(src(module), dist(module)),
+    ),
+  );
+
   let { outputFiles: cjsOutputs } = await build({
-    entryPoints,
+    entryPoints: modules.map(src),
     outdir: distDir,
     outExtension: { '.js': '.cjs' },
     format: 'cjs',
@@ -39,9 +37,11 @@ function rewriteCjs(content) {
     write: false,
     sourcemap: true,
   });
-  for (let { path, text } of cjsOutputs) {
-    await fs.writeFile(path, rewriteCjs(text), 'utf8');
-  }
+  await Promise.all(
+    cjsOutputs.map(
+      ({ path, text }) => fs.writeFile(path, rewriteCjs(text), 'utf8'),
+    ),
+  );
 }
 
 {
