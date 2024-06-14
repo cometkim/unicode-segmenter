@@ -1,5 +1,14 @@
 # unicode-segmenter
 
+## 0.9.1
+
+### Patch Changes
+
+- 04fe2fc: Fix sourcemap reference error
+
+  - Include missing sourcemap files for transformed cjs entries
+  - Remove unnecessary transforms for esm entries and remove source map reference
+
 ## 0.9.0
 
 ### Minor Changes
