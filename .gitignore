@@ -22,3 +22,6 @@ lcov.info
 
 /.parcel-cache/
 /dist/
+
+*.hermes.js
+*.hermes.hbc

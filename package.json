@@ -102,7 +102,8 @@
     "perf:emoji": "node benchmark/performance-emoji.js",
     "perf:general": "node benchmark/performance-general.js",
     "perf:grapheme": "node benchmark/performance-grapheme.js",
-    "perf:grapheme:browser": "vite benchmark/performance-grapheme"
+    "perf:grapheme:browser": "vite benchmark/performance-grapheme",
+    "perf:hermes": "node benchmark/hermes/run.js"
   },
   "alias": {
     "process": false
@@ -111,6 +112,7 @@
     "@changesets/cli": "^2.27.1",
     "@formatjs/intl-segmenter": "11.5.7",
     "@jazzer.js/core": "^2.1.0",
+    "@react-native/metro-babel-transformer": "^0.74.84",
     "@types/node": "^20.12.7",
     "@types/xregexp": "^4.4.0",
     "emoji-regex": "10.3.0",
@@ -119,6 +121,7 @@
     "fast-check": "^3.17.1",
     "grapheme-splitter": "1.0.4",
     "graphemer": "1.4.0",
+    "metro": "^0.80.9",
     "mitata": "^0.1.11",
     "os-browserify": "^0.3.0",
     "pretty-bytes": "^6.1.1",
@@ -127,7 +130,8 @@
     "typescript": "^5.4.5",
     "unicode-segmentation-wasm": "portal:benchmark/unicode-segmentation-wasm",
     "vite": "^5.2.11",
-    "xregexp": "5.1.1"
+    "xregexp": "5.1.1",
+    "zx": "^8.1.3"
   },
   "packageManager": "yarn@4.3.0"
 }
