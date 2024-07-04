@@ -1,10 +1,16 @@
 import { Segmenter } from './intl-adapter.js';
 
 ((intl) => {
-  if (typeof intl !== 'object') {
+  let key = Segmenter.name;
+  if (typeof intl !== 'object' || intl.hasOwnProperty(key)) {
     return;
   }
-  intl.Segmenter ||= Segmenter;
+  Object.defineProperty(intl, key, {
+    value: Segmenter,
+    enumerable: false,
+    writable: true,
+    configurable: true,
+  });
 })(globalThis.Intl);
 
-/*  Not a pure module */
+/* Not a pure module */
