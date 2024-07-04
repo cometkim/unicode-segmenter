@@ -1,7 +1,7 @@
 import { Segmenter } from './intl-adapter.js';
 
 ((intl) => {
-  let key = Segmenter.name;
+  let key = 'Segmenter';
   if (typeof intl !== 'object' || intl.hasOwnProperty(key)) {
     return;
   }
