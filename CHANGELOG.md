@@ -1,5 +1,11 @@
 # unicode-segmenter
 
+## 0.9.2
+
+### Patch Changes
+
+- 447b484: Fix polyfill to do not override existing, and also to be assigned as non-enumerable
+
 ## 0.9.1
 
 ### Patch Changes
