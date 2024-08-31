@@ -9,6 +9,9 @@ import {
   takeCodePoint,
   isBMP,
   isSMP,
+  isSIP,
+  isTIP,
+  isSSP,
 } from 'unicode-segmenter/utils';
 
 fc.configureGlobal({
@@ -83,20 +86,50 @@ test('takeChar', async t => {
 
 test('isBMP', () => {
   fc.assert(
+    fc.property(fc.integer({ min: 0, max: 0xffff }),
     // @ts-ignore
-    fc.property(fc.fullUnicode(), (data) => {
-      // @ts-ignore
-      assert.equal(isBMP(data.codePointAt(0)) ? 1 : 2, data.length);
+    (data) => {
+      assert.ok(isBMP(data));
     }),
   );
 });
 
 test('isSMP', () => {
   fc.assert(
+    fc.property(fc.integer({ min: 0x10000, max: 0x1ffff }),
     // @ts-ignore
-    fc.property(fc.fullUnicode(), (data) => {
-      // @ts-ignore
-      assert.equal(isSMP(data.codePointAt(0)) ? 2 : 1, data.length);
+    (data) => {
+      assert.ok(isSMP(data));
+    }),
+  );
+});
+
+test('isSIP', () => {
+  fc.assert(
+    fc.property(fc.integer({ min: 0x20000, max: 0x2ffff }),
+    // @ts-ignore
+    (data) => {
+      assert.ok(isSIP(data));
+    }),
+  );
+});
+
+test('isTIP', () => {
+  fc.assert(
+    fc.property(fc.integer({ min: 0x30000, max: 0x3ffff }),
+    // @ts-ignore
+    (data) => {
+      assert.ok(isTIP(data));
+    }),
+  );
+});
+
+test('isSSP', () => {
+  fc.assert(
+    fc.property(fc.integer({ min: 0xe0000, max: 0xeffff }),
+    // @ts-ignore
+    (data) => {
+      assert.ok(isSSP(data));
     }),
   );
 });

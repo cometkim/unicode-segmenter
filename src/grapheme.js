@@ -14,7 +14,7 @@
 // @ts-check
 
 import { bsearchRange } from './core.js';
-import { isSMP } from './utils.js';
+import { isBMP } from './utils.js';
 import {
   searchGraphemeCategory,
   GraphemeCategory,
@@ -96,7 +96,7 @@ export function* graphemeSegments(input) {
 
   while (true) {
     segment += input[cursor++];
-    if (isSMP(cp)) {
+    if (!isBMP(cp)) {
       segment += input[cursor++];
     }
 
