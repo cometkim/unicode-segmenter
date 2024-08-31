@@ -89,5 +89,35 @@ export function isBMP(c) {
  * @return {boolean}
  */
 export function isSMP(c) {
-  return 0xffff < c;
+  return 0x10000 <= c && c <= 0x1ffff;
+}
+
+/**
+ * Check if given code point is within the SIP(Supplementary Ideographic Plane)
+ *
+ * @param {number} c Unicode code point
+ * @return {boolean}
+ */
+export function isSIP(c) {
+  return 0x20000 <= c && c <= 0x2ffff;
+}
+
+/**
+ * Check if given code point is within the TIP(Tertiary Ideographic Plane)
+ *
+ * @param {number} c Unicode code point
+ * @return {boolean}
+ */
+export function isTIP(c) {
+  return 0x30000 <= c && c <= 0x3ffff;
+}
+
+/**
+ * Check if given code point is within the SSP(Supplementary Special-purpose Plane)
+ *
+ * @param {number} c Unicode code point
+ * @return {boolean}
+ */
+export function isSSP(c) {
+  return 0xe0000 <= c && c <= 0xeffff;
 }
