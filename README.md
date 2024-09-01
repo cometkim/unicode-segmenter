@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/gh/cometkim/unicode-segmenter/graph/badge.svg?token=3rA29JEH4J)](https://codecov.io/gh/cometkim/unicode-segmenter)
 [![LICENSE - MIT](https://img.shields.io/github/license/cometkim/unicode-segmenter)](#license)
 
-A lightweight implementation of [Unicode Text Segmentation (UAX \#29)](https://www.unicode.org/reports/tr29)
+A lightweight implementation of the [Unicode Text Segmentation (UAX \#29)](https://www.unicode.org/reports/tr29)
 
 - **Zero-dependencies**: It doesn't bloat `node_modules` or the networks tab.
 
