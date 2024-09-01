@@ -1,5 +1,15 @@
 # unicode-segmenter
 
+## 0.10.0
+
+### Minor Changes
+
+- 73f5e6b: Significantly reduced bundle size by compressing data table. So the grapheme segmentation library is only takes 6.6kB (gzip) or 4.4kB (brotli)!
+
+### Patch Changes
+
+- b045320: Fix `isSMP`, and add more plane utils (`isSIP`, `isTIP`, `isSSP`)
+
 ## 0.9.2
 
 ### Patch Changes
