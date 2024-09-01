@@ -1,14 +1,14 @@
 // @ts-check
 
 /**
- * @typedef {[from: number, to: number]} UnicodeRange
+ * @typedef {[point: number, padding: number]} UnicodeRange
  *
  * Encoded unicode range
  */
 
 /**
  * @template {number} T
- * @typedef {[from: number, to: number, category: T]} CategorizedUnicodeRange
+ * @typedef {[point: number, padding: number, category: T]} CategorizedUnicodeRange
  *
  * Encoded unicode range with category code.
  *
@@ -30,7 +30,7 @@
  */
 
 /**
- * @template T
+ * @template {number} T
  * @template C
  * @param {T} x
  * @param {Array<[T, T, C?]>} table
@@ -39,23 +39,23 @@
  * @return {number} index of including range, or -(low+1) if there isn't
  */
 export function bsearchRange(x, table, sliceFrom = 0, sliceTo = table.length) {
-  let low = sliceFrom;
-  let high = sliceTo - 1;
+  let lo = sliceFrom;
+  let hi = sliceTo - 1;
 
-  while (low <= high) {
-    let mid = low + high >> 1;
-    let cur = table[mid];
-    let l = cur[0], h = cur[1];
+  while (lo <= hi) {
+    let mid = lo + hi >> 1;
+    let row = table[mid];
+    let l = row[0], h = l + row[1];
     if (l <= x && x <= h) {
       return mid;
     } else if (h < x) {
-      low = mid + 1;
+      lo = mid + 1;
     } else {
-      high = mid - 1;
+      hi = mid - 1;
     }
   }
 
-  return -low-1;
+  return -lo-1;
 }
 
 /**
@@ -75,9 +75,20 @@ export function bsearchUnicodeRange(cp, table, defaultLower, defaultUpper, slice
   }
 
   // Not found
-  let low = -found-1;
-  let lower = low > 0 ? table[low - 1][1] + 1 : defaultLower;
-  let upper = table[low] ? table[low][0] - 1 : defaultUpper;
+  let cursor = -found-1;
+
+  let lower = defaultLower;
+  if (cursor > 0) {
+    let range = table[cursor - 1];
+    lower = range[0] + range[1] + 1;
+  }
+
+  let upper = defaultUpper;
+  let range = table[cursor];
+  if (range) {
+    upper = range[0] - 1;
+  }
+
   // @ts-ignore
-  return [lower, upper, 0 /* Any */];
+  return [lower, upper - lower, 0 /* Any */];
 }

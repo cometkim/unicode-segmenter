@@ -175,10 +175,11 @@ let formatRange = (range, compressed = true) => {
 let ungroupCat = ranges => {
   /** @type {UnicodeValues} */
   let catOut = [];
-  for (let [lo, hi] of ranges) {
-    while (lo <= hi) {
-      catOut.push(lo);
-      lo += 1;
+  for (let [point, padding] of ranges) {
+    let cur = point;
+    while (cur <= point + padding) {
+      catOut.push(cur);
+      cur += 1;
     }
   }
   return catOut;
@@ -203,11 +204,11 @@ let groupCat = values => {
     if (letter === curEnd + 1) {
       curEnd = letter;
     } else {
-      catOut.push([curStart, curEnd]);
+      catOut.push([curStart, curEnd - curStart]);
       curStart = curEnd = letter;
     }
   }
-  catOut.push([curStart, curEnd]);
+  catOut.push([curStart, curEnd - curStart]);
   return catOut;
 };
 
@@ -306,7 +307,7 @@ let parseProperties = (data, interestingProps) => {
     let hi = Number.parseInt(d_hi, 16);
 
     props[propValue] ||= [];
-    props[propValue].push([lo, hi]);
+    props[propValue].push([lo, hi - lo]);
   }
 
   for (let [key, ranges] of Object.entries(props)) {
@@ -509,8 +510,8 @@ let printBreakModule = (f, breakTable, breakCats, name) => {
   for (let i of range(0, lookupTableLen)) {
     let lookupFrom = i * lookupInterval;
     while (j < breakTable.length) {
-      let [_, entryTo] = breakTable[j];
-      if (entryTo >= lookupFrom) {
+      let [entryPoint, entryPadding] = breakTable[j];
+      if (entryPoint + entryPadding >= lookupFrom) {
         break;
       }
       j += 1;
@@ -902,7 +903,7 @@ let graphemeCats = parseProperties(graphemeData);
 graphemeCats["Control"] = groupCat(Array.from(
   difference(
     new Set(ungroupCat(graphemeCats["Control"])),
-    new Set(ungroupCat([surrogateCodepoints])),
+    new Set(ungroupCat([[surrogateCodepoints[0], surrogateCodepoints[1] - surrogateCodepoints[0]]])),
   ),
 ));
 
@@ -921,6 +922,7 @@ for (let [cat, ranges] of Object.entries(emojiProps)) {
   }
 }
 graphemeTable.sort((a, b) => a[0] - b[0]);
+console.log(graphemeTable);
 
 let last = -1;
 for (let chars of graphemeTable) {
