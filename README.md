@@ -208,8 +208,8 @@ Look [benchmark](benchmark) to see how it works.
 
 | Name                      | Unicode®       | ESM? | Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |---------------------------|----------------|------|--------:|-----------:|----------------:|--------------:|
-| `unicode-segmenter/emoji` | 15.1.0         |    ✔️ |   3,058 |      2,611 |           1,041 |           751 |
-| `emoji-regex`             | 15.1.0 (vary)* |    ✔️ |  12,946 |     12,859 |           2,180 |         1,746 |
+| `unicode-segmenter/emoji` | 15.1.0         |    ✔️ |   3,191 |      2,665 |           1,051 |           772 |
+| `emoji-regex`             | 15.1.0 (vary)* |    ✔️ |  12,933 |     12,846 |           2,187 |         1,740 |
 | `emojibase-regex`*        | 15.1.0         |    ✖️ |  17,711 |     16,595 |           2,870 |         2,317 |
 | `emojibase-regex/emoji`*  | 15.1.0         |    ✖️ |  13,550 |     12,458 |           2,835 |         2,210 |
 | `RegExp` w/ `u`*          |              - |    - |       0 |          0 |               0 |             0 |
@@ -280,7 +280,7 @@ You can handle emojis in between grapheme processing by `unicode-segmenter/graph
 | Name                        | Unicode® | ESM? | Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |-----------------------------|----------|------|--------:|-----------:|----------------:|--------------:|
 | `unicode-segmenter/general` |   15.1.0 |    ✔️ |  21,505 |     20,972 |           5,792 |         3,564 |
-| `XRegExp`                   |   14.0.0 |    ✖️ ️| 383,156 |    194,202 |          62,986 |        39,871 |
+| `XRegExp`                   |   14.0.0 |    ✖️ ️| 381,084 |    194,202 |          62,986 |        39,871 |
 | `RegExp` w/ `u`*            |        - |    - |       0 |          0 |               0 |             0 |
 
 * `RegExp` Unicode data is always kept up to date as the runtime support.
@@ -336,11 +336,11 @@ Depending on your usage, `unicode-segmenter/general` may be slightly faster than
 
 | Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|
-| `unicode-segmenter/grapheme` |   15.1.0 |    ✔️ |    33,307 |     29,712 |           9,364 |         5,675 |
+| `unicode-segmenter/grapheme` |   15.1.0 |    ✔️ |    33,305 |     29,713 |           9,368 |         5,684 |
 | `graphemer`                  |   15.0.0 |    ✖️ ️|   410,424 |     95,104 |          15,752 |        10,660 |
 | `grapheme-splitter`          |   10.0.0 |    ✖️ |   122,241 |     23,680 |           7,852 |         4,841 |
 | `unicode-segmentation`*      |   15.0.0 |    ✔️ |    51,251 |     51,251 |          22,545 |        16,614 |
-| `@formatjs/intl-segmenter`*  |   15.0.0 |    ✖️ |   492,803 |    319,109 |          54,346 |        34,365 |
+| `@formatjs/intl-segmenter`*  |   15.0.0 |    ✖️ |   492,079 |    319,109 |          54,346 |        34,365 |
 | `Intl.Segmenter`*            |        - |    - |         0 |          0 |               0 |             0 |
 
 * `unicode-segmentation` size contains only the minimum WASM binary. It will be larger by adding more bindings.
