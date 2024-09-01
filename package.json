@@ -2,13 +2,15 @@
   "name": "unicode-segmenter",
   "version": "0.10.0",
   "type": "module",
-  "description": "A lightweight and fast, pure JavaScript library for Unicode segmentation",
+  "description": "A lightweight implementation of the Unicode Text Segmentation (UAX #29)",
   "license": "MIT",
   "homepage": "https://github.com/cometkim/unicode-segmenter",
   "keywords": [
-    "cjk",
     "unicode",
+    "uax29",
+    "text-segmentation",
     "grapheme",
+    "grapheme-cluster",
     "emoji"
   ],
   "repository": {
