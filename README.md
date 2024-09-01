@@ -208,7 +208,7 @@ Look [benchmark](benchmark) to see how it works.
 
 | Name                      | Unicode®       | ESM? | Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |---------------------------|----------------|------|--------:|-----------:|----------------:|--------------:|
-| `unicode-segmenter/emoji` | 15.1.0         |    ✔️ |   3,191 |      2,665 |           1,051 |           772 |
+| `unicode-segmenter/emoji` | 15.1.0         |    ✔️ |   2,568 |      2,051 |             853 |           698 |
 | `emoji-regex`             | 15.1.0 (vary)* |    ✔️ |  12,933 |     12,846 |           2,187 |         1,740 |
 | `emojibase-regex`*        | 15.1.0         |    ✖️ |  17,711 |     16,595 |           2,870 |         2,317 |
 | `emojibase-regex/emoji`*  | 15.1.0         |    ✖️ |  13,550 |     12,458 |           2,835 |         2,210 |
@@ -279,7 +279,7 @@ You can handle emojis in between grapheme processing by `unicode-segmenter/graph
 
 | Name                        | Unicode® | ESM? | Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |-----------------------------|----------|------|--------:|-----------:|----------------:|--------------:|
-| `unicode-segmenter/general` |   15.1.0 |    ✔️ |  21,505 |     20,972 |           5,792 |         3,564 |
+| `unicode-segmenter/general` |   15.1.0 |    ✔️ |  16,552 |     16,030 |           4,382 |         3,245 |
 | `XRegExp`                   |   14.0.0 |    ✖️ ️| 381,084 |    194,202 |          62,986 |        39,871 |
 | `RegExp` w/ `u`*            |        - |    - |       0 |          0 |               0 |             0 |
 
@@ -336,7 +336,7 @@ Depending on your usage, `unicode-segmenter/general` may be slightly faster than
 
 | Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|
-| `unicode-segmenter/grapheme` |   15.1.0 |    ✔️ |    33,305 |     29,713 |           9,368 |         5,684 |
+| `unicode-segmenter/grapheme` |   15.1.0 |    ✔️ |    28,288 |     24,616 |           6,592 |         4,433 |
 | `graphemer`                  |   15.0.0 |    ✖️ ️|   410,424 |     95,104 |          15,752 |        10,660 |
 | `grapheme-splitter`          |   10.0.0 |    ✖️ |   122,241 |     23,680 |           7,852 |         4,841 |
 | `unicode-segmentation`*      |   15.0.0 |    ✔️ |    51,251 |     51,251 |          22,545 |        16,614 |
