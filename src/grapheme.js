@@ -206,7 +206,7 @@ function cat(cp, cache) {
   } else {
     // If this char isn't within the cached range, update the cache to the
     // range that includes it.
-    if (cp < cache[0] || cp > cache[1]) {
+    if (cp < cache[0] || cp > cache[0] + cache[1]) {
       let result = searchGraphemeCategory(cp);
       cache[0] = result[0];
       cache[1] = result[1];
