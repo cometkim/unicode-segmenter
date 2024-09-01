@@ -6677,13 +6677,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tinybench@npm:^2.9.0":
-  version: 2.9.0
-  resolution: "tinybench@npm:2.9.0"
-  checksum: 10c0/c3500b0f60d2eb8db65250afe750b66d51623057ee88720b7f064894a6cb7eb93360ca824a60a31ab16dab30c7b1f06efe0795b352e37914a9d4bad86386a20c
-  languageName: node
-  linkType: hard
-
 "tmp@npm:^0.0.33":
   version: 0.0.33
   resolution: "tmp@npm:0.0.33"
@@ -6838,7 +6831,6 @@ __metadata:
     os-browserify: "npm:^0.3.0"
     pretty-bytes: "npm:^6.1.1"
     rimraf: "npm:^6.0.1"
-    tinybench: "npm:^2.9.0"
     typescript: "npm:^5.5.4"
     unicode-segmentation-wasm: "portal:benchmark/unicode-segmentation-wasm"
     vite: "npm:^5.4.2"
