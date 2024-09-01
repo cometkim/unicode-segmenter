@@ -1,6 +1,6 @@
 {
   "name": "unicode-segmenter",
-  "version": "0.9.2",
+  "version": "0.10.0",
   "type": "module",
   "description": "A lightweight and fast, pure JavaScript library for Unicode segmentation",
   "license": "MIT",
