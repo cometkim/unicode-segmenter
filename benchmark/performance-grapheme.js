@@ -32,8 +32,12 @@ let testcases = [
     '🌟📚✨🎉🚀🌍🎈🌸🍀🌻🎨💖🐾🍒🔮🍕🌙🌈🐢🍉💡📅🎶🎮🔥💤💼🚲🌼🔒💧💫',
   ],
   [
+    'Hindi',
+    'राधा अपने बगीचे में फूलों को पानी देते हुए पक्षियों की चहचहाहट सुन रही थी, और वह सोच रही थी कि आज का दिन कितना शांत और सुंदर है।',
+  ],
+  [
     'Demonic characters',
-    'Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍A̴̵̜̰͔ͫ͗͢L̠ͨͧͩ͘G̴̻͈͍͔̹̑͗̎̅͛́Ǫ̵̹̻̝̳͂̌̌͘!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞'
+    'Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍A̴̵̜̰͔ͫ͗͢L̠ͨͧͩ͘G̴̻͈͍͔̹̑͗̎̅͛́Ǫ̵̹̻̝̳͂̌̌͘!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞',
   ],
   [
     'Tweet text (combined)',
@@ -56,7 +60,7 @@ function 문자분할테스트(문자열) {
 // 테스트 문자열
 const 테스트문자열 = "안녕하세요! Welcome to the unicode-segementer library 📚";
 문자분할테스트(테스트문자열);
-`
+`,
   ],
 ];
 
@@ -65,10 +69,12 @@ for (const [title, input] of testcases) {
 
   if (isSystemRuntime) {
     assert.deepEqual([...graphemeSegments(input)].map(({ segment }) => segment), expected);
-    assert.deepEqual([...graphemer.iterateGraphemes(input)], expected);
-    assert.deepEqual([...graphemeSplitter.iterateGraphemes(input)], expected);
-    assert.deepEqual([...unicodeSegmentation.collect(input)], expected);
     assert.deepEqual([...formatjsSegmenter.segment(input)].map(({ segment }) => segment), expected);
+
+    // They don't support Unicode 15.1
+    // assert.deepEqual([...graphemer.iterateGraphemes(input)], expected);
+    // assert.deepEqual([...graphemeSplitter.iterateGraphemes(input)], expected);
+    // assert.deepEqual([...unicodeSegmentation.collect(input)], expected);
   }
 
   group(title, () => {
