@@ -18,8 +18,10 @@ let config = await Metro.loadConfig(undefined, {
 });
 
 let libs = [
-  'graphemer',
-  'unicode-segmenter',
+  ['unicode-segmenter'],
+  ['graphemer'],
+  ['grapheme-splitter'],
+  // ['@formatjs/intl-segmenter', 'formatjs-intl-segmenter'],
 ];
 
 let benches = [];
@@ -27,7 +29,7 @@ let benches = [];
 console.group('Preparing bundles...');
 
 for (let lib of libs) {
-  let libDir = path.join(baseDir, lib);
+  let libDir = path.join(baseDir, lib[1] || lib[0]);
 
   let files = await fs.readdir(libDir);
   files = files.filter(file => file.endsWith('.js') && !file.includes('hermes'));
@@ -48,12 +50,14 @@ for (let lib of libs) {
 
     console.log();
 
-    benches.push({
-      lib,
-      source,
-      hermesBin,
-      hermesEntry,
-    });
+    if (file === 'bench.js') {
+      benches.push({
+        lib,
+        source,
+        hermesBin,
+        hermesEntry,
+      });
+    }
   }
 }
 

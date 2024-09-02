@@ -1,6 +1,7 @@
-import { graphemeSegments } from '../../../src/grapheme.js';
-
+import entry from './entry.js';
 import { inputs, simpleBench } from '../suite.js';
+
+let { graphemeSegments } = entry;
 
 {
   let result = simpleBench(1000, () => {

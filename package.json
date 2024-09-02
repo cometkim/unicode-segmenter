@@ -107,7 +107,7 @@
     "perf:general": "node benchmark/performance-general.js",
     "perf:grapheme": "node benchmark/performance-grapheme.js",
     "perf:grapheme:browser": "vite benchmark/performance-grapheme",
-    "perf:hermes": "node benchmark/hermes/run.js"
+    "perf:grapheme:hermes": "node benchmark/performance-grapheme/hermes/run.js"
   },
   "alias": {
     "process": false

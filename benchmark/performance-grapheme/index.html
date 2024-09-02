@@ -8,12 +8,27 @@
       *:disabled + #status {
         display: block;
       }
+      #output {
+        font-family: monospace;
+        font-variant-numeric: tabular-nums;
+        white-space: pre;
+      }
     </style>
     <button id="execute">Execute benchmark</button>
     <div id="status">
       Executing benchmark...
       <button id="stop">Stop running benchmark</button>
     </div>
+    <div
+      id="output"
+      role="textbox"
+      translate="no"
+      contenteditable
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
+    ></div>
     <script type="module">
       let worker = null;
 
@@ -23,15 +38,25 @@
       const stopButton = document.getElementById('stop');
       stopButton.addEventListener('click', stopBenchmark);
 
+      const outputBox = document.getElementById('output');
+
       function executeBenchmark() {
         if (worker) return;
+
         console.clear();
+        outputBox.innerText = '';
+
         worker = new Worker(
           new URL('../performance-grapheme.js', import.meta.url),
           { type: 'module' },
         );
-        worker.addEventListener('message', msg => {
-          if (msg === 'done') {
+        let seq = 0;
+        worker.addEventListener('message', e => {
+          if (e.data.type === 'log') {
+            if (seq++) outputBox.innerText += '\n';
+            outputBox.innerText += e.data.message;
+          }
+          if (e.data.type === 'done') {
             stopBenchmark();
           }
         });

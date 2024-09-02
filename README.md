@@ -213,7 +213,7 @@ If the runtime doesn't support these features, it can easily be fulfilled with t
 
 Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/facebook/hermes/blob/main/doc/IntlAPIs.md), `unicode-segmenter` is a good alternative.
 
-`unicode-segmenter` is compiled into efficient Hermes bytecode than others. See https://github.com/cometkim/unicode-segmenter/pull/47 for detail.
+`unicode-segmenter` is compiled into small & efficient Hermes bytecode than others JavaScript libraries. See https://github.com/cometkim/unicode-segmenter/pull/47 for detail.
 
 ## Benchmarks
 
@@ -223,11 +223,11 @@ See more on [benchmark](benchmark).
 
 ### `unicode-segmenter/grapheme` vs
 
-- Node.js' [`Intl.Segmenter`] (browser's version may vary)
 - [graphemer]@1.4.0 (16.6M+ weekly downloads on NPM)
 - [grapheme-splitter]@1.0.4 (5.7M+ weekly downloads on NPM)
 - [@formatjs/intl-segmenter]@11.5.7 (5.4K+ weekly downloads on NPM)
-- WebAssembly build of the Rust [unicode-segmentation] library
+- WebAssembly binding of the Rust's [unicode-segmentation] library
+- Built-in [`Intl.Segmenter`] API
 
 #### Package stats
 
@@ -236,134 +236,27 @@ See more on [benchmark](benchmark).
 | `unicode-segmenter/grapheme` |   15.1.0 |    ✔️ |    28,337 |     24,623 |           6,599 |         4,360 |
 | `graphemer`                  |   15.0.0 |    ✖️ ️|   410,424 |     95,104 |          15,752 |        10,660 |
 | `grapheme-splitter`          |   10.0.0 |    ✖️ |   122,241 |     23,680 |           7,852 |         4,841 |
-| `unicode-segmentation`*      |   15.0.0 |    ✔️ |    51,251 |     51,251 |          22,545 |        16,614 |
 | `@formatjs/intl-segmenter`*  |   15.0.0 |    ✖️ |   492,079 |    319,109 |          54,346 |        34,365 |
+| `unicode-segmentation`*      |   15.0.0 |    ✔️ |    51,251 |     51,251 |          22,545 |        16,614 |
 | `Intl.Segmenter`*            |        - |    - |         0 |          0 |               0 |             0 |
 
-* `unicode-segmentation` size contains only the minimum WASM binary. It will be larger by adding more bindings.
 * `@formatjs/intl-segmenter` handles grapheme, word, sentence, but it's not tree-shakable.
+* `unicode-segmentation` size contains only the minimum WASM binary. It will be larger by adding more bindings.
 * `Intl.Segmenter`'s Unicode data is always kept up to date as the runtime support.
 * `Intl.Segmenter` may not be available in [some old browsers](https://caniuse.com/mdn-javascript_builtins_intl_segmenter), edge runtimes, or embedded environments.
 
 #### Runtime performance
 
-`unicode-segmenter/grapheme` is 7\~18x faster than other JS alternatives, 3\~8x faster than native [`Intl.Segmenter`]), and 1.5\~3x faster than WASM build of the Rust [unicode-segmentation] library.
+- **Performance in Node.js**: `unicode-segmenter/grapheme` is significantly faster than alternatives.
+  - 7\~18x faster than other JavaScript libraries
+  - 1.5\~3x faster than WASM binding of the Rust's [unicode-segmentation]
+  - 3\~8x faster than built-in [`Intl.Segmenter`]
 
-The gap may increase depending on the environment. Bindings for browsers generally appear to perform worse. In most environments, `unicode-segmenter/grapheme` is over 6x faster than `graphemer`.
+- **Performance in Bun**: `unicode-segmenter/grapheme` has almost the same performance as the built-in [`Intl.Segmenter`], with no performance degradation compared to other JavaScript libraries.
 
-<details>
-  <summary>Details</summary>
+- **Performance in Browsers**: The performance in browser environments varies greatly due to differences in browser engines and versions, which makes benchmarking less consistent. Despite these variations, `unicode-segmenter/grapheme` generally outperforms other JavaScript libraries in most environments.
 
-  ```
-  cpu: Apple M1 Pro
-  runtime: node v20.17.0 (arm64-darwin)
-  
-  benchmark                                        time (avg)             (min … max)       p75       p99      p999
-  ----------------------------------------------------------------------------------- -----------------------------
-  • Lorem ipsum (ascii)
-  ----------------------------------------------------------------------------------- -----------------------------
-  unicode-segmenter/grapheme                    6'316 ns/iter     (5'708 ns … 275 µs)  6'166 ns 10'542 ns 76'458 ns
-  Intl.Segmenter                               50'929 ns/iter    (47'250 ns … 444 µs) 50'833 ns 63'541 ns    333 µs
-  graphemer                                    48'254 ns/iter    (46'500 ns … 241 µs) 47'250 ns 75'416 ns    145 µs
-  grapheme-splitter                            76'231 ns/iter    (73'500 ns … 306 µs) 76'333 ns 92'958 ns    225 µs
-  unicode-rs/unicode-segmentation (wasm-pack)  17'123 ns/iter  (15'750 ns … 1'052 µs) 16'583 ns 21'334 ns    172 µs
-  @formatjs/intl-segmenter                     41'896 ns/iter  (38'583 ns … 1'584 µs) 40'667 ns    107 µs    252 µs
-  
-  summary for Lorem ipsum (ascii)
-    unicode-segmenter/grapheme
-     2.71x faster than unicode-rs/unicode-segmentation (wasm-pack)
-     6.63x faster than @formatjs/intl-segmenter
-     7.64x faster than graphemer
-     8.06x faster than Intl.Segmenter
-     12.07x faster than grapheme-splitter
-  
-  • Emojis
-  ----------------------------------------------------------------------------------- -----------------------------
-  unicode-segmenter/grapheme                    1'943 ns/iter   (1'879 ns … 2'175 ns)  1'965 ns  2'126 ns  2'175 ns
-  Intl.Segmenter                               14'548 ns/iter  (12'250 ns … 1'362 µs) 13'708 ns 19'000 ns    818 µs
-  graphemer                                    13'464 ns/iter    (12'583 ns … 560 µs) 13'250 ns 17'500 ns    138 µs
-  grapheme-splitter                            27'387 ns/iter    (26'625 ns … 579 µs) 27'000 ns 30'875 ns 48'041 ns
-  unicode-rs/unicode-segmentation (wasm-pack)   5'751 ns/iter   (5'551 ns … 6'208 ns)  5'830 ns  6'175 ns  6'208 ns
-  @formatjs/intl-segmenter                     15'030 ns/iter    (13'709 ns … 257 µs) 14'833 ns 19'084 ns    184 µs
-  
-  summary for Emojis
-    unicode-segmenter/grapheme
-     2.96x faster than unicode-rs/unicode-segmentation (wasm-pack)
-     6.93x faster than graphemer
-     7.49x faster than Intl.Segmenter
-     7.74x faster than @formatjs/intl-segmenter
-     14.09x faster than grapheme-splitter
-  
-  • Hindi
-  ----------------------------------------------------------------------------------- -----------------------------
-  unicode-segmenter/grapheme                    6'633 ns/iter   (6'439 ns … 6'937 ns)  6'713 ns  6'919 ns  6'937 ns
-  Intl.Segmenter                               37'551 ns/iter    (33'958 ns … 840 µs) 36'750 ns 43'958 ns    638 µs
-  graphemer                                    49'185 ns/iter    (47'375 ns … 400 µs) 48'333 ns 55'875 ns    232 µs
-  grapheme-splitter                            99'486 ns/iter    (96'042 ns … 508 µs) 99'625 ns    112 µs    459 µs
-  unicode-rs/unicode-segmentation (wasm-pack)  16'594 ns/iter    (15'791 ns … 295 µs) 16'584 ns 18'625 ns 68'709 ns
-  @formatjs/intl-segmenter                     48'197 ns/iter    (45'583 ns … 319 µs) 48'125 ns 56'375 ns    213 µs
-  
-  summary for Hindi
-    unicode-segmenter/grapheme
-     2.5x faster than unicode-rs/unicode-segmentation (wasm-pack)
-     5.66x faster than Intl.Segmenter
-     7.27x faster than @formatjs/intl-segmenter
-     7.42x faster than graphemer
-     15x faster than grapheme-splitter
-  
-  • Demonic characters
-  ----------------------------------------------------------------------------------- -----------------------------
-  unicode-segmenter/grapheme                    1'884 ns/iter   (1'773 ns … 2'084 ns)  1'920 ns  2'057 ns  2'084 ns
-  Intl.Segmenter                                5'169 ns/iter   (3'529 ns … 9'480 ns)  8'078 ns  8'892 ns  9'480 ns
-  graphemer                                    27'576 ns/iter  (26'333 ns … 2'834 µs) 26'916 ns 32'542 ns    179 µs
-  grapheme-splitter                            20'048 ns/iter    (18'958 ns … 456 µs) 19'500 ns 24'583 ns    267 µs
-  unicode-rs/unicode-segmentation (wasm-pack)   2'490 ns/iter   (2'450 ns … 2'771 ns)  2'500 ns  2'665 ns  2'771 ns
-  @formatjs/intl-segmenter                     17'327 ns/iter    (16'833 ns … 309 µs) 17'125 ns 18'917 ns 36'167 ns
-  
-  summary for Demonic characters
-    unicode-segmenter/grapheme
-     1.32x faster than unicode-rs/unicode-segmentation (wasm-pack)
-     2.74x faster than Intl.Segmenter
-     9.19x faster than @formatjs/intl-segmenter
-     10.64x faster than grapheme-splitter
-     14.63x faster than graphemer
-  
-  • Tweet text (combined)
-  ----------------------------------------------------------------------------------- -----------------------------
-  unicode-segmenter/grapheme                    9'132 ns/iter   (8'890 ns … 9'951 ns)  9'158 ns  9'757 ns  9'951 ns
-  Intl.Segmenter                               67'826 ns/iter    (63'708 ns … 432 µs) 68'125 ns 76'500 ns    395 µs
-  graphemer                                    69'152 ns/iter    (66'834 ns … 311 µs) 68'083 ns 78'375 ns    258 µs
-  grapheme-splitter                               150 µs/iter       (147 µs … 618 µs)    149 µs    161 µs    554 µs
-  unicode-rs/unicode-segmentation (wasm-pack)  24'408 ns/iter    (23'750 ns … 362 µs) 24'125 ns 27'542 ns    160 µs
-  @formatjs/intl-segmenter                     64'550 ns/iter    (62'166 ns … 299 µs) 63'416 ns 77'583 ns    231 µs
-  
-  summary for Tweet text (combined)
-    unicode-segmenter/grapheme
-     2.67x faster than unicode-rs/unicode-segmentation (wasm-pack)
-     7.07x faster than @formatjs/intl-segmenter
-     7.43x faster than Intl.Segmenter
-     7.57x faster than graphemer
-     16.42x faster than grapheme-splitter
-  
-  • Code snippet (combined)
-  ----------------------------------------------------------------------------------- -----------------------------
-  unicode-segmenter/grapheme                   21'593 ns/iter    (20'583 ns … 204 µs) 21'083 ns 28'709 ns    130 µs
-  Intl.Segmenter                                  156 µs/iter       (148 µs … 378 µs)    154 µs    297 µs    340 µs
-  graphemer                                       165 µs/iter       (159 µs … 391 µs)    164 µs    288 µs    356 µs
-  grapheme-splitter                               352 µs/iter       (342 µs … 730 µs)    351 µs    426 µs    713 µs
-  unicode-rs/unicode-segmentation (wasm-pack)  58'288 ns/iter    (56'125 ns … 325 µs) 58'334 ns 67'041 ns    223 µs
-  @formatjs/intl-segmenter                        149 µs/iter       (143 µs … 426 µs)    147 µs    267 µs    367 µs
-  
-  summary for Code snippet (combined)
-    unicode-segmenter/grapheme
-     2.7x faster than unicode-rs/unicode-segmentation (wasm-pack)
-     6.88x faster than @formatjs/intl-segmenter
-     7.22x faster than Intl.Segmenter
-     7.64x faster than graphemer
-     16.28x faster than grapheme-splitter
-  ```
-
-</details>
+You can see captured [benchmark results](benchmark/_records), or run yourself executing `yarn perf:grapheme` in your environment.
 
 ## LICENSE
 

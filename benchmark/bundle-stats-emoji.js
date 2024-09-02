@@ -24,15 +24,15 @@ let myEntry = await reportBundleStats(
 );
 
 let competitors = [
-  'emoji-regex',
-  'emojibase-regex',
-  ['emojibase-regex-emoji', 'emojibase-regex/emoji'],
+  ['emoji-regex'],
+  ['emojibase-regex'],
+  ['emojibase-regex/emoji', 'emojibase-regex-emoji'],
 ];
 
 let otherEntries = await Promise.all(
   competitors.map(async (lib) => {
-    let libEntry = Array.isArray(lib) ? lib[0] : lib;
-    let libName = Array.isArray(lib) ? lib[1] : lib;
+    let libName = lib[0];
+    let libEntry = lib[1] || lib[0];
     let result = await build({
       write: false,
       bundle: true,

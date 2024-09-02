@@ -1,5 +1,4 @@
 import * as assert from 'node:assert/strict';
-import { group, baseline, bench, run } from 'mitata';
 
 import Graphemer from 'graphemer';
 import GraphemeSplitter from 'grapheme-splitter';
@@ -8,14 +7,21 @@ import { Segmenter as FormatjsSegmenter } from '@formatjs/intl-segmenter/src/seg
 
 import { graphemeSegments } from '../src/grapheme.js';
 
-// Browser-like env
-const isWebWorker = typeof self === 'object';
 // Node.js, Deno, Bun
-const isSystemRuntime = typeof process === 'object';
+const isSystemRuntime = typeof process === 'object' || typeof Deno === 'object' && typeof Bun === 'object';
+const isWebWorker = !isSystemRuntime && typeof self === 'object';
 
 if (isWebWorker) {
   await unicodeSegmentation.default();
+
+  const defaultLog = console.log.bind(console);
+  console.log = function(message) {
+    self.postMessage({ type: 'log', message });
+    defaultLog.apply(console, arguments);
+  };
 }
+
+const { group, baseline, bench, run } = await import('mitata');
 
 const intlSegmenter = new Intl.Segmenter();
 const graphemer = new (Graphemer.default || Graphemer)();
@@ -82,10 +88,6 @@ for (const [title, input] of testcases) {
       void ([...graphemeSegments(input)]);
     });
 
-    bench('Intl.Segmenter', () => {
-      void ([...intlSegmenter.segment(input)]);
-    });
-
     bench('graphemer', () => {
       void ([...graphemer.iterateGraphemes(input)]);
     });
@@ -94,13 +96,16 @@ for (const [title, input] of testcases) {
       void ([...graphemeSplitter.iterateGraphemes(input)]);
     });
 
-    bench('unicode-rs/unicode-segmentation (wasm-pack)', () => {
-      // Note: This is not an exact binding to iteration, but it is more efficient.
-      void [...unicodeSegmentation.collect(input)];
-    });
-
     bench('@formatjs/intl-segmenter', () => {
       void ([...formatjsSegmenter.segment(input)]);
+    });
+
+    bench('unicode-rs/unicode-segmentation (wasm-pack)', () => {
+      void unicodeSegmentation.collect(input);
+    });
+
+    bench('Intl.Segmenter', () => {
+      void ([...intlSegmenter.segment(input)]);
     });
   });
 }
@@ -108,5 +113,5 @@ for (const [title, input] of testcases) {
 await run();
 
 if (isWebWorker) {
-  self.postMessage('done');
+  self.postMessage({ type: 'done' });
 }

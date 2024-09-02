@@ -1,15 +1,14 @@
-import Graphemer from 'graphemer';
-
+import entry from './entry.js';
 import { inputs, simpleBench } from '../suite.js';
 
-let graphemer = new (Graphemer.default || Graphemer)();
+let graphemeSplitter = entry;
 
 {
   let result = simpleBench(1000, () => {
-    void [...graphemer.iterateGraphemes(inputs.small)];
+    void [...graphemeSplitter.iterateGraphemes(inputs.small)];
   });
 
-  print(`graphemer (small input)`);
+  print(`grapheme-splitter (small input)`);
   print(`samples: ${result.samples}`);
   print(`duration (avg): ${result.avgDuration}`);
 }
@@ -17,11 +16,11 @@ let graphemer = new (Graphemer.default || Graphemer)();
 
 {
   let result = simpleBench(1000, () => {
-    void [...graphemer.iterateGraphemes(inputs.medium)];
+    void [...graphemeSplitter.iterateGraphemes(inputs.medium)];
   });
 
   print();
-  print(`graphemer (medium input)`);
+  print(`grapheme-splitter (medium input)`);
   print(`samples: ${result.samples}`);
   print(`duration (avg): ${result.avgDuration}`);
 }
