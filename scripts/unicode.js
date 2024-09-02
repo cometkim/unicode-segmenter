@@ -922,7 +922,6 @@ for (let [cat, ranges] of Object.entries(emojiProps)) {
   }
 }
 graphemeTable.sort((a, b) => a[0] - b[0]);
-console.log(graphemeTable);
 
 let last = -1;
 for (let chars of graphemeTable) {

@@ -119,7 +119,6 @@ export function* graphemeSegments(input) {
       cp = input.codePointAt(cursor);
       catAfter = cat(cp, cache);
     } else {
-      // console.log({ segment, catBefore, catBegin, risCount });
       yield {
         segment,
         index,
@@ -147,7 +146,6 @@ export function* graphemeSegments(input) {
       }
     }
 
-    // console.log({ catBefore, catAfter, emoji, risCount });
     if (isBoundary(catBefore, catAfter, risCount, emoji, incb)) {
       yield {
         segment,
