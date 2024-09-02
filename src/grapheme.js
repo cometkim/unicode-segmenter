@@ -108,9 +108,12 @@ export function* graphemeSegments(input) {
       catBegin = catBefore;
     }
 
+    // Note: Lazily update `consonant` and `linker` state
+    // which is a extra overhead only for Hindi text.
     if (!consonant && catBefore === 0) {
       consonant = isIndicConjunctCosonant(cp);
-    } else if (catBefore === 3) {
+    } else if (catBefore === 3 /* Extend */) {
+      // Note: \p{InCB=Linker} is a subset of \p{Extend}
       linker = isIndicConjunctLinker(cp);
     }
 
@@ -130,7 +133,7 @@ export function* graphemeSegments(input) {
       return;
     }
 
-    if (catBefore === 10 /* Regional_Indicator*/) {
+    if (catBefore === 10 /* Regional_Indicator */) {
       risCount += 1;
     } else {
       risCount = 0;
@@ -140,9 +143,10 @@ export function* graphemeSegments(input) {
       ) {
         emoji = true;
 
-      // Put GB9c rule checking here to reduce.
-      } else if (consonant && catAfter === 0 /* Any */) {
-        incb = linker && (consonant = isIndicConjunctCosonant(cp));
+      // Note: Put GB9c rule checking here to reduce.
+      } else if (catAfter === 0 /* Any */) {
+        incb = consonant && linker && (consonant = isIndicConjunctCosonant(cp));
+        // It cannot be both a linker and a consonant.
         linker = linker && !consonant;
       }
     }
