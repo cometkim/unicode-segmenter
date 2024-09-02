@@ -143,7 +143,7 @@ export function* graphemeSegments(input) {
       // Put GB9c rule checking here to reduce.
       } else if (consonant && catAfter === 0 /* Any */) {
         incb = linker && (consonant = isIndicConjunctCosonant(cp));
-        linker = linker && !incb;
+        linker = linker && !consonant;
       }
     }
 
