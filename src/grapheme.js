@@ -141,8 +141,9 @@ export function* graphemeSegments(input) {
         emoji = true;
 
       // Put GB9c rule checking here to reduce.
-      } else if (catAfter === 0 /* Any */) {
-        incb = consonant && linker && isIndicConjunctCosonant(cp);
+      } else if (consonant && catAfter === 0 /* Any */) {
+        incb = linker && (consonant = isIndicConjunctCosonant(cp));
+        linker = linker && !incb;
       }
     }
 
@@ -160,8 +161,7 @@ export function* graphemeSegments(input) {
       index = cursor;
       segment = '';
       emoji = false;
-      consonant = false;
-      linker = false;
+      incb = false;
       catBegin = catAfter;
     }
   }
@@ -227,7 +227,14 @@ function isIndicConjunctCosonant(cp) {
  * @return {boolean}
  */
 function isIndicConjunctLinker(cp) {
-  return (cp === 0x094D || cp === 0x09CD || cp === 0x0ACD || cp === 0x0B4D || cp === 0x0C4D || cp === 0x0D4D);
+  return (
+    cp === 2381 /* 0x094D */ ||
+    cp === 2509 /* 0x09CD */ ||
+    cp === 2765 /* 0x0ACD */ ||
+    cp === 2893 /* 0x0B4D */ ||
+    cp === 3149 /* 0x0C4D */ ||
+    cp === 3405 /* 0x0D4D */
+  );
 }
 
 /**
@@ -246,12 +253,13 @@ function isBoundary(catBefore, catAfter, risCount, emoji, incb) {
     return false;
   }
 
-  if (
-    // GB4
-    (catBefore === 1 || catBefore === 2 || catBefore === 6) ||
-    // GB5
-    (catAfter === 1 || catAfter === 2 || catAfter === 6)
-  ) {
+  // GB4
+  if (catBefore === 1 || catBefore === 2 || catBefore === 6) {
+    return true;
+  }
+
+  // GB5
+  if (catAfter === 1 || catAfter === 2 || catAfter === 6) {
     return true;
   }
 
@@ -279,8 +287,13 @@ function isBoundary(catBefore, catAfter, risCount, emoji, incb) {
     return false;
   }
 
-  // GB9. GB9a
-  if (catAfter === 3 || catAfter === 11 || catAfter === 14) {
+  // GB9
+  if (catAfter === 3 || catAfter === 14) {
+    return false;
+  }
+
+  // GB9a
+  if (catAfter === 11) {
     return false;
   }
 
