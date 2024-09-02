@@ -1,5 +1,11 @@
 # unicode-segmenter
 
+## 0.10.1
+
+### Patch Changes
+
+- 3665cf7: Fix Hindi text segmentation
+
 ## 0.10.0
 
 ### Minor Changes
