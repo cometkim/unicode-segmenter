@@ -233,7 +233,7 @@ See more on [benchmark](benchmark).
 
 | Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|
-| `unicode-segmenter/grapheme` |   15.1.0 |    ✔️ |    28,332 |     24,623 |           6,597 |         4,369 |
+| `unicode-segmenter/grapheme` |   15.1.0 |    ✔️ |    28,337 |     24,623 |           6,596 |         4,364 |
 | `graphemer`                  |   15.0.0 |    ✖️ ️|   410,424 |     95,104 |          15,752 |        10,660 |
 | `grapheme-splitter`          |   10.0.0 |    ✖️ |   122,241 |     23,680 |           7,852 |         4,841 |
 | `unicode-segmentation`*      |   15.0.0 |    ✔️ |    51,251 |     51,251 |          22,545 |        16,614 |
