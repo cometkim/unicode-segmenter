@@ -6804,10 +6804,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unicode-segmentation-wasm@github:cometkim/unicode-segmentation-wasm":
+"unicode-segmentation-wasm@github:cometkim/unicode-segmentation-wasm#8f4adf68322ff567a5811bf11f4ad475cc1343b7":
   version: 0.0.1
-  resolution: "unicode-segmentation-wasm@https://github.com/cometkim/unicode-segmentation-wasm.git#commit=6d0b0879216880d1d15fdff9ee0038ccc926ebe7"
-  checksum: 10c0/5fa16c9932ec24c3a90861ca75c84736612209f3365fea7379ed6724337ae87b76d4b55e4412ec0adb698022ab6d05cc65ccf2e613972755213b481f379aea1b
+  resolution: "unicode-segmentation-wasm@https://github.com/cometkim/unicode-segmentation-wasm.git#commit=8f4adf68322ff567a5811bf11f4ad475cc1343b7"
+  checksum: 10c0/f57ed3d0611c2ae327f9b2b4d9b721cf10b1e2880caafae9752d9befbaf4e985fd27cbad5dfc0caed9ffbaeb5bae3dcebcf8ecbcef8b20bfd4b0d269cbae01a3
   languageName: node
   linkType: hard
 
@@ -6833,7 +6833,7 @@ __metadata:
     pretty-bytes: "npm:^6.1.1"
     rimraf: "npm:^6.0.1"
     typescript: "npm:^5.5.4"
-    unicode-segmentation-wasm: "github:cometkim/unicode-segmentation-wasm"
+    unicode-segmentation-wasm: "github:cometkim/unicode-segmentation-wasm#8f4adf68322ff567a5811bf11f4ad475cc1343b7"
     vite: "npm:^5.4.2"
     xregexp: "npm:5.1.1"
     zx: "npm:^8.1.5"
