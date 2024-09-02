@@ -6804,11 +6804,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unicode-segmentation-wasm@portal:benchmark/unicode-segmentation-wasm::locator=unicode-segmenter%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "unicode-segmentation-wasm@portal:benchmark/unicode-segmentation-wasm::locator=unicode-segmenter%40workspace%3A."
+"unicode-segmentation-wasm@github:cometkim/unicode-segmentation-wasm":
+  version: 0.0.1
+  resolution: "unicode-segmentation-wasm@https://github.com/cometkim/unicode-segmentation-wasm.git#commit=6d0b0879216880d1d15fdff9ee0038ccc926ebe7"
+  checksum: 10c0/5fa16c9932ec24c3a90861ca75c84736612209f3365fea7379ed6724337ae87b76d4b55e4412ec0adb698022ab6d05cc65ccf2e613972755213b481f379aea1b
   languageName: node
-  linkType: soft
+  linkType: hard
 
 "unicode-segmenter@workspace:.":
   version: 0.0.0-use.local
@@ -6832,7 +6833,7 @@ __metadata:
     pretty-bytes: "npm:^6.1.1"
     rimraf: "npm:^6.0.1"
     typescript: "npm:^5.5.4"
-    unicode-segmentation-wasm: "portal:benchmark/unicode-segmentation-wasm"
+    unicode-segmentation-wasm: "github:cometkim/unicode-segmentation-wasm"
     vite: "npm:^5.4.2"
     xregexp: "npm:5.1.1"
     zx: "npm:^8.1.5"
