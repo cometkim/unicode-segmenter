@@ -11,7 +11,9 @@
     "text-segmentation",
     "grapheme",
     "grapheme-cluster",
-    "emoji"
+    "emoji",
+    "intl",
+    "polyfill"
   ],
   "repository": {
     "type": "git",
