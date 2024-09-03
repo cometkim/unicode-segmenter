@@ -11,11 +11,11 @@ A lightweight implementation of the [Unicode Text Segmentation (UAX \#29)](https
 
 - **Excellent compatibility**: It works well on older browsers, edge runtimes, and embedded JavaScript runtimes like [Hermes] and [QuickJS].
 
-- **Small bundle size**: It effectively compresses Unicode data and provides tree-shakeable format, allowing unnecessary codes to be eliminated.
+- **Small bundle size**: It effectively compresses Unicode data and provides a tree-shakeable format, allowing unnecessary codes to be eliminated.
 
-- **Extreamly efficient**: It's carefully optimized for performance, making it the fastest one in the ecosystem—outperforming even the built-in `Intl.Segmenter`.
+- **Extremely efficient**: It's carefully optimized for performance, making it the fastest one in the ecosystem—outperforming even the built-in `Intl.Segmenter`.
 
-- **TypeScript**: It's fully type-checked, provides definitions with JSDoc.
+- **TypeScript**: It's fully type-checked, and provides definitions with JSDoc.
 
 - **ESM-first**: It natively supports ES Modules, also supports CommonJS too.
 
@@ -213,25 +213,21 @@ If the runtime doesn't support these features, it can easily be fulfilled with t
 
 Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/facebook/hermes/blob/main/doc/IntlAPIs.md) yet, `unicode-segmenter` is a good alternative.
 
-`unicode-segmenter` is compiled into small & efficient Hermes bytecode than others JavaScript libraries. See the [benchmark](#hermes-bytecode-stats) for detail.
+`unicode-segmenter` is compiled into small & efficient Hermes bytecode than other JavaScript libraries. See the [benchmark](#hermes-bytecode-stats) for details.
 
-## Benchmarks
+## Comparison
 
-`unicode-segmenter` aims to be lighter and faster than alternatives in the ecosystem while fully spec compliant. So the benchmark is tracking the performance, bundle size, and Unicode version compliance of several libraries.
-
-See more on [benchmark](benchmark).
+`unicode-segmenter` aims to be lighter and faster than alternatives in the ecosystem while fully spec compliant. So the benchmark is tracking several libraries' performance, bundle size, and Unicode version compliance.
 
 ### `unicode-segmenter/grapheme` vs
 
-- [graphemer]@1.4.0
-  - U
-  - 16.6M+ weekly downloads on NPM
+- [graphemer]@1.4.0 (16.6M+ weekly downloads on NPM)
 - [grapheme-splitter]@1.0.4 (5.7M+ weekly downloads on NPM)
 - [@formatjs/intl-segmenter]@11.5.7 (5.4K+ weekly downloads on NPM)
 - WebAssembly binding of the Rust's [unicode-segmentation] library
 - Built-in [`Intl.Segmenter`] API
 
-#### JS bundle stats
+#### JS Bundle Stats
 
 | Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|
@@ -242,12 +238,12 @@ See more on [benchmark](benchmark).
 | `unicode-segmentation`*      |   15.0.0 |    ✔️ |    45,803 |     41,717 |          19,687 |        13,477 |
 | `Intl.Segmenter`*            |        - |    - |         0 |          0 |               0 |             0 |
 
-* `@formatjs/intl-segmenter` handles grapheme, word, sentence, but it's not tree-shakable.
+* `@formatjs/intl-segmenter` handles grapheme, word, and sentence, but it's not tree-shakable.
 * `unicode-segmentation` size contains only the minimum WASM binary and bindings. It will be larger by adding more features.
-* `Intl.Segmenter`'s Unicode data is always kept up to date as the runtime support.
+* `Intl.Segmenter`'s Unicode data depends on the host, and may not be up-to-date.
 * `Intl.Segmenter` may not be available in [some old browsers](https://caniuse.com/mdn-javascript_builtins_intl_segmenter), edge runtimes, or embedded environments.
 
-#### Hermes bytecode stats
+#### Hermes Bytecode Stats
 
 | Name                         | Unicode® | Bytecode size | Bytecode size (gzip)* |
 |------------------------------|----------|--------------:|----------------------:|
@@ -258,27 +254,27 @@ See more on [benchmark](benchmark).
 
 * It would be compressed when included as an app asset.
 
-#### Runtime performance
+#### Runtime Performance
 
-- **Performance in Node.js**: `unicode-segmenter/grapheme` is significantly faster than alternatives.
-  - 7\~18x faster than other JavaScript libraries
-  - 1.5\~3x faster than WASM binding of the Rust's [unicode-segmentation]
-  - 3\~8x faster than built-in [`Intl.Segmenter`]
+**Performance in Node.js**: `unicode-segmenter/grapheme` is significantly faster than alternatives.
+- 7\~18x faster than other JavaScript libraries
+- 1.5\~3x faster than WASM binding of the Rust's [unicode-segmentation]
+- 3\~8x faster than built-in [`Intl.Segmenter`]
 
-- **Performance in Bun**: `unicode-segmenter/grapheme` has almost the same performance as the built-in [`Intl.Segmenter`], with no performance degradation compared to other JavaScript libraries.
+**Performance in Bun**: `unicode-segmenter/grapheme` has almost the same performance as the built-in [`Intl.Segmenter`], with no performance degradation compared to other JavaScript libraries.
 
-- **Performance in Browsers**: The performance in browser environments varies greatly due to differences in browser engines and versions, which makes benchmarking less consistent. Despite these variations, `unicode-segmenter/grapheme` generally outperforms other JavaScript libraries in most environments.
+**Performance in Browsers**: The performance in browser environments varies greatly due to differences in browser engines and versions, which makes benchmarking less consistent. Despite these variations, `unicode-segmenter/grapheme` generally outperforms other JavaScript libraries in most environments.
 
-- **Performance in React Native**: `unicode-segmenter/grapheme` is significantly faster than alternatives when it compiled to Hermes bytecode. It's 2\~4x faster than graphemer and 18\~25x faster than grapheme-splitter, with the performance gap increasing with input size.
+**Performance in React Native**: `unicode-segmenter/grapheme` is significantly faster than alternatives when compiled to Hermes bytecode. It's 2\~4x faster than `graphemer` and 18\~25x faster than `grapheme-splitter`, with the performance gap increasing with input size.
 
-You can see captured [benchmark results](benchmark/grapheme/_records), or run yourself executing `yarn perf:grapheme` or `yarn perf:grapheme:browser` in your environment.
+You can see captured [benchmark results](benchmark/grapheme/_records) or run yourself executing `yarn perf:grapheme` or `yarn perf:grapheme:browser` in your environment.
 
 ## LICENSE
 
 [MIT](LICENSE)
 
 > [!NOTE]
-> The initial implementation was ported manually from Rust's [unicode-segmentation] library, which is licenced under the [MIT](licenses/unicode-segmentation_MIT.txt) license.
+> The initial implementation was ported manually from Rust's [unicode-segmentation] library, which is licensed under the [MIT](licenses/unicode-segmentation_MIT.txt) license.
 
 [Hermes]: https://hermesengine.dev/
 [QuickJS]: https://bellard.org/quickjs/
