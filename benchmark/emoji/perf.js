@@ -3,9 +3,9 @@ import { group, baseline, bench, run } from 'mitata';
 import emojiRegex from 'emoji-regex';
 import EMOJIBASE_REGEX from 'emojibase-regex';
 
-import { isBMP } from '../src/utils.js';
-import { isExtendedPictographic } from '../src/emoji.js';
-import { graphemeSegments, GraphemeCategory } from '../src/grapheme.js';
+import { isBMP } from '../../src/utils.js';
+import { isExtendedPictographic } from '../../src/emoji.js';
+import { graphemeSegments, GraphemeCategory } from '../../src/grapheme.js';
 
 let input = '🚀 새로운 유니코드 분할기 라이브러리 \'unicode-segmenter\'를 소개합니다! 🔍 각종 언어의 문자를 정확하게 구분해주는 강력한 도구입니다. Check it out! 👉 [https://github.com/cometkim/unicode-segmenter] #Unicode #Programming 🌐';
 
@@ -123,4 +123,4 @@ group('match all emoji (Extended_Pictographic)', () => {
   });
 });
 
-run();
+await run();

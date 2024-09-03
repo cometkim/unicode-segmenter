@@ -229,21 +229,32 @@ See more on [benchmark](benchmark).
 - WebAssembly binding of the Rust's [unicode-segmentation] library
 - Built-in [`Intl.Segmenter`] API
 
-#### Package stats
+#### JS bundle stats
 
 | Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|
-| `unicode-segmenter/grapheme` |   15.1.0 |    ✔️ |    28,337 |     24,623 |           6,599 |         4,360 |
-| `graphemer`                  |   15.0.0 |    ✖️ ️|   410,424 |     95,104 |          15,752 |        10,660 |
-| `grapheme-splitter`          |   10.0.0 |    ✖️ |   122,241 |     23,680 |           7,852 |         4,841 |
-| `@formatjs/intl-segmenter`*  |   15.0.0 |    ✖️ |   492,079 |    319,109 |          54,346 |        34,365 |
-| `unicode-segmentation`*      |   15.0.0 |    ✔️ |    51,251 |     51,251 |          22,545 |        16,614 |
+| `unicode-segmenter/grapheme` |   15.1.0 |    ✔️ |    28,270 |     24,291 |           6,347 |         4,273 |
+| `graphemer`                  |   15.0.0 |    ✖️ ️|   410,435 |     95,104 |          15,752 |        10,660 |
+| `grapheme-splitter`          |   10.0.0 |    ✖️ |   122,252 |     23,680 |           7,852 |         4,841 |
+| `@formatjs/intl-segmenter`*  |   15.0.0 |    ✖️ |   491,043 |    318,721 |          54,248 |        34,380 |
+| `unicode-segmentation`*      |   15.0.0 |    ✔️ |    45,803 |     41,717 |          19,687 |        13,477 |
 | `Intl.Segmenter`*            |        - |    - |         0 |          0 |               0 |             0 |
 
 * `@formatjs/intl-segmenter` handles grapheme, word, sentence, but it's not tree-shakable.
-* `unicode-segmentation` size contains only the minimum WASM binary. It will be larger by adding more bindings.
+* `unicode-segmentation` size contains only the minimum WASM binary and bindings. It will be larger by adding more features.
 * `Intl.Segmenter`'s Unicode data is always kept up to date as the runtime support.
 * `Intl.Segmenter` may not be available in [some old browsers](https://caniuse.com/mdn-javascript_builtins_intl_segmenter), edge runtimes, or embedded environments.
+
+#### Hermes bytecode stats
+
+| Name                         | Unicode® | Bytecode size | Bytecode size (gzip)* |
+|------------------------------|----------|--------------:|----------------------:|
+| `unicode-segmenter/grapheme` |   15.1.0 |        35,014 |                13,326 |
+| `graphemer`                  |   15.0.0 |       133,949 |                31,710 |
+| `grapheme-splitter`          |   10.0.0 |        63,810 |                19,125 |
+| `@formatjs/intl-segmenter`*  |   15.0.0 |       315,865 |                99,063 |
+
+* It would be compressed when included as an app asset.
 
 #### Runtime performance
 
@@ -256,7 +267,9 @@ See more on [benchmark](benchmark).
 
 - **Performance in Browsers**: The performance in browser environments varies greatly due to differences in browser engines and versions, which makes benchmarking less consistent. Despite these variations, `unicode-segmenter/grapheme` generally outperforms other JavaScript libraries in most environments.
 
-You can see captured [benchmark results](benchmark/_records), or run yourself executing `yarn perf:grapheme` in your environment.
+- **Performance in React Native**: `unicode-segmenter/grapheme` is significantly faster than alternatives when it compiled to Hermes bytecode. It's 2~4x faster than graphemer and 18~25x faster than grapheme-splitter, with the performance gap increasing with input size.
+
+You can see captured [benchmark results](benchmark/grapheme/_records), or run yourself executing `yarn perf:grapheme` or `yarn perf:grapheme:browser` in your environment.
 
 ## LICENSE
 

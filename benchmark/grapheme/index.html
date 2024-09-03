@@ -47,7 +47,7 @@
         outputBox.innerText = '';
 
         worker = new Worker(
-          new URL('../performance-grapheme.js', import.meta.url),
+          new URL('./perf.js', import.meta.url),
           { type: 'module' },
         );
         let seq = 0;

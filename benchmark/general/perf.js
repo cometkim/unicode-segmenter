@@ -2,10 +2,13 @@ import * as assert from 'node:assert/strict';
 import { group, baseline, bench, run } from 'mitata';
 import XRegExp from 'xregexp';
 
-import { isBMP } from '../src/utils.js';
-import { isAlphanumeric } from '../src/general.js';
+import { isBMP } from '../../src/utils.js';
+import { isAlphanumeric } from '../../src/general.js';
 
 group('checking any alphanumeric', () => {
+  /**
+   * @param {string} input
+   */
   function anyAlnum(input) {
     let cursor = 0;
     let len = input.length;
@@ -78,4 +81,4 @@ group('match all alphanumeric', () => {
   });
 });
 
-run();
+await run();

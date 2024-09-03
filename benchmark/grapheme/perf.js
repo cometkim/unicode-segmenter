@@ -5,7 +5,7 @@ import GraphemeSplitter from 'grapheme-splitter';
 import * as unicodeSegmentation from 'unicode-segmentation-wasm';
 import { Segmenter as FormatjsSegmenter } from '@formatjs/intl-segmenter/src/segmenter.js';
 
-import { graphemeSegments } from '../src/grapheme.js';
+import { graphemeSegments } from '../../src/grapheme.js';
 
 // Node.js, Deno, Bun
 const isSystemRuntime = typeof process === 'object' || typeof Deno === 'object' && typeof Bun === 'object';
@@ -100,7 +100,7 @@ for (const [title, input] of testcases) {
       void ([...formatjsSegmenter.segment(input)]);
     });
 
-    bench('unicode-rs/unicode-segmentation (wasm-pack)', () => {
+    bench('unicode-rs/unicode-segmentation (wasm-bindgen)', () => {
       void unicodeSegmentation.collect(input);
     });
 

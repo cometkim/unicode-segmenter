@@ -100,14 +100,15 @@
     "test": "node --test --test-reporter spec --test-reporter-destination=stdout",
     "test:coverage": "yarn test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info",
     "fuzz": "jazzer fuzz/target.cjs",
-    "bundle-stats:emoji": "yarn build && node benchmark/bundle-stats-emoji.js",
-    "bundle-stats:general": "yarn build && node benchmark/bundle-stats-general.js",
-    "bundle-stats:grapheme": "yarn build && node benchmark/bundle-stats-grapheme.js",
-    "perf:emoji": "node benchmark/performance-emoji.js",
-    "perf:general": "node benchmark/performance-general.js",
-    "perf:grapheme": "node benchmark/performance-grapheme.js",
-    "perf:grapheme:browser": "vite benchmark/performance-grapheme",
-    "perf:grapheme:hermes": "node benchmark/performance-grapheme/hermes/run.js"
+    "bundle-stats:emoji": "node benchmark/emoji/bundle-stats.js",
+    "bundle-stats:general": "node benchmark/general/bundle-stats.js",
+    "bundle-stats:grapheme": "node benchmark/grapheme/bundle-stats.js",
+    "bundle-stats:grapheme:hermes": "node benchmark/grapheme/bundle-stats-hermes.js",
+    "perf:emoji": "node benchmark/emoji/perf.js",
+    "perf:general": "node benchmark/general/perf.js",
+    "perf:grapheme": "node benchmark/grapheme/perf.js",
+    "perf:grapheme:browser": "vite benchmark/grapheme",
+    "perf:grapheme:hermes": "node benchmark/grapheme/perf-hermes.js"
   },
   "alias": {
     "process": false
@@ -131,7 +132,7 @@
     "pretty-bytes": "^6.1.1",
     "rimraf": "^6.0.1",
     "typescript": "^5.5.4",
-    "unicode-segmentation-wasm": "github:cometkim/unicode-segmentation-wasm#8f4adf68322ff567a5811bf11f4ad475cc1343b7",
+    "unicode-segmentation-wasm": "github:cometkim/unicode-segmentation-wasm#15223718f418f781e1041d4a32b1260c53d40ab9",
     "vite": "^5.4.2",
     "xregexp": "5.1.1",
     "zx": "^8.1.5"
