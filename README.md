@@ -256,6 +256,8 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 #### Runtime Performance
 
+Here is a brief explanation, and you can see [archived benchmark results](benchmark/grapheme/_records).
+
 **Performance in Node.js**: `unicode-segmenter/grapheme` is significantly faster than alternatives.
 - 7\~18x faster than other JavaScript libraries
 - 1.5\~3x faster than WASM binding of the Rust's [unicode-segmentation]
@@ -267,7 +269,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 **Performance in React Native**: `unicode-segmenter/grapheme` is significantly faster than alternatives when compiled to Hermes bytecode. It's 2\~4x faster than `graphemer` and 18\~25x faster than `grapheme-splitter`, with the performance gap increasing with input size.
 
-You can see captured [benchmark results](benchmark/grapheme/_records) or run yourself executing `yarn perf:grapheme` or `yarn perf:grapheme:browser` in your environment.
+Instead of trusting these claims, you can try `yarn perf:grapheme` directly in your environment or build a benchmark yourself.
 
 ## LICENSE
 
