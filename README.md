@@ -211,9 +211,9 @@ If the runtime doesn't support these features, it can easily be fulfilled with t
 
 ## React Native Support
 
-Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/facebook/hermes/blob/main/doc/IntlAPIs.md), `unicode-segmenter` is a good alternative.
+Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/facebook/hermes/blob/main/doc/IntlAPIs.md) yet, `unicode-segmenter` is a good alternative.
 
-`unicode-segmenter` is compiled into small & efficient Hermes bytecode than others JavaScript libraries. See https://github.com/cometkim/unicode-segmenter/pull/47 for detail.
+`unicode-segmenter` is compiled into small & efficient Hermes bytecode than others JavaScript libraries. See the [benchmark](#hermes-bytecode-stats) for detail.
 
 ## Benchmarks
 
@@ -223,7 +223,9 @@ See more on [benchmark](benchmark).
 
 ### `unicode-segmenter/grapheme` vs
 
-- [graphemer]@1.4.0 (16.6M+ weekly downloads on NPM)
+- [graphemer]@1.4.0
+  - U
+  - 16.6M+ weekly downloads on NPM
 - [grapheme-splitter]@1.0.4 (5.7M+ weekly downloads on NPM)
 - [@formatjs/intl-segmenter]@11.5.7 (5.4K+ weekly downloads on NPM)
 - WebAssembly binding of the Rust's [unicode-segmentation] library
@@ -267,7 +269,7 @@ See more on [benchmark](benchmark).
 
 - **Performance in Browsers**: The performance in browser environments varies greatly due to differences in browser engines and versions, which makes benchmarking less consistent. Despite these variations, `unicode-segmenter/grapheme` generally outperforms other JavaScript libraries in most environments.
 
-- **Performance in React Native**: `unicode-segmenter/grapheme` is significantly faster than alternatives when it compiled to Hermes bytecode. It's 2~4x faster than graphemer and 18~25x faster than grapheme-splitter, with the performance gap increasing with input size.
+- **Performance in React Native**: `unicode-segmenter/grapheme` is significantly faster than alternatives when it compiled to Hermes bytecode. It's 2\~4x faster than graphemer and 18\~25x faster than grapheme-splitter, with the performance gap increasing with input size.
 
 You can see captured [benchmark results](benchmark/grapheme/_records), or run yourself executing `yarn perf:grapheme` or `yarn perf:grapheme:browser` in your environment.
 
