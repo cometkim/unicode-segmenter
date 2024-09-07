@@ -9,6 +9,7 @@
 node_modules/
 
 /scripts/unicode_data/
+/scripts/unicode_emoji_data/
 /scripts/__pycache__/
 
 /*.d.ts
