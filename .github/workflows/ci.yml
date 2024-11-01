@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     name: Checking build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
 
   test:
     name: Running tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -44,8 +44,27 @@ jobs:
       - name: Install Dependencies
         run: yarn install --immutable
 
+      - uses: actions/cache@v4
+        id: cache-prebuilt-node
+        with:
+          key: node-v24.0.0-pre-linux-x64_icu76.1
+          path: prebuilt/node-v24.0.0-pre-linux-x64_icu76.1
+
+      - name: Download Prebuilt Node.js with ICU 76.1
+        if: steps.cache-prebuilt-node.cache-hit != 'true'
+        run: |
+          export PREBUILT_BINARY="prebuilt/node-v24.0.0-pre-linux-x64_icu76.1"
+          mkdir -p "$(dirname $PREBUILT_BINARY)"
+          curl -fsSL -o "$PREBUILT_BINARY" \
+            "https://github-actions-assets.cometkim.dev/$PREBUILT_BINARY"
+          chmod +x "$PREBUILT_BINARY"
+          echo "PREBUILT_BINARY=$PREBUILT_BINARY" >> $GITHUB_ENV
+
       - name: Execute Tests
-        run: yarn test:coverage
+        run: |
+          $PREBUILT_BINARY \
+            --test --test-reporter spec --test-reporter-destination=stdout \
+            --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
