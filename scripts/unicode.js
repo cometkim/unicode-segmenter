@@ -47,7 +47,7 @@ let preamble = `
 `.trimStart();
 
 /** @type {[major: number, minor: number, patch: number]} */
-const UNICODE_VERSION = [15, 1, 0];
+const UNICODE_VERSION = [16, 0, 0];
 const UNICODE_VERSION_STRING = UNICODE_VERSION.join('.');
 
 // these are the surrogate codepoints, which are not valid rust characters
@@ -375,7 +375,7 @@ let parseTestData = (data, optsplit = []) => {
     outcs.push(workcs || []);
     return [outcs, outis];
   };
-  
+
   /**
    * @param {string} str
    * @return {UnicodeValues[]}
@@ -761,7 +761,7 @@ let printTestDataModule = async f => {
  */
 `,
   );
-  
+
   /**
    * @typedef {[UnicodeValues, UnicodeValues[]]} TestCaseRow
    */
