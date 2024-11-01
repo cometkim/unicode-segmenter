@@ -99,7 +99,6 @@
     "build": "node scripts/build-exports.js && tsc -p tsconfig.build.json",
     "test": "node --test --test-reporter spec --test-reporter-destination=stdout",
     "test:coverage": "yarn test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info",
-    "fuzz": "jazzer fuzz/target.cjs",
     "bundle-stats:emoji": "node benchmark/emoji/bundle-stats.js",
     "bundle-stats:general": "node benchmark/general/bundle-stats.js",
     "bundle-stats:grapheme": "node benchmark/grapheme/bundle-stats.js",
@@ -116,7 +115,6 @@
   "devDependencies": {
     "@changesets/cli": "^2.27.7",
     "@formatjs/intl-segmenter": "11.5.7",
-    "@jazzer.js/core": "^2.1.0",
     "@react-native/metro-babel-transformer": "^0.75.2",
     "@types/node": "^22.5.1",
     "@types/xregexp": "^4.4.0",
