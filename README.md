@@ -224,7 +224,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 - [graphemer]@1.4.0 (16.6M+ weekly downloads on NPM)
 - [grapheme-splitter]@1.0.4 (5.7M+ weekly downloads on NPM)
 - [@formatjs/intl-segmenter]@11.5.7 (5.4K+ weekly downloads on NPM)
-- WebAssembly binding of the Rust's [unicode-segmentation] library
+- WebAssembly build of [unicode-segmentation]@1.12.0 with minimum bindings
 - Built-in [`Intl.Segmenter`] API
 
 #### JS Bundle Stats
@@ -235,11 +235,11 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 | `graphemer`                  |   15.0.0 |    ✖️ ️|   410,435 |     95,104 |          15,752 |        10,660 |
 | `grapheme-splitter`          |   10.0.0 |    ✖️ |   122,252 |     23,680 |           7,852 |         4,841 |
 | `@formatjs/intl-segmenter`*  |   15.0.0 |    ✖️ |   491,043 |    318,721 |          54,248 |        34,380 |
-| `unicode-segmentation`*      |   15.0.0 |    ✔️ |    45,803 |     41,717 |          19,687 |        13,477 |
+| `unicode-segmentation`*      |   16.0.0 |    ✔️ |    56,529 |     52,443 |          24,110 |        17,343 |
 | `Intl.Segmenter`*            |        - |    - |         0 |          0 |               0 |             0 |
 
 * `@formatjs/intl-segmenter` handles grapheme, word, and sentence, but it's not tree-shakable.
-* `unicode-segmentation` size contains only the minimum WASM binary and bindings. It will be larger by adding more features.
+* `unicode-segmentation` size contains only minimum WASM binary and its bindings to execute benchmarking. It will increases to expose more features.
 * `Intl.Segmenter`'s Unicode data depends on the host, and may not be up-to-date.
 * `Intl.Segmenter` may not be available in [some old browsers](https://caniuse.com/mdn-javascript_builtins_intl_segmenter), edge runtimes, or embedded environments.
 
