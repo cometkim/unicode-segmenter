@@ -1,6 +1,6 @@
 {
   "name": "unicode-segmenter",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "type": "module",
   "description": "A lightweight implementation of the Unicode Text Segmentation (UAX #29)",
   "license": "MIT",

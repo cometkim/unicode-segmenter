@@ -1,5 +1,11 @@
 # unicode-segmenter
 
+## 0.11.0
+
+### Minor Changes
+
+- 9e0feca: Update to Unicode® 16.0.0
+
 ## 0.10.1
 
 ### Patch Changes
