@@ -21,9 +21,9 @@ A lightweight implementation of the [Unicode Text Segmentation (UAX \#29)](https
 
 ## Unicode® Version
 
-Unicode® 15.1.0
+Unicode® 16.0.0
 
-Unicode® Standard Annex \#29 - [Revision 43](https://www.unicode.org/reports/tr29/tr29-43.html) (2023-08-16)
+Unicode® Standard Annex \#29 - [Revision 45](https://www.unicode.org/reports/tr29/tr29-45.html) (2024-08-28)
 
 ## APIs
 
@@ -231,7 +231,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|
-| `unicode-segmenter/grapheme` |   15.1.0 |    ✔️ |    28,270 |     24,291 |           6,347 |         4,273 |
+| `unicode-segmenter/grapheme` |   16.0.0 |    ✔️ |    28,330 |     24,351 |           6,395 |         4,300 |
 | `graphemer`                  |   15.0.0 |    ✖️ ️|   410,435 |     95,104 |          15,752 |        10,660 |
 | `grapheme-splitter`          |   10.0.0 |    ✖️ |   122,252 |     23,680 |           7,852 |         4,841 |
 | `@formatjs/intl-segmenter`*  |   15.0.0 |    ✖️ |   491,043 |    318,721 |          54,248 |        34,380 |
@@ -245,12 +245,12 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 #### Hermes Bytecode Stats
 
-| Name                         | Unicode® | Bytecode size | Bytecode size (gzip)* |
-|------------------------------|----------|--------------:|----------------------:|
-| `unicode-segmenter/grapheme` |   15.1.0 |        35,014 |                13,326 |
-| `graphemer`                  |   15.0.0 |       133,949 |                31,710 |
-| `grapheme-splitter`          |   10.0.0 |        63,810 |                19,125 |
-| `@formatjs/intl-segmenter`*  |   15.0.0 |       315,865 |                99,063 |
+| Name                         | Bytecode size | Bytecode size (gzip)* |
+|------------------------------|--------------:|----------------------:|
+| `unicode-segmenter/grapheme` |        35,074 |                13,366 |
+| `graphemer`                  |       133,949 |                31,710 |
+| `grapheme-splitter`          |        63,810 |                19,125 |
+| `@formatjs/intl-segmenter`*  |       315,865 |                99,063 |
 
 * It would be compressed when included as an app asset.
 

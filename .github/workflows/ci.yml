@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     name: Checking build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -30,7 +30,9 @@ jobs:
 
   test:
     name: Running tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    env:
+      PREBUILT_BINARY: prebuilt/node-v24.0.0-pre-linux-x64_icu76.1
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -44,8 +46,25 @@ jobs:
       - name: Install Dependencies
         run: yarn install --immutable
 
+      - uses: actions/cache@v4
+        id: cache-prebuilt-node
+        with:
+          key: ${{ env.PREBUILT_BINARY }}
+          path: ${{ env.PREBUILT_BINARY }}
+
+      - name: Install prebuilt Node.js with custom ICU
+        if: steps.cache-prebuilt-node.cache-hit != 'true'
+        run: |
+          mkdir -p "$(dirname $PREBUILT_BINARY)"
+          curl -fsSL -o "$PREBUILT_BINARY" \
+            "https://github-actions-assets.cometkim.dev/$PREBUILT_BINARY"
+          chmod +x "$PREBUILT_BINARY"
+
       - name: Execute Tests
-        run: yarn test:coverage
+        run: |
+          $PREBUILT_BINARY \
+            --test --test-reporter spec --test-reporter-destination=stdout \
+            --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
