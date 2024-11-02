@@ -16,10 +16,11 @@
 import { bsearchRange } from './core.js';
 import { isBMP } from './utils.js';
 import {
-  searchGraphemeIndex,
-  grapheme_range_table,
-  grapheme_cat_table,
   GraphemeCategory,
+  grapheme_basic_table,
+  grapheme_basic_cats,
+  grapheme_supplementary_table,
+  grapheme_supplementary_cats,
 } from './_grapheme_table.js';
 import {
   consonant_table,
@@ -52,18 +53,23 @@ export {
  * @return A {@link GraphemeCategoryRange} value if found, or garbage `start` and `padding` values with {@link GC_Any} category.
  */
 export function searchGraphemeCategory(cp) {
-  let index = searchGraphemeIndex(cp);
+  let table = grapheme_basic_table, cats = grapheme_basic_cats;
+  if (isBMP(cp)) {
+    table = grapheme_supplementary_table, cats = grapheme_supplementary_cats;
+  }
+
+  let index = bsearchRange(cp, table);
   if (index < 0) {
     return [
-      grapheme_range_table[-index],
+      table[-index],
       0,
       0 /* GC_Any */,
     ];
   } else {
     return [
-      grapheme_range_table[index],
-      grapheme_range_table[index + 1],
-      grapheme_cat_table[index >> 1],
+      table[index],
+      table[index + 1],
+      cats[index >> 1],
     ];
   }
 }
@@ -233,14 +239,22 @@ function cat(cp, cache) {
     // If this char isn't within the cached range, update the cache to the
     // range that includes it.
     if (cp < cache[0] || cp > cache[1]) {
-      let index = searchGraphemeIndex(cp);
+      let index = -1, table = grapheme_basic_table, cats = grapheme_basic_cats;
+      if (isBMP(cp)) {
+        index = bsearchRange(cp, table);
+      } else {
+        table = grapheme_supplementary_table, cats = grapheme_supplementary_cats;
+        index = bsearchRange(cp - 65536, table);
+      }
+
       if (index < 0) {
         return 0;
       }
-      cache[0] = grapheme_range_table[index];
-      cache[1] = grapheme_range_table[index + 1];
+
+      cache[0] = table[index];
+      cache[1] = table[index + 1];
       // @ts-ignore
-      cache[2] = grapheme_cat_table[index >> 1];
+      cache[2] = cats[index >> 1];
     }
     return cache[2];
   }
