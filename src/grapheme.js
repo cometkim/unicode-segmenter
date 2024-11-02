@@ -158,8 +158,8 @@ export function* graphemeSegments(input) {
       ) {
         emoji = true;
 
-        // Note: Put GB9c rule checking here to reduce.
       } else if (catAfter === 0 /* Any */) {
+        // Note: Put GB9c rule checking here to reduce.
         incb = consonant && linker && (consonant = isIndicConjunctCosonant(cp));
         // It cannot be both a linker and a consonant.
         linker = linker && !consonant;
