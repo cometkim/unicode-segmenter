@@ -55,3 +55,30 @@ export function bsearchRange(x, table, sliceFrom = 0, sliceTo = table.length) {
 
   return -lo;
 }
+
+/**
+ * @param {ArrayLike<number>} table
+ * @param {string} value
+ * @param {string} [sep=',']
+ * @return {ArrayLike<number>}
+ */
+export function createTable(table, value, sep = ',') {
+  let nums = value.split(sep).map(s => s ? parseInt(s, 36) : 0);
+  for (let i = 0; i < nums.length; i++)
+    // @ts-ignore
+    table[i] = nums[i];
+  return table;
+};
+
+/**
+ * @param {ArrayLike<number>} table
+ * @param {string} value
+ * @return {ArrayLike<number>}
+ */
+export function createRangeTable(table, value) {
+  let nums = value.split(',').map(s => s ? parseInt(s, 36) : 0);
+  for (let i = 0, n = 0; i < nums.length; i++)
+    // @ts-ignore
+    table[i] = i % 2 ? n + nums[i] : (n = nums[i]);
+  return table;
+};

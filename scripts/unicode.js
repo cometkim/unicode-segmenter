@@ -543,7 +543,11 @@ let printBreakModule = (f, breakTable, breakCats, name) => {
 
   f.write(preamble);
   f.write(`
-import { bsearchRange } from './core.js';
+import {
+  bsearchRange,
+  createTable,
+  createRangeTable,
+} from './core.js';
 
 /**
 `,
@@ -599,63 +603,30 @@ export const ${typeName} = {
   for (let cat of cats) {
     f.write(`  ${cat}: ${inversed[cat]},\n`);
   }
-  f.write('};\n\n');
+  f.write('};\n');
 
-  printTableStr(
-    f,
-    `${name}_lookup_str`,
-    lookupTable,
-    ',',
-    x => x === 0 ? '' : x.toString(36),
-  );
-  f.write('\n');
   f.write(`
-export const ${name}_lookup_table = new Uint16Array(${lookupTable.length});
-(function(table, value) {
-  let nums = value.split(',').map(s => s ? parseInt(s, 36) : 0);
-  for (let i = 0; i < nums.length; i++)
-    table[i] = nums[i];
-})(${name}_lookup_table, ${name}_lookup_str);
+export const ${name}_range_table = createRangeTable(
+  new Uint32Array(${breakTable.length * 2}),
+  '${breakTable.map(x => `${x[0] === 0 ? '' : x[0].toString(36)},${x[1] === 0 ? '' : x[1].toString(36)}`).join(',')}',
+);
+`);
 
+  f.write(`
+export const ${name}_cat_table = createTable(
+  new Uint8Array(${breakTable.length}),
+  '${breakTable.map(x => inversed[x[2]].toString(36)).join('')}',
+  '',
+);
 `,
   );
 
-  printTableStr(
-    f,
-    `${name}_range_str`,
-    breakTable,
-    ',',
-    x => `${x[0] === 0 ? '' : x[0].toString(36)},${x[1] === 0 ? '' : x[1].toString(36)}`,
-  );
-  f.write('\n');
   f.write(`
-export const ${name}_range_table = new Uint32Array(${breakTable.length * 2});
-(function(table, value) {
-  let nums = value.split(',').map(s => s ? parseInt(s, 36) : 0);
-  for (let i = 0, n = 0; i < nums.length; i++)
-    table[i] = i % 2 ? n + nums[i] : (n = nums[i]);
-})(${name}_range_table, ${name}_range_str);
-
-`,
-  );
-
-  printTableStr(
-    f,
-    `${name}_cat_str`,
-    breakTable,
-    '',
-    x => inversed[x[2]].toString(36),
-  );
-  f.write('\n');
-  f.write(`
-export const ${name}_cat_table = new Uint8Array(${breakTable.length});
-(function(table, value) {
-  for (let i = 0; i < value.length; i++)
-    table[i] = parseInt(value[i], 36);
-})(${name}_cat_table, ${name}_cat_str);
-
-`,
-  );
+const ${name}_lookup_table = createTable(
+  new Uint16Array(${lookupTable.length}),
+  '${lookupTable.map(x => x === 0 ? '' : x.toString(36)).join(',')}',
+);
+`);
 
   f.write(`
 /**
@@ -665,22 +636,21 @@ export const ${name}_cat_table = new Uint8Array(${breakTable.length});
 export function search${capitalName}Index(cp) {
   // Perform a quick O(1) lookup in a precomputed table to determine
   // the slice of the range table to search in.
-  let lookup_table = ${name}_lookup_table;
-  let lookup_interval = 0x${lookupInterval.toString(16)};
+  let lookup_interval = ${lookupInterval};
 
   let idx = cp / lookup_interval | 0;
   // If the \`idx\` is outside of the precomputed table - use the slice
   // starting from the last covered index in the precomputed table and
   // ending with the length of the range table.
   let sliceFrom = ${j}, sliceTo = ${breakTable.length};
-  if (idx + 1 < lookup_table.length) {
-    sliceFrom = lookup_table[idx];
-    sliceTo = lookup_table[idx + 1] + 1;
+  if (idx + 1 < ${lookupTable.length}) {
+    sliceFrom = ${name}_lookup_table[idx];
+    sliceTo = ${name}_lookup_table[idx + 1] + 1;
   }
 
-  return bsearchRange(cp, ${name}_range_table, sliceFrom, sliceTo);
+  return bsearchRange(cp, ${name}_range_table, sliceFrom * 2, sliceTo * 2);
 }
-`.trimStart(),
+`,
   );
 };
 
@@ -690,31 +660,19 @@ export function search${capitalName}Index(cp) {
 let printIncbModule = async f => {
   let ucd = await fetchData('DerivedCoreProperties.txt');
   let props = parseProperties(ucd, ['InCB=Consonant']);
+  let table = props['Consonant'];
 
   f.write(preamble);
   f.write(`
+import { createRangeTable } from './core.js';
+
 /**
  * The Unicode \`Indic_Conjunct_Break=Consonant\` derived property table
  */
-`,
-  );
-  let table = props['Consonant'];
-  printTableStr(
-    f,
-    'consonant_str',
-    table,
-    ',',
-    x => `${x[0] ? x[0].toString(36) : ''},${x[1] ? x[1].toString(36) : ''}`,
-  );
-  f.write('\n');
-  f.write(`
-export const consonant_table = new Uint16Array(${table.length * 2});
-(function(table, value) {
-  let nums = value.split(',').map(s => s ? parseInt(s, 36) : 0);
-  for (let i = 0, n = 0; i < nums.length; i++)
-    table[i] = i % 2 ? n + nums[i] : (n = nums[i]);
-})(consonant_table, consonant_str);
-
+export const consonant_table = createRangeTable(
+  new Uint16Array(${table.length * 2}),
+  '${table.map(x => `${x[0] ? x[0].toString(36) : ''},${x[1] ? x[1].toString(36) : ''}`).join(',')}',
+);
 `,
   );
 };

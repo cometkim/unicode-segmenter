@@ -26,6 +26,8 @@ import {
 } from './_incb_table.js';
 
 /**
+ * @typedef {import('./_grapheme_table.js').GC_Any} GC_Any
+ *
  * @typedef {import('./_grapheme_table.js').GraphemeCategoryNum} GraphemeCategoryNum
  * @typedef {import('./_grapheme_table.js').GraphemeCategoryRange} GraphemeCategoryRange
  *
@@ -36,17 +38,35 @@ import {
  * @typedef {import('./core.js').Segmenter<GraphemeSegmentExtra>} GraphemeSegmenter
  */
 
-export function searchGraphemeCategory(cp) {
-}
-
 export {
   /**
-   * @deprecated Use `searchGraphemeCategory` instead
+   * @deprecated DO NOT USE directly, will be removed in v1
    */
   searchGraphemeCategory as searchGrapheme,
   GraphemeCategory,
 };
 
+/**
+ * @deprecated DO NOT USE directly, will be removed in v1
+ * @param {number} cp
+ * @return A {@link GraphemeCategoryRange} value if found, or garbage `start` and `padding` values with {@link GC_Any} category.
+ */
+export function searchGraphemeCategory(cp) {
+  let index = searchGraphemeIndex(cp);
+  if (index < 0) {
+    return [
+      grapheme_range_table[-index],
+      0,
+      0 /* GC_Any */,
+    ];
+  } else {
+    return [
+      grapheme_range_table[index],
+      grapheme_range_table[index + 1],
+      grapheme_cat_table[index >> 1],
+    ];
+  }
+}
 
 /**
  * @param {string} input
@@ -332,3 +352,4 @@ function isBoundary(catBefore, catAfter, risCount, emoji, incb) {
   // GB999
   return true;
 }
+
