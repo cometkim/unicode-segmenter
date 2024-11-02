@@ -259,17 +259,17 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 Here is a brief explanation, and you can see [archived benchmark results](benchmark/grapheme/_records).
 
 **Performance in Node.js**: `unicode-segmenter/grapheme` is significantly faster than alternatives.
-- 7\~18x faster than other JavaScript libraries
+- 6\~15x faster than other JavaScript libraries
 - 1.5\~3x faster than WASM binding of the Rust's [unicode-segmentation]
-- 3\~8x faster than built-in [`Intl.Segmenter`]
+- 1.5\~3x faster than built-in [`Intl.Segmenter`]
 
 **Performance in Bun**: `unicode-segmenter/grapheme` has almost the same performance as the built-in [`Intl.Segmenter`], with no performance degradation compared to other JavaScript libraries.
 
 **Performance in Browsers**: The performance in browser environments varies greatly due to differences in browser engines and versions, which makes benchmarking less consistent. Despite these variations, `unicode-segmenter/grapheme` generally outperforms other JavaScript libraries in most environments.
 
-**Performance in React Native**: `unicode-segmenter/grapheme` is significantly faster than alternatives when compiled to Hermes bytecode. It's 2\~4x faster than `graphemer` and 18\~25x faster than `grapheme-splitter`, with the performance gap increasing with input size.
+**Performance in React Native**: `unicode-segmenter/grapheme` is significantly faster than alternatives when compiled to Hermes bytecode. It's 3\~8x faster than `graphemer` and 20\~26x faster than `grapheme-splitter`, with the performance gap increasing with input size.
 
-Instead of trusting these claims, you can try `yarn perf:grapheme` directly in your environment or build a benchmark yourself.
+Instead of trusting these claims, you can try `yarn perf:grapheme` directly in your environment or build your own benchmark.
 
 ## LICENSE
 
