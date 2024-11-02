@@ -34,8 +34,6 @@ import { existsSync, createWriteStream } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
-import { isBMP } from '../src/utils.js';
-
 let __dirname = path.dirname(fileURLToPath(import.meta.url));
 let srcPath = path.resolve(__dirname, '../src');
 let testPath = path.resolve(__dirname, '../test');
@@ -524,15 +522,19 @@ let printBreakModule = (f, breakTable, breakCats, name) => {
   f.write(preamble);
   f.write(`
 import {
-  bsearchRange,
-  createTable,
-  createRangeTable,
+  bsearchUnicodeRange,
+  initLookupTableBuffer,
+  initUnicodeRangeBuffer,
 } from './core.js';
+
+/**
+ * @typedef {import('./core.js').LookupTableEncoding} LookupTableEncoding
+ * @typedef {import('./core.js').UnicodeRangeEncoding} UnicodeRangeEncoding
+ */
 
 /**
 `,
   );
-
   /** @type {Record<string, number>} */
   let inversed = {};
   cats.forEach((cat, idx) => {
@@ -545,22 +547,19 @@ import {
     f.write(` *   | ${typeName[0]}C_${cat}\n`);
   }
   f.write(` * )} ${numTypeName}\n`);
-  f.write(' */\n\n');
+  f.write(' */\n');
 
   f.write(`
 /**
  * @typedef {import('./core.js').CategorizedUnicodeRange<${numTypeName}>} ${typeName}Range
- *
- * NOTE: It might be garbage \`from\` and \`to\` values when the \`category\` is {@link ${typeName[0]}C_Any}.
  */
-
-`.trimStart(),
+`,
   );
 
   f.write(`
 /**
  * @typedef {(
-`.trimStart(),
+`,
   );
   for (let cat of cats) {
     f.write(` *   | '${cat}'\n`);
@@ -586,25 +585,28 @@ export const ${typeName} = {
   f.write('};\n');
 
   f.write(`
-export const ${name}_ranges = createRangeTable(
+export const ${name}_ranges = initUnicodeRangeBuffer(
   new Uint32Array(${breakTable.length * 2}),
-  '${breakTable.map(x => `${x[0] === 0 ? '' : x[0].toString(36)},${x[1] === 0 ? '' : x[1].toString(36)}`).join(',')}',
+  /** @type {UnicodeRangeEncoding} */
+  ('${breakTable.map(x => `${x[0] === 0 ? '' : x[0].toString(36)},${x[1] === 0 ? '' : x[1].toString(36)}`).join(',')}')
 );
 `);
 
   f.write(`
-export const ${name}_cats = createTable(
+export const ${name}_cats = initLookupTableBuffer(
   new Uint8Array(${breakTable.length}),
-  '${breakTable.map(x => inversed[x[2]].toString(36)).join('')}',
-  '',
+  /** @type {LookupTableEncoding} */
+  ('${breakTable.map(x => inversed[x[2]].toString(36)).join('')}')
 );
 `,
   );
 
   f.write(`
-const ${name}_lookup = createTable(
+const ${name}_lookup = initLookupTableBuffer(
   new Uint16Array(${lookupTable.length}),
-  '${lookupTable.map(x => x === 0 ? '' : x.toString(36)).join(',')}',
+  /** @type {LookupTableEncoding} */
+  ('${lookupTable.map(x => x === 0 ? '' : x.toString(36)).join(',')}'),
+  ','
 );
 `,
   );
@@ -612,7 +614,7 @@ const ${name}_lookup = createTable(
   f.write(`
 /**
  * @param {number} cp
- * @return An {@link ${typeName}Range} if found, or approx \`start\` and \`padding\` values with {@link ${typeName[0]}C_Any} category.
+ * @return Index of {@link ${name}_ranges} if found, or negation of last visited low cursor.
  */
 export function find${capitalName}Index(cp) {
   // Perform a quick O(1) lookup in a precomputed table to determine
@@ -630,7 +632,7 @@ export function find${capitalName}Index(cp) {
     sliceTo = lookup_table[idx + 1] + 1;
   }
 
-  return bsearchRange(cp, ${name}_ranges, sliceFrom * 2, sliceTo * 2);
+  return bsearchUnicodeRange(cp, ${name}_ranges, sliceFrom * 2, sliceTo * 2);
 }
 `,
   );
@@ -646,14 +648,19 @@ let printIncbModule = async f => {
 
   f.write(preamble);
   f.write(`
-import { createRangeTable } from './core.js';
+import { initUnicodeRangeBuffer } from './core.js';
+
+/**
+ * @typedef {import('./core.js').UnicodeRangeEncoding} UnicodeRangeEncoding
+ */
 
 /**
  * The Unicode \`Indic_Conjunct_Break=Consonant\` derived property table
  */
-export const consonant_table = createRangeTable(
+export const consonant_table = initUnicodeRangeBuffer(
   new Uint16Array(${table.length * 2}),
-  '${table.map(x => `${x[0] ? x[0].toString(36) : ''},${x[1] ? x[1].toString(36) : ''}`).join(',')}',
+  /** @type {UnicodeRangeEncoding} */
+  ('${table.map(x => `${x[0] ? x[0].toString(36) : ''},${x[1] ? x[1].toString(36) : ''}`).join(',')}')
 );
 `,
   );

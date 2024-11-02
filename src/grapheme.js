@@ -13,7 +13,7 @@
 
 // @ts-check
 
-import { bsearchRange } from './core.js';
+import { bsearchUnicodeRange } from './core.js';
 import { isBMP } from './utils.js';
 import {
   GraphemeCategory,
@@ -49,23 +49,18 @@ export {
 /**
  * @deprecated DO NOT USE directly, will be removed in v1
  * @param {number} cp
- * @return A {@link GraphemeCategoryRange} value if found, or garbage `start` and `padding` values with {@link GC_Any} category.
+ * @return A {@link GraphemeCategoryRange} value if found, or garbage value with {@link GC_Any} category.
  */
 export function searchGraphemeCategory(cp) {
   let index = findGraphemeIndex(cp);
   if (index < 0) {
-    return [
-      grapheme_ranges[-index],
-      0,
-      0 /* GC_Any */,
-    ];
-  } else {
-    return [
-      grapheme_ranges[index],
-      grapheme_ranges[index + 1],
-      grapheme_cats[index >> 1],
-    ];
+    return [0, 0, 0 /* GC_Any */];
   }
+  return [
+    grapheme_ranges[index],
+    grapheme_ranges[index + 1],
+    grapheme_cats[index >> 1],
+  ];
 }
 
 /**
@@ -111,9 +106,7 @@ export function* graphemeSegments(input) {
   /** InCB=Consonant InCB=Linker x InCB=Consonant */
   let incb = false;
 
-  /** @type number */
-  // @ts-ignore
-  let cp = input.codePointAt(cursor);
+  let cp = /** @type number */ (input.codePointAt(cursor));
 
   let index = 0;
   let segment = '';
@@ -142,16 +135,14 @@ export function* graphemeSegments(input) {
     }
 
     if (cursor < len) {
-      // @ts-ignore
-      cp = input.codePointAt(cursor);
+      cp = /** @type {number} */ (input.codePointAt(cursor));
       catAfter = cat(cp, cache);
     } else {
       yield {
         segment,
         index,
         input,
-        // @ts-ignore
-        _catBegin: catBegin,
+        _catBegin: /** @type {typeof catBefore} */ (catBegin),
         _catEnd: catBefore,
       };
       return;
@@ -180,8 +171,7 @@ export function* graphemeSegments(input) {
         segment,
         index,
         input,
-        // @ts-ignore
-        _catBegin: catBegin,
+        _catBegin: /** @type {typeof catBefore} */ (catBegin),
         _catEnd: catBefore,
       };
 
@@ -241,8 +231,7 @@ function cat(cp, cache) {
 
       cache[0] = grapheme_ranges[index];
       cache[1] = grapheme_ranges[index + 1];
-      // @ts-ignore
-      cache[2] = grapheme_cats[index >> 1];
+      cache[2] = /** @type {GraphemeCategoryNum} */ (grapheme_cats[index >> 1]);
     }
     return cache[2];
   }
@@ -253,7 +242,7 @@ function cat(cp, cache) {
  * @return {boolean}
  */
 function isIndicConjunctCosonant(cp) {
-  return bsearchRange(cp, consonant_table) >= 0;
+  return bsearchUnicodeRange(cp, consonant_table) >= 0;
 }
 
 /**
