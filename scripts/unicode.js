@@ -34,6 +34,8 @@ import { existsSync, createWriteStream } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
+import { isBMP } from '../src/utils.js';
+
 let __dirname = path.dirname(fileURLToPath(import.meta.url));
 let srcPath = path.resolve(__dirname, '../src');
 let testPath = path.resolve(__dirname, '../test');
@@ -470,6 +472,28 @@ let printTableCompressed = (f, name, table, format) => {
  * @param {WriteStream} f
  * @param {string} name
  * @param {T[]} table
+ * @param {string} sep
+ * @param {(row: T) => string} format
+ */
+let printTableStr = (f, name, table, sep, format) => {
+  f.write(`const ${name} = '`);
+  let first = true;
+  for (let row of table) {
+    if (first) {
+      f.write(format(row));
+    } else {
+      f.write(sep + format(row));
+    }
+    first = false;
+  }
+  f.write(`';`);
+};
+
+/**
+ * @template T
+ * @param {WriteStream} f
+ * @param {string} name
+ * @param {T[]} table
  * @param {(row: T) => string} format
  */
 let printTableRaw = (f, name, table, format) => {
@@ -488,6 +512,9 @@ let printTableRaw = (f, name, table, format) => {
  * @returns 
  */
 let printBreakModule = (f, breakTable, breakCats, name) => {
+  let basicTable = breakTable.filter(x => isBMP(x[0]));
+  let supplementaryTable = breakTable.filter(x => !isBMP(x[0]));
+
   let cats = [...breakCats, 'Any'].toSorted();
 
   let capitalName = capitalize(name);
@@ -498,7 +525,7 @@ let printBreakModule = (f, breakTable, breakCats, name) => {
   // We don't want the lookup table to be too large so choose a reasonable
   // cutoff. 0x20000 is selected because most of the range table entries are
   // within the interval of [0x0, 0x20000]
-  let lookupValueCutoff = 0x20000;
+  let lookupValueCutoff = 0x10000;
 
   // Length of lookup table. It has to be a divisor of `lookup_value_cutoff`.
   let lookupTableLen = 0x400;
@@ -521,7 +548,7 @@ let printBreakModule = (f, breakTable, breakCats, name) => {
 
   f.write(preamble);
   f.write(`
-import { bsearchUnicodeRange } from './core.js';
+import { createRanges, createCats } from './core.js';
 
 /**
 `,
@@ -577,60 +604,36 @@ export const ${typeName} = {
   for (let cat of cats) {
     f.write(`  ${cat}: ${inversed[cat]},\n`);
   }
-  f.write('};\n\n');
-
-  printTableCompressed(
-    f,
-    `${name}_cat_lookup`,
-    lookupTable,
-    x => x.toString(),
-  );
-  f.write('\n\n');
+  f.write('};\n');
 
   f.write(`
-/**
- * @type {${typeName}Range[]}
- */
-`.trimStart(),
-  );
-
-  printTableCompressed(
-    f,
-    `${name}_cat_table`,
-    breakTable,
-    x => `[${x[0]},${x[1]},${inversed[x[2]]}]`,
-  );
-  f.write('\n\n');
+export const ${name}_basic_table = createRanges(
+  new Uint16Array(${basicTable.length * 2}),
+  '${basicTable.map(x => `${x[0] === 0 ? '' : x[0].toString(36)},${x[1] === 0 ? '' : x[1].toString(36)}`).join(',')}',
+);
+`);
 
   f.write(`
-/**
- * @param {number} cp
- * @return An exact {@link ${typeName}Range} if found, or garbage \`start\` and \`from\` values with {@link ${typeName[0]}C_Any} category.
- */
-export function search${typeName}(cp) {
-  // Perform a quick O(1) lookup in a precomputed table to determine
-  // the slice of the range table to search in.
-  let lookup_table = ${name}_cat_lookup;
-  let lookup_interval = 0x${lookupInterval.toString(16)};
+export const ${name}_basic_cats = createCats(
+  new Uint8Array(${basicTable.length}),
+  '${basicTable.map(x => inversed[x[2]].toString(36)).join('')}',
+);
+`,
+  );
 
-  let idx = cp / lookup_interval | 0;
-  // If the \`idx\` is outside of the precomputed table - use the slice
-  // starting from the last covered index in the precomputed table and
-  // ending with the length of the range table.
-  let sliceFrom = ${j}, sliceTo = ${breakTable.length};
-  if (idx + 1 < lookup_table.length) {
-    sliceFrom = lookup_table[idx];
-    sliceTo = lookup_table[idx + 1] + 1;
-  }
+  f.write(`
+export const ${name}_supplementary_table = createRanges(
+  new Uint32Array(${supplementaryTable.length * 2}),
+  '${supplementaryTable.map(x => `${(x[0] - 0x10000).toString(36)},${x[1] === 0 ? '' : x[1].toString(36)}`).join(',')}',
+);
+`);
 
-  // Compute pessimistic default lower and upper bounds on the category.
-  // If character doesn't map to any range and there is no adjacent range
-  // in the table slice - these bounds has to apply.
-  let lower = idx * lookup_interval;
-  let upper = lower + lookup_interval - 1;
-  return bsearchUnicodeRange(cp, ${name}_cat_table, lower, upper, sliceFrom, sliceTo);
-}
-`.trimStart(),
+  f.write(`
+export const ${name}_supplementary_cats = createCats(
+  new Uint8Array(${supplementaryTable.length}),
+  '${supplementaryTable.map(x => inversed[x[2]].toString(36)).join('')}',
+);
+`,
   );
 };
 
@@ -640,23 +643,21 @@ export function search${typeName}(cp) {
 let printIncbModule = async f => {
   let ucd = await fetchData('DerivedCoreProperties.txt');
   let props = parseProperties(ucd, ['InCB=Consonant']);
+  let table = props['Consonant'];
 
   f.write(preamble);
   f.write(`
+import { createRanges } from './core.js';
+
 /**
  * The Unicode \`Indic_Conjunct_Break=Consonant\` derived property table
- *
- * @type {import('./core.js').UnicodeRange[]}
  */
+export const consonant_table = createRanges(
+  new Uint16Array(${table.length * 2}),
+  '${table.map(x => `${x[0] ? x[0].toString(36) : ''},${x[1] ? x[1].toString(36) : ''}`).join(',')}',
+);
 `,
   );
-  printTableCompressed(
-    f,
-    'consonant_table',
-    props['Consonant'],
-    formatRange,
-  );
-  f.write('\n');
 };
 
 /**

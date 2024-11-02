@@ -16,14 +16,19 @@
 import { bsearchRange } from './core.js';
 import { isBMP } from './utils.js';
 import {
-  searchGraphemeCategory,
   GraphemeCategory,
+  grapheme_basic_table,
+  grapheme_basic_cats,
+  grapheme_supplementary_table,
+  grapheme_supplementary_cats,
 } from './_grapheme_table.js';
 import {
   consonant_table,
 } from './_incb_table.js';
 
 /**
+ * @typedef {import('./_grapheme_table.js').GC_Any} GC_Any
+ *
  * @typedef {import('./_grapheme_table.js').GraphemeCategoryNum} GraphemeCategoryNum
  * @typedef {import('./_grapheme_table.js').GraphemeCategoryRange} GraphemeCategoryRange
  *
@@ -36,13 +41,38 @@ import {
 
 export {
   /**
-   * @deprecated Use `searchGraphemeCategory` instead
+   * @deprecated DO NOT USE directly, will be removed in v1
    */
   searchGraphemeCategory as searchGrapheme,
-  searchGraphemeCategory,
   GraphemeCategory,
 };
 
+/**
+ * @deprecated DO NOT USE directly, will be removed in v1
+ * @param {number} cp
+ * @return A {@link GraphemeCategoryRange} value if found, or garbage `start` and `padding` values with {@link GC_Any} category.
+ */
+export function searchGraphemeCategory(cp) {
+  let table = grapheme_basic_table, cats = grapheme_basic_cats;
+  if (isBMP(cp)) {
+    table = grapheme_supplementary_table, cats = grapheme_supplementary_cats;
+  }
+
+  let index = bsearchRange(cp, table);
+  if (index < 0) {
+    return [
+      table[-index],
+      0,
+      0 /* GC_Any */,
+    ];
+  } else {
+    return [
+      table[index],
+      table[index + 1],
+      cats[index >> 1],
+    ];
+  }
+}
 
 /**
  * @param {string} input
@@ -143,7 +173,7 @@ export function* graphemeSegments(input) {
       ) {
         emoji = true;
 
-      // Note: Put GB9c rule checking here to reduce.
+        // Note: Put GB9c rule checking here to reduce.
       } else if (catAfter === 0 /* Any */) {
         incb = consonant && linker && (consonant = isIndicConjunctCosonant(cp));
         // It cannot be both a linker and a consonant.
@@ -208,11 +238,23 @@ function cat(cp, cache) {
   } else {
     // If this char isn't within the cached range, update the cache to the
     // range that includes it.
-    if (cp < cache[0] || cp > cache[0] + cache[1]) {
-      let result = searchGraphemeCategory(cp);
-      cache[0] = result[0];
-      cache[1] = result[1];
-      cache[2] = result[2];
+    if (cp < cache[0] || cp > cache[1]) {
+      let index = -1, table = grapheme_basic_table, cats = grapheme_basic_cats;
+      if (isBMP(cp)) {
+        index = bsearchRange(cp, table);
+      } else {
+        table = grapheme_supplementary_table, cats = grapheme_supplementary_cats;
+        index = bsearchRange(cp - 65536, table);
+      }
+
+      if (index < 0) {
+        return 0;
+      }
+
+      cache[0] = table[index];
+      cache[1] = table[index + 1];
+      // @ts-ignore
+      cache[2] = cats[index >> 1];
     }
     return cache[2];
   }
@@ -324,3 +366,4 @@ function isBoundary(catBefore, catAfter, risCount, emoji, incb) {
   // GB999
   return true;
 }
+
