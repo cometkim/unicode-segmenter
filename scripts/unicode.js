@@ -472,28 +472,6 @@ let printTableCompressed = (f, name, table, format) => {
  * @param {WriteStream} f
  * @param {string} name
  * @param {T[]} table
- * @param {string} sep
- * @param {(row: T) => string} format
- */
-let printTableStr = (f, name, table, sep, format) => {
-  f.write(`const ${name} = '`);
-  let first = true;
-  for (let row of table) {
-    if (first) {
-      f.write(format(row));
-    } else {
-      f.write(sep + format(row));
-    }
-    first = false;
-  }
-  f.write(`';`);
-};
-
-/**
- * @template T
- * @param {WriteStream} f
- * @param {string} name
- * @param {T[]} table
  * @param {(row: T) => string} format
  */
 let printTableRaw = (f, name, table, format) => {
@@ -512,9 +490,6 @@ let printTableRaw = (f, name, table, format) => {
  * @returns 
  */
 let printBreakModule = (f, breakTable, breakCats, name) => {
-  let basicTable = breakTable.filter(x => isBMP(x[0]));
-  let supplementaryTable = breakTable.filter(x => !isBMP(x[0]));
-
   let cats = [...breakCats, 'Any'].toSorted();
 
   let capitalName = capitalize(name);
@@ -525,10 +500,10 @@ let printBreakModule = (f, breakTable, breakCats, name) => {
   // We don't want the lookup table to be too large so choose a reasonable
   // cutoff. 0x20000 is selected because most of the range table entries are
   // within the interval of [0x0, 0x20000]
-  let lookupValueCutoff = 0x10000;
+  let lookupValueCutoff = 0x20000;
 
   // Length of lookup table. It has to be a divisor of `lookup_value_cutoff`.
-  let lookupTableLen = 0x400;
+  let lookupTableLen = 0x80;
 
   let lookupInterval = Math.round(lookupValueCutoff / lookupTableLen);
 

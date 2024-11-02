@@ -108,8 +108,8 @@ export const grapheme_cats = createTable(
 );
 
 const grapheme_lookup = createTable(
-  new Uint16Array(1024),
-  ',5,5,9,9,9,9,9,9,9,9,9,9,9,a,a,a,a,a,b,b,b,b,d,g,j,l,l,q,s,t,u,w,10,11,13,15,1a,1h,1l,1t,1w,23,26,2e,2i,2p,2s,2y,32,38,3c,3l,3p,3x,3z,47,4a,4b,4e,4f,4k,4m,4q,4r,4x,51,56,56,56,57,58,59,59,59,59,59,59,5a,5a,5a,5a,5a,5a,5a,5a,5a,5a,5a,5a,5a,5a,5a,5c,5e,5h,5m,5p,5p,5r,5r,5z,5z,5z,5z,62,6c,6c,6d,6g,6j,6p,6w,70,70,70,78,78,78,78,79,79,79,79,79,79,79,79,79,7f,7h,7h,7i,7k,7k,7m,7m,7m,7m,7m,7m,7o,7o,7p,7s,7s,7s,7s,7t,7t,7t,7v,7x,7z,7z,80,80,88,8f,8j,8j,8j,8j,8j,8j,8k,8k,8k,8k,8k,8k,8k,8k,8m,8o,8o,8o,8o,8o,8o,8p,8p,8q,8q,8r,8r,8r,8r,8r,8r,8r,8r,8r,8u,8u,8v,8v,8v,8v,8v,8v,8v,8v,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8z,90,91,91,91,91,91,98,98,99,9d,9e,9i,9q,9s,9x,a1,a5,ab,ab,ab,ab,ai,an,ar,av,b1,b5,b9,be,bj,bn,br,bx,c1,c5,ca,cf,cj,cn,ct,cx,d1,d6,db,df,dj,dp,dt,dx,e2,e7,eb,ef,el,ep,et,ey,f3,f7,fb,fh,fl,fp,fu,fz,g3,g7,gd,gh,gl,gq,gv,gz,h3,h9,hd,hh,hm,hr,hv,hz,i5,i9,id,ii,in,ir,iv,j1,j5,j9,je,jj,jn,jr,jx,k1,k5,ka,kf,kj,kn,kt,kx,l1,l6,lb,lf,lj,lp,lt,lx,m2,m7,mb,mf,ml,mp,mt,my,n3,n7,nb,nh,nl,np,nu,nz,o3,o7,od,oh,ol,oq,ov,oz,p3,p9,pd,ph,pm,pr,pv,pz,q5,q9,qd,qi,qn,qr,qv,r1,r5,r9,re,rj,rn,rr,rx,s1,s5,sa,sf,sj,sn,st,sx,t1,t6,tb,tf,tj,tp,tt,tx,u2,u7,ub,uf,ul,up,ut,uy,v3,v7,vb,vh,vl,vp,vu,vz,w3,w7,wd,wh,wl,wo,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wq,wr,wr,wr,wr,wr,wr,wr,wr,wr,wr,wr,wr,wt,wt,wt,wu,wu,wu,wv',
+  new Uint16Array(128),
+  ',a,w,2y,4r,5a,5m,6w,79,7s,8j,8o,8r,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,8x,91,ai,cj,el,gl,in,kn,mp,oq,qr,st,ut,wq,wq,wq,wq,wq,wq,wq,wq,wq,wr,ww,wz,wz,x5,xb,z5,10c,118,126,126,126,126,126,126,129,129,129,129,129,129,129,129,129,129,129,12c,12c,12e,12l,12l,12l,12l,12l,12l,12l,12l,12l,12l,12l,12l,12l,12l,12l,12l,12l,12l,12l,12l,12n,12n,12n,12n,12p,12w,12w,132,132,13b,13d,13f,13f,13v,140,148',
 );
 
 /**
@@ -120,13 +120,13 @@ export function findGraphemeIndex(cp) {
   // Perform a quick O(1) lookup in a precomputed table to determine
   // the slice of the range table to search in.
   let lookup_table = grapheme_lookup;
-  let lookup_interval = 64;
+  let lookup_interval = 1024;
 
   let idx = cp / lookup_interval | 0;
   // If the `idx` is outside of the precomputed table - use the slice
   // starting from the last covered index in the precomputed table and
   // ending with the length of the range table.
-  let sliceFrom = 1183, sliceTo = 1454;
+  let sliceFrom = 1448, sliceTo = 1454;
   if (idx + 1 < lookup_table.length) {
     sliceFrom = lookup_table[idx];
     sliceTo = lookup_table[idx + 1] + 1;
