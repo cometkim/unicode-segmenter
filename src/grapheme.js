@@ -13,12 +13,12 @@
 
 // @ts-check
 
-import { bsearchUnicodeRange } from './core.js';
+import { searchUnicodeRange } from './core.js';
 import { isBMP } from './utils.js';
 import {
   GraphemeCategory,
   findGraphemeIndex,
-  grapheme_ranges,
+  grapheme_buffer,
   grapheme_cats,
 } from './_grapheme_table.js';
 import {
@@ -57,8 +57,8 @@ export function searchGraphemeCategory(cp) {
     return [0, 0, 0 /* GC_Any */];
   }
   return [
-    grapheme_ranges[index],
-    grapheme_ranges[index + 1],
+    grapheme_buffer[index],
+    grapheme_buffer[index + 1],
     grapheme_cats[index >> 1],
   ];
 }
@@ -229,8 +229,8 @@ function cat(cp, cache) {
         return 0;
       }
 
-      cache[0] = grapheme_ranges[index];
-      cache[1] = grapheme_ranges[index + 1];
+      cache[0] = grapheme_buffer[index];
+      cache[1] = grapheme_buffer[index + 1];
       cache[2] = /** @type {GraphemeCategoryNum} */ (grapheme_cats[index >> 1]);
     }
     return cache[2];
@@ -242,7 +242,7 @@ function cat(cp, cache) {
  * @return {boolean}
  */
 function isIndicConjunctCosonant(cp) {
-  return bsearchUnicodeRange(cp, consonant_table) >= 0;
+  return searchUnicodeRange(cp, consonant_table) >= 0;
 }
 
 /**

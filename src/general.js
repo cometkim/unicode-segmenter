@@ -1,10 +1,10 @@
 // @ts-check
 
-import { bsearchRange } from './core.js';
+import { searchUnicodeRange } from './core.js';
 import {
-  letter_table,
-  alphabetic_table,
-  numeric_table,
+  letter_buffer,
+  alphabetic_buffer,
+  numeric_buffer,
 } from './_general_table.js';
 
 /**
@@ -14,7 +14,7 @@ import {
  * @return boolean
  */
 export function isLetter(cp) {
-  return bsearchRange(cp, letter_table) >= 0;
+  return searchUnicodeRange(cp, letter_buffer) >= 0;
 }
 
 /**
@@ -24,7 +24,7 @@ export function isLetter(cp) {
  * @return boolean
  */
 export function isAlphabetic(cp) {
-  return bsearchRange(cp, alphabetic_table) >= 0;
+  return searchUnicodeRange(cp, alphabetic_buffer) >= 0;
 }
 
 /**
@@ -34,7 +34,7 @@ export function isAlphabetic(cp) {
  * @return boolean true if 
  */
 export function isNumeric(cp) {
-  return bsearchRange(cp, numeric_table) >= 0;
+  return searchUnicodeRange(cp, numeric_buffer) >= 0;
 }
 
 /**

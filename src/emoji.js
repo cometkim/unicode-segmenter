@@ -1,9 +1,9 @@
 // @ts-check
 
-import { bsearchRange } from './core.js';
+import { searchUnicodeRange } from './core.js';
 import {
-  emoji_presentation_table,
-  extended_pictographic_table,
+  emoji_presentation_buffer,
+  extended_pictographic_buffer,
 } from './_emoji_table.js';
 
 /**
@@ -25,7 +25,7 @@ export function isEmoji(cp) {
  * @return boolean
  */
 export function isEmojiPresentation(cp) {
-  return bsearchRange(cp, emoji_presentation_table) >= 0;
+  return searchUnicodeRange(cp, emoji_presentation_buffer) >= 0;
 }
 
 /**
@@ -35,5 +35,5 @@ export function isEmojiPresentation(cp) {
  * @return boolean
  */
 export function isExtendedPictographic(cp) {
-  return bsearchRange(cp, extended_pictographic_table) >= 0;
+  return searchUnicodeRange(cp, extended_pictographic_buffer) >= 0;
 }

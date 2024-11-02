@@ -66,7 +66,7 @@
  * @param {number} [sliceTo]
  * @return {number} index of including range, or (-low) if there isn't
  */
-export function bsearchUnicodeRange(x, buffer, sliceFrom = 0, sliceTo = buffer.length) {
+export function searchUnicodeRange(x, buffer, sliceFrom = 0, sliceTo = buffer.length) {
   let lo = sliceFrom;
   let hi = sliceTo - 2;
 

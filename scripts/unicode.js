@@ -158,6 +158,14 @@ let difference = (a, b) => {
 };
 
 /**
+ * @param {UnicodeRange[]} ranges
+ * @return {string}
+ */
+let encodeRanges = ranges => {
+  return ranges.map(x => `${x[0] ? x[0].toString(36) : ''},${x[1] ? x[1].toString(36) : ''}`).join(',');
+};
+
+/**
  * @param {UnicodeRange} range
  * @param {boolean} [compressed=true]
  * @return {string}
@@ -451,27 +459,6 @@ let parseTestData = (data, optsplit = []) => {
  * @param {T[]} table
  * @param {(row: T) => string} format
  */
-let printTableCompressed = (f, name, table, format) => {
-  f.write(`export const ${name} = JSON.parse('[`);
-  let first = true;
-  for (let row of table) {
-    if (first) {
-      f.write(format(row));
-    } else {
-      f.write(',' + format(row));
-    }
-    first = false;
-  }
-  f.write(`]');`);
-};
-
-/**
- * @template T
- * @param {WriteStream} f
- * @param {string} name
- * @param {T[]} table
- * @param {(row: T) => string} format
- */
 let printTableRaw = (f, name, table, format) => {
   f.write(`export const ${name} = [\n`);
   for (let row of table) {
@@ -522,7 +509,7 @@ let printBreakModule = (f, breakTable, breakCats, name) => {
   f.write(preamble);
   f.write(`
 import {
-  bsearchUnicodeRange,
+  searchUnicodeRange,
   initLookupTableBuffer,
   initUnicodeRangeBuffer,
 } from './core.js';
@@ -585,33 +572,25 @@ export const ${typeName} = {
   f.write('};\n');
 
   f.write(`
-export const ${name}_ranges = initUnicodeRangeBuffer(
+export const ${name}_buffer = initUnicodeRangeBuffer(
   new Uint32Array(${breakTable.length * 2}),
   /** @type {UnicodeRangeEncoding} */
   ('${breakTable.map(x => `${x[0] === 0 ? '' : x[0].toString(36)},${x[1] === 0 ? '' : x[1].toString(36)}`).join(',')}')
 );
-`);
 
-  f.write(`
 export const ${name}_cats = initLookupTableBuffer(
   new Uint8Array(${breakTable.length}),
   /** @type {LookupTableEncoding} */
   ('${breakTable.map(x => inversed[x[2]].toString(36)).join('')}')
 );
-`,
-  );
 
-  f.write(`
 const ${name}_lookup = initLookupTableBuffer(
   new Uint16Array(${lookupTable.length}),
   /** @type {LookupTableEncoding} */
   ('${lookupTable.map(x => x === 0 ? '' : x.toString(36)).join(',')}'),
   ','
 );
-`,
-  );
 
-  f.write(`
 /**
  * @param {number} cp
  * @return Index of {@link ${name}_ranges} if found, or negation of last visited low cursor.
@@ -632,7 +611,7 @@ export function find${capitalName}Index(cp) {
     sliceTo = lookup_table[idx + 1] + 1;
   }
 
-  return bsearchUnicodeRange(cp, ${name}_ranges, sliceFrom * 2, sliceTo * 2);
+  return searchUnicodeRange(cp, ${name}_buffer, sliceFrom * 2, sliceTo * 2);
 }
 `,
   );
@@ -683,37 +662,47 @@ let printGeneralModule = async f => {
 
   f.write(preamble);
   f.write(`
+import { initUnicodeRangeBuffer } from './core.js';
+
 /**
- * The Unicode \`L\` (Letter) property table
- *
- * @type {import('./core.js').UnicodeRange[]}
+ * @typedef {import('./core.js').UnicodeRangeBuffer} UnicodeRangeBuffer
+ * @typedef {import('./core.js').UnicodeRangeEncoding} UnicodeRangeEncoding
  */
+
+/**
+ * The Unicode \`L\` (Letter) properties data
+ *
+ * @type {UnicodeRangeBuffer}
+ */
+export const letter_buffer = initUnicodeRangeBuffer(
+  new Uint32Array(${gencats['L'].length * 2}),
+  /** @type {UnicodeRangeEncoding} */
+  ('${encodeRanges(gencats['L'])}')
+);
+
+/**
+ * The Unicode \`N\` (Numeric) properties data
+ *
+ * @type {UnicodeRangeBuffer}
+ */
+export const numeric_buffer = initUnicodeRangeBuffer(
+  new Uint32Array(${gencats['N'].length * 2}),
+  /** @type {UnicodeRangeEncoding} */
+  ('${encodeRanges(gencats['N'])}')
+);
+
+/**
+ * The Unicode \`Alphabetic\` properties data
+ *
+ * @type {UnicodeRangeBuffer}
+ */
+export const alphabetic_buffer = initUnicodeRangeBuffer(
+  new Uint32Array(${derived['Alphabetic'].length * 2}),
+  /** @type {UnicodeRangeEncoding} */
+  ('${encodeRanges(derived['Alphabetic'])}')
+);
 `,
   );
-  printTableCompressed(f, 'letter_table', gencats['L'], formatRange);
-  f.write('\n');
-
-  f.write(`
-/**
- * The Unicode \`N\` (Numeric) property table
- *
- * @type {import('./core.js').UnicodeRange[]}
- */
-`,
-  )
-  printTableCompressed(f, 'numeric_table', gencats['N'], formatRange);
-  f.write('\n');
-
-  f.write(`
-/**
- * The Unicode \`Alphabetic\` property table
- *
- * @type {import('./core.js').UnicodeRange[]}
- */
-`,
-  )
-  printTableCompressed(f, 'alphabetic_table', derived['Alphabetic'], formatRange);
-  f.write('\n');
 };
 
 /**
@@ -725,36 +714,36 @@ let printEmojiModule = async f => {
 
   f.write(preamble);
   f.write(`
-/**
- * The Unicode \`Emoji_Presentation\` property table
- *
- * @type {import('./core.js').UnicodeRange[]}
- */
-`,
-  );
-  printTableCompressed(
-    f,
-    'emoji_presentation_table',
-    emojiProps['Emoji_Presentation'],
-    formatRange,
-  );
-  f.write('\n');
+import { initUnicodeRangeBuffer } from './core.js';
 
-  f.write(`
 /**
- * The Unicode \`Extended_Pictographic\` property table
- *
- * @type {import('./core.js').UnicodeRange[]}
+ * @typedef {import('./core.js').UnicodeRangeBuffer} UnicodeRangeBuffer
+ * @typedef {import('./core.js').UnicodeRangeEncoding} UnicodeRangeEncoding
  */
+
+/**
+ * The Unicode \`Emoji_Presentation\` properties data
+ *
+ * @type {UnicodeRangeBuffer}
+ */
+export const emoji_presentation_buffer = initUnicodeRangeBuffer(
+  new Uint32Array(${emojiProps['Emoji_Presentation'].length * 2}),
+  /** @type {UnicodeRangeEncoding} */
+  ('${encodeRanges(emojiProps['Emoji_Presentation'])}')
+);
+
+/**
+ * The Unicode \`Extended_Pictographic\` properties data
+ *
+ * @type {UnicodeRangeBuffer}
+ */
+export const extended_pictographic_buffer = initUnicodeRangeBuffer(
+  new Uint32Array(${emojiProps['Extended_Pictographic'].length * 2}),
+  /** @type {UnicodeRangeEncoding} */
+  ('${encodeRanges(emojiProps['Extended_Pictographic'])}')
+);
 `,
   );
-  printTableCompressed(
-    f,
-    'extended_pictographic_table',
-    emojiProps['Extended_Pictographic'],
-    formatRange,
-  );
-  f.write('\n');
 };
 
 /**
