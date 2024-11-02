@@ -158,6 +158,14 @@ let difference = (a, b) => {
 };
 
 /**
+ * @param {UnicodeRange[]} ranges
+ * @return {string}
+ */
+let encodeRanges = ranges => {
+  return ranges.map(x => `${x[0] ? x[0].toString(36) : ''},${x[1] ? x[1].toString(36) : ''}`).join(',');
+};
+
+/**
  * @param {UnicodeRange} range
  * @param {boolean} [compressed=true]
  * @return {string}
@@ -451,27 +459,6 @@ let parseTestData = (data, optsplit = []) => {
  * @param {T[]} table
  * @param {(row: T) => string} format
  */
-let printTableCompressed = (f, name, table, format) => {
-  f.write(`export const ${name} = JSON.parse('[`);
-  let first = true;
-  for (let row of table) {
-    if (first) {
-      f.write(format(row));
-    } else {
-      f.write(',' + format(row));
-    }
-    first = false;
-  }
-  f.write(`]');`);
-};
-
-/**
- * @template T
- * @param {WriteStream} f
- * @param {string} name
- * @param {T[]} table
- * @param {(row: T) => string} format
- */
 let printTableRaw = (f, name, table, format) => {
   f.write(`export const ${name} = [\n`);
   for (let row of table) {
@@ -501,7 +488,7 @@ let printBreakModule = (f, breakTable, breakCats, name) => {
   let lookupValueCutoff = 0x20000;
 
   // Length of lookup table. It has to be a divisor of `lookup_value_cutoff`.
-  let lookupTableLen = 0x400;
+  let lookupTableLen = 0x80;
 
   let lookupInterval = Math.round(lookupValueCutoff / lookupTableLen);
 
@@ -521,12 +508,20 @@ let printBreakModule = (f, breakTable, breakCats, name) => {
 
   f.write(preamble);
   f.write(`
-import { bsearchUnicodeRange } from './core.js';
+import {
+  searchUnicodeRange,
+  initLookupTableBuffer,
+  initUnicodeRangeBuffer,
+} from './core.js';
+
+/**
+ * @typedef {import('./core.js').LookupTableEncoding} LookupTableEncoding
+ * @typedef {import('./core.js').UnicodeRangeEncoding} UnicodeRangeEncoding
+ */
 
 /**
 `,
   );
-
   /** @type {Record<string, number>} */
   let inversed = {};
   cats.forEach((cat, idx) => {
@@ -539,22 +534,19 @@ import { bsearchUnicodeRange } from './core.js';
     f.write(` *   | ${typeName[0]}C_${cat}\n`);
   }
   f.write(` * )} ${numTypeName}\n`);
-  f.write(' */\n\n');
+  f.write(' */\n');
 
   f.write(`
 /**
  * @typedef {import('./core.js').CategorizedUnicodeRange<${numTypeName}>} ${typeName}Range
- *
- * NOTE: It might be garbage \`from\` and \`to\` values when the \`category\` is {@link ${typeName[0]}C_Any}.
  */
-
-`.trimStart(),
+`,
   );
 
   f.write(`
 /**
  * @typedef {(
-`.trimStart(),
+`,
   );
   for (let cat of cats) {
     f.write(` *   | '${cat}'\n`);
@@ -577,41 +569,37 @@ export const ${typeName} = {
   for (let cat of cats) {
     f.write(`  ${cat}: ${inversed[cat]},\n`);
   }
-  f.write('};\n\n');
-
-  printTableCompressed(
-    f,
-    `${name}_cat_lookup`,
-    lookupTable,
-    x => x.toString(),
-  );
-  f.write('\n\n');
+  f.write('};\n');
 
   f.write(`
-/**
- * @type {${typeName}Range[]}
- */
-`.trimStart(),
-  );
+export const ${name}_buffer = initUnicodeRangeBuffer(
+  new Uint32Array(${breakTable.length * 2}),
+  /** @type {UnicodeRangeEncoding} */
+  ('${breakTable.map(x => `${x[0] === 0 ? '' : x[0].toString(36)},${x[1] === 0 ? '' : x[1].toString(36)}`).join(',')}')
+);
 
-  printTableCompressed(
-    f,
-    `${name}_cat_table`,
-    breakTable,
-    x => `[${x[0]},${x[1]},${inversed[x[2]]}]`,
-  );
-  f.write('\n\n');
+export const ${name}_cats = initLookupTableBuffer(
+  new Uint8Array(${breakTable.length}),
+  /** @type {LookupTableEncoding} */
+  ('${breakTable.map(x => inversed[x[2]].toString(36)).join('')}')
+);
 
-  f.write(`
+const ${name}_lookup = initLookupTableBuffer(
+  new Uint16Array(${lookupTable.length}),
+  /** @type {LookupTableEncoding} */
+  ('${lookupTable.map(x => x === 0 ? '' : x.toString(36)).join(',')}'),
+  ','
+);
+
 /**
  * @param {number} cp
- * @return An exact {@link ${typeName}Range} if found, or garbage \`start\` and \`from\` values with {@link ${typeName[0]}C_Any} category.
+ * @return Index of {@link ${name}_ranges} if found, or negation of last visited low cursor.
  */
-export function search${typeName}(cp) {
+export function find${capitalName}Index(cp) {
   // Perform a quick O(1) lookup in a precomputed table to determine
   // the slice of the range table to search in.
-  let lookup_table = ${name}_cat_lookup;
-  let lookup_interval = 0x${lookupInterval.toString(16)};
+  let lookup_table = ${name}_lookup;
+  let lookup_interval = ${lookupInterval};
 
   let idx = cp / lookup_interval | 0;
   // If the \`idx\` is outside of the precomputed table - use the slice
@@ -623,14 +611,9 @@ export function search${typeName}(cp) {
     sliceTo = lookup_table[idx + 1] + 1;
   }
 
-  // Compute pessimistic default lower and upper bounds on the category.
-  // If character doesn't map to any range and there is no adjacent range
-  // in the table slice - these bounds has to apply.
-  let lower = idx * lookup_interval;
-  let upper = lower + lookup_interval - 1;
-  return bsearchUnicodeRange(cp, ${name}_cat_table, lower, upper, sliceFrom, sliceTo);
+  return searchUnicodeRange(cp, ${name}_buffer, sliceFrom * 2, sliceTo * 2);
 }
-`.trimStart(),
+`,
   );
 };
 
@@ -640,23 +623,26 @@ export function search${typeName}(cp) {
 let printIncbModule = async f => {
   let ucd = await fetchData('DerivedCoreProperties.txt');
   let props = parseProperties(ucd, ['InCB=Consonant']);
+  let table = props['Consonant'];
 
   f.write(preamble);
   f.write(`
+import { initUnicodeRangeBuffer } from './core.js';
+
+/**
+ * @typedef {import('./core.js').UnicodeRangeEncoding} UnicodeRangeEncoding
+ */
+
 /**
  * The Unicode \`Indic_Conjunct_Break=Consonant\` derived property table
- *
- * @type {import('./core.js').UnicodeRange[]}
  */
+export const consonant_buffer = initUnicodeRangeBuffer(
+  new Uint16Array(${table.length * 2}),
+  /** @type {UnicodeRangeEncoding} */
+  ('${table.map(x => `${x[0] ? x[0].toString(36) : ''},${x[1] ? x[1].toString(36) : ''}`).join(',')}')
+);
 `,
   );
-  printTableCompressed(
-    f,
-    'consonant_table',
-    props['Consonant'],
-    formatRange,
-  );
-  f.write('\n');
 };
 
 /**
@@ -676,37 +662,47 @@ let printGeneralModule = async f => {
 
   f.write(preamble);
   f.write(`
+import { initUnicodeRangeBuffer } from './core.js';
+
 /**
- * The Unicode \`L\` (Letter) property table
- *
- * @type {import('./core.js').UnicodeRange[]}
+ * @typedef {import('./core.js').UnicodeRangeBuffer} UnicodeRangeBuffer
+ * @typedef {import('./core.js').UnicodeRangeEncoding} UnicodeRangeEncoding
  */
+
+/**
+ * The Unicode \`L\` (Letter) properties data
+ *
+ * @type {UnicodeRangeBuffer}
+ */
+export const letter_buffer = initUnicodeRangeBuffer(
+  new Uint32Array(${gencats['L'].length * 2}),
+  /** @type {UnicodeRangeEncoding} */
+  ('${encodeRanges(gencats['L'])}')
+);
+
+/**
+ * The Unicode \`N\` (Numeric) properties data
+ *
+ * @type {UnicodeRangeBuffer}
+ */
+export const numeric_buffer = initUnicodeRangeBuffer(
+  new Uint32Array(${gencats['N'].length * 2}),
+  /** @type {UnicodeRangeEncoding} */
+  ('${encodeRanges(gencats['N'])}')
+);
+
+/**
+ * The Unicode \`Alphabetic\` properties data
+ *
+ * @type {UnicodeRangeBuffer}
+ */
+export const alphabetic_buffer = initUnicodeRangeBuffer(
+  new Uint32Array(${derived['Alphabetic'].length * 2}),
+  /** @type {UnicodeRangeEncoding} */
+  ('${encodeRanges(derived['Alphabetic'])}')
+);
 `,
   );
-  printTableCompressed(f, 'letter_table', gencats['L'], formatRange);
-  f.write('\n');
-
-  f.write(`
-/**
- * The Unicode \`N\` (Numeric) property table
- *
- * @type {import('./core.js').UnicodeRange[]}
- */
-`,
-  )
-  printTableCompressed(f, 'numeric_table', gencats['N'], formatRange);
-  f.write('\n');
-
-  f.write(`
-/**
- * The Unicode \`Alphabetic\` property table
- *
- * @type {import('./core.js').UnicodeRange[]}
- */
-`,
-  )
-  printTableCompressed(f, 'alphabetic_table', derived['Alphabetic'], formatRange);
-  f.write('\n');
 };
 
 /**
@@ -718,36 +714,36 @@ let printEmojiModule = async f => {
 
   f.write(preamble);
   f.write(`
-/**
- * The Unicode \`Emoji_Presentation\` property table
- *
- * @type {import('./core.js').UnicodeRange[]}
- */
-`,
-  );
-  printTableCompressed(
-    f,
-    'emoji_presentation_table',
-    emojiProps['Emoji_Presentation'],
-    formatRange,
-  );
-  f.write('\n');
+import { initUnicodeRangeBuffer } from './core.js';
 
-  f.write(`
 /**
- * The Unicode \`Extended_Pictographic\` property table
- *
- * @type {import('./core.js').UnicodeRange[]}
+ * @typedef {import('./core.js').UnicodeRangeBuffer} UnicodeRangeBuffer
+ * @typedef {import('./core.js').UnicodeRangeEncoding} UnicodeRangeEncoding
  */
+
+/**
+ * The Unicode \`Emoji_Presentation\` properties data
+ *
+ * @type {UnicodeRangeBuffer}
+ */
+export const emoji_presentation_buffer = initUnicodeRangeBuffer(
+  new Uint32Array(${emojiProps['Emoji_Presentation'].length * 2}),
+  /** @type {UnicodeRangeEncoding} */
+  ('${encodeRanges(emojiProps['Emoji_Presentation'])}')
+);
+
+/**
+ * The Unicode \`Extended_Pictographic\` properties data
+ *
+ * @type {UnicodeRangeBuffer}
+ */
+export const extended_pictographic_buffer = initUnicodeRangeBuffer(
+  new Uint32Array(${emojiProps['Extended_Pictographic'].length * 2}),
+  /** @type {UnicodeRangeEncoding} */
+  ('${encodeRanges(emojiProps['Extended_Pictographic'])}')
+);
 `,
   );
-  printTableCompressed(
-    f,
-    'extended_pictographic_table',
-    emojiProps['Extended_Pictographic'],
-    formatRange,
-  );
-  f.write('\n');
 };
 
 /**
@@ -952,7 +948,7 @@ for (let chars of graphemeTable) {
 // sentenceTable.sort((a, b) => a[0] - b[0]);
 
 await emitSrc(
-  '_grapheme_table.js',
+  '_grapheme_data.js',
   async f => printBreakModule(
     f,
     graphemeTable,
@@ -962,7 +958,7 @@ await emitSrc(
 );
 
 // emitSrc(
-//   '_word_table.js',
+//   '_word_data.js',
 //   async f => printBreakModule(
 //     f,
 //     wordTable,
@@ -972,7 +968,7 @@ await emitSrc(
 // );
 
 // emitSrc(
-//   '_sentence_table.js',
+//   '_sentence_data.js',
 //   async f => printBreakModule(
 //     f,
 //     sentenceTable,
@@ -982,17 +978,17 @@ await emitSrc(
 // );
 
 await emitSrc(
-  '_incb_table.js',
+  '_incb_data.js',
   printIncbModule,
 );
 
 await emitSrc(
-  '_general_table.js',
+  '_general_data.js',
   printGeneralModule,
 );
 
 await emitSrc(
-  '_emoji_table.js',
+  '_emoji_data.js',
   printEmojiModule,
 );
 

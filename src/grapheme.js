@@ -13,19 +13,23 @@
 
 // @ts-check
 
-import { bsearchRange } from './core.js';
+import { searchUnicodeRange } from './core.js';
 import { isBMP } from './utils.js';
 import {
-  searchGraphemeCategory,
   GraphemeCategory,
-} from './_grapheme_table.js';
+  findGraphemeIndex,
+  grapheme_buffer,
+  grapheme_cats,
+} from './_grapheme_data.js';
 import {
-  consonant_table,
-} from './_incb_table.js';
+  consonant_buffer,
+} from './_incb_data.js';
 
 /**
- * @typedef {import('./_grapheme_table.js').GraphemeCategoryNum} GraphemeCategoryNum
- * @typedef {import('./_grapheme_table.js').GraphemeCategoryRange} GraphemeCategoryRange
+ * @typedef {import('./_grapheme_data.js').GC_Any} GC_Any
+ *
+ * @typedef {import('./_grapheme_data.js').GraphemeCategoryNum} GraphemeCategoryNum
+ * @typedef {import('./_grapheme_data.js').GraphemeCategoryRange} GraphemeCategoryRange
  *
  * @typedef {object} GraphemeSegmentExtra
  * @property {GraphemeCategoryNum} _catBegin Beginning Grapheme_Cluster_Break category of the segment
@@ -36,13 +40,28 @@ import {
 
 export {
   /**
-   * @deprecated Use `searchGraphemeCategory` instead
+   * @deprecated DO NOT USE directly, will be removed in v1
    */
   searchGraphemeCategory as searchGrapheme,
-  searchGraphemeCategory,
   GraphemeCategory,
 };
 
+/**
+ * @deprecated DO NOT USE directly, will be removed in v1
+ * @param {number} cp
+ * @return A {@link GraphemeCategoryRange} value if found, or garbage value with {@link GC_Any} category.
+ */
+export function searchGraphemeCategory(cp) {
+  let index = findGraphemeIndex(cp);
+  if (index < 0) {
+    return [0, 0, 0 /* GC_Any */];
+  }
+  return [
+    grapheme_buffer[index],
+    grapheme_buffer[index + 1],
+    grapheme_cats[index >> 1],
+  ];
+}
 
 /**
  * @param {string} input
@@ -69,7 +88,7 @@ export function* graphemeSegments(input) {
   /** @type {GraphemeCategoryNum | null} Beginning category of a segment */
   let catBegin = null;
 
-  /** @type {import('./_grapheme_table.js').GraphemeCategoryRange} */
+  /** @type {import('./_grapheme_data.js').GraphemeCategoryRange} */
   let cache = [0, 0, 2 /* GC_Control */];
 
   /** @type {number} The number of RIS codepoints preceding `cursor`. */
@@ -87,9 +106,7 @@ export function* graphemeSegments(input) {
   /** InCB=Consonant InCB=Linker x InCB=Consonant */
   let incb = false;
 
-  /** @type number */
-  // @ts-ignore
-  let cp = input.codePointAt(cursor);
+  let cp = /** @type number */ (input.codePointAt(cursor));
 
   let index = 0;
   let segment = '';
@@ -118,16 +135,14 @@ export function* graphemeSegments(input) {
     }
 
     if (cursor < len) {
-      // @ts-ignore
-      cp = input.codePointAt(cursor);
+      cp = /** @type {number} */ (input.codePointAt(cursor));
       catAfter = cat(cp, cache);
     } else {
       yield {
         segment,
         index,
         input,
-        // @ts-ignore
-        _catBegin: catBegin,
+        _catBegin: /** @type {typeof catBefore} */ (catBegin),
         _catEnd: catBefore,
       };
       return;
@@ -143,8 +158,8 @@ export function* graphemeSegments(input) {
       ) {
         emoji = true;
 
-      // Note: Put GB9c rule checking here to reduce.
       } else if (catAfter === 0 /* Any */) {
+        // Note: Put GB9c rule checking here to reduce.
         incb = consonant && linker && (consonant = isIndicConjunctCosonant(cp));
         // It cannot be both a linker and a consonant.
         linker = linker && !consonant;
@@ -156,8 +171,7 @@ export function* graphemeSegments(input) {
         segment,
         index,
         input,
-        // @ts-ignore
-        _catBegin: catBegin,
+        _catBegin: /** @type {typeof catBefore} */ (catBegin),
         _catEnd: catBefore,
       };
 
@@ -187,7 +201,7 @@ export function countGrapheme(str) {
  * @see https://www.unicode.org/reports/tr29/tr29-43.html#Default_Grapheme_Cluster_Table
  *
  * @param {number} cp
- * @param {import('./_grapheme_table.js').GraphemeCategoryRange} cache
+ * @param {import('./_grapheme_data.js').GraphemeCategoryRange} cache
  * @return {GraphemeCategoryNum}
  */
 function cat(cp, cache) {
@@ -208,11 +222,16 @@ function cat(cp, cache) {
   } else {
     // If this char isn't within the cached range, update the cache to the
     // range that includes it.
-    if (cp < cache[0] || cp > cache[0] + cache[1]) {
-      let result = searchGraphemeCategory(cp);
-      cache[0] = result[0];
-      cache[1] = result[1];
-      cache[2] = result[2];
+    if (cp < cache[0] || cp > cache[1]) {
+      let index = findGraphemeIndex(cp);
+
+      if (index < 0) {
+        return 0;
+      }
+
+      cache[0] = grapheme_buffer[index];
+      cache[1] = grapheme_buffer[index + 1];
+      cache[2] = /** @type {GraphemeCategoryNum} */ (grapheme_cats[index >> 1]);
     }
     return cache[2];
   }
@@ -223,7 +242,7 @@ function cat(cp, cache) {
  * @return {boolean}
  */
 function isIndicConjunctCosonant(cp) {
-  return bsearchRange(cp, consonant_table) >= 0;
+  return searchUnicodeRange(cp, consonant_buffer) >= 0;
 }
 
 /**
@@ -324,3 +343,4 @@ function isBoundary(catBefore, catAfter, risCount, emoji, incb) {
   // GB999
   return true;
 }
+

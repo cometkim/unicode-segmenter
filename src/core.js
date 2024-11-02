@@ -1,18 +1,47 @@
 // @ts-check
 
 /**
- * @typedef {[point: number, padding: number]} UnicodeRange
+ * @typedef {[from: number, to: number]} UnicodeRange
  *
- * Encoded unicode range
+ * [from..to] code points included
  */
 
 /**
  * @template {number} T
- * @typedef {[point: number, padding: number, category: T]} CategorizedUnicodeRange
+ * @typedef {[fro: number, to: number, category: T]} CategorizedUnicodeRange
+ */
+
+/**
+ * @typedef {string & { __tag: 'LookupTableEncoding' }} LookupTableEncoding
  *
- * Encoded unicode range with category code.
+ * Base36 encoded {@link LookupTableBuffer} data. It's a sequence of `base36(code point)` with separators.
  *
- * NOTE: It might be garbage `from` and `to` values when the `category` is `Any`.
+ * Separator can be omitted if each value is small (=< 36)
+ */
+
+/**
+ * @typedef {ArrayLike<number> & { __tag: 'LookupTableBuffer' }} LookupTableBuffer
+ *
+ * Value lookup table serialized into a TypedArray
+ */
+
+/**
+ * @typedef {ArrayLike<number> & { __tag: 'UnicodeRangeBuffer' }} UnicodeRangeBuffer
+ *
+ * {@link UnicodeRange} data serialized into a TypedArray
+ *
+ * It's a dense array like `[from,to,from,to,...]`
+ * So always has an even length and is quantized into 2-items chunks.
+ *
+ * The pairs must be sorted in ascending order to allow binary search. 
+ */
+
+/**
+ * @typedef {string & { __tag: 'UnicodeRangeEncoding' }} UnicodeRangeEncoding
+ *
+ * Base36 encoded {@link UnicodeRangeBuffer} data. It's a sequence of `base36(code point),base36(padding)`
+ *
+ * Value `0` is represented as empty strings
  */
 
 /**
@@ -31,64 +60,54 @@
 
 /**
  * @template {number} T
- * @template C
  * @param {T} x
- * @param {Array<[T, T, C?]>} table
+ * @param {UnicodeRangeBuffer} buffer
  * @param {number} [sliceFrom]
  * @param {number} [sliceTo]
  * @return {number} index of including range, or -(low+1) if there isn't
  */
-export function bsearchRange(x, table, sliceFrom = 0, sliceTo = table.length) {
+export function searchUnicodeRange(x, buffer, sliceFrom = 0, sliceTo = buffer.length) {
   let lo = sliceFrom;
-  let hi = sliceTo - 1;
+  let hi = sliceTo - 2;
 
   while (lo <= hi) {
-    let mid = lo + hi >> 1;
-    let row = table[mid];
-    let l = row[0], h = l + row[1];
+    let mid = lo + hi >> 1 & ~1;
+    let l = buffer[mid], h = buffer[mid + 1];
     if (l <= x && x <= h) {
       return mid;
     } else if (h < x) {
-      lo = mid + 1;
+      lo = mid + 2;
     } else {
-      hi = mid - 1;
+      hi = mid - 2;
     }
   }
 
-  return -lo-1;
+  return -lo - 1;
 }
 
 /**
- * @template {number} T
- * @param {number} cp Unicode code point
- * @param {Array<CategorizedUnicodeRange<T>>} table
- * @param {number} defaultLower
- * @param {number} defaultUpper
- * @param {number} [sliceFrom]
- * @param {number} [sliceTo]
- * @return {CategorizedUnicodeRange<T>}
+ * @param {ArrayLike<number>} buffer 
+ * @param {LookupTableEncoding} value
+ * @param {'' | ','} [sep = '']
+ * @return {LookupTableBuffer}
  */
-export function bsearchUnicodeRange(cp, table, defaultLower, defaultUpper, sliceFrom = 0, sliceTo = table.length) {
-  let found = bsearchRange(cp, table, sliceFrom, sliceTo);
-  if (found >= 0) {
-    return table[found];
-  }
+export function initLookupTableBuffer(buffer, value, sep = '') {
+  let nums = value.split(sep).map(s => s ? parseInt(s, 36) : 0);
+  for (let i = 0; i < nums.length; i++)
+    /** @type Array<number> */
+    (buffer)[i] = nums[i];
+  return /** @type {LookupTableBuffer} */(buffer);
+};
 
-  // Not found
-  let cursor = -found-1;
-
-  let lower = defaultLower;
-  if (cursor > 0) {
-    let range = table[cursor - 1];
-    lower = range[0] + range[1] + 1;
-  }
-
-  let upper = defaultUpper;
-  let range = table[cursor];
-  if (range) {
-    upper = range[0] - 1;
-  }
-
-  // @ts-ignore
-  return [lower, upper - lower, 0 /* Any */];
-}
+/**
+ * @param {ArrayLike<number>} buffer
+ * @param {UnicodeRangeEncoding} value
+ * @return {UnicodeRangeBuffer}
+ */
+export function initUnicodeRangeBuffer(buffer, value) {
+  let nums = value.split(',').map(s => s ? parseInt(s, 36) : 0);
+  for (let i = 0, n = 0; i < nums.length; i++)
+    /** @type Array<number> */
+    (buffer)[i] = i % 2 ? n + nums[i] : (n = nums[i]);
+  return /** @type {UnicodeRangeBuffer} */ (buffer);
+};
