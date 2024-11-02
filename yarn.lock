@@ -5942,7 +5942,7 @@ __metadata:
 "unicode-segmentation-wasm@github:cometkim/unicode-segmentation-wasm#230eb74d320ea2f31f95b74ddb2567186d496587":
   version: 0.0.1
   resolution: "unicode-segmentation-wasm@https://github.com/cometkim/unicode-segmentation-wasm.git#commit=230eb74d320ea2f31f95b74ddb2567186d496587"
-  checksum: 10c0/083e9d9bb70f6b67e148fb5519719a975c1110515941c0b7d92e5f2aaa603b4cde99a4d3b042c778ed77d2857271e9358fb344cefaeec69b397b21fdd7103b2b
+  checksum: 10c0/241541ad75136f7d371bf803ef366ee620e9cd2e4e207d64e0aa032f90d53aeb7a91dd7e6652b79590ccf9212809125f2a1e38fefd8df86dc53356c39669d41c
   languageName: node
   linkType: hard
 
