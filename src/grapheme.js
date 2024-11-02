@@ -22,7 +22,7 @@ import {
   grapheme_cats,
 } from './_grapheme_table.js';
 import {
-  consonant_table,
+  consonant_buffer,
 } from './_incb_table.js';
 
 /**
@@ -242,7 +242,7 @@ function cat(cp, cache) {
  * @return {boolean}
  */
 function isIndicConjunctCosonant(cp) {
-  return searchUnicodeRange(cp, consonant_table) >= 0;
+  return searchUnicodeRange(cp, consonant_buffer) >= 0;
 }
 
 /**

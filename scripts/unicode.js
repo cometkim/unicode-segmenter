@@ -636,7 +636,7 @@ import { initUnicodeRangeBuffer } from './core.js';
 /**
  * The Unicode \`Indic_Conjunct_Break=Consonant\` derived property table
  */
-export const consonant_table = initUnicodeRangeBuffer(
+export const consonant_buffer = initUnicodeRangeBuffer(
   new Uint16Array(${table.length * 2}),
   /** @type {UnicodeRangeEncoding} */
   ('${table.map(x => `${x[0] ? x[0].toString(36) : ''},${x[1] ? x[1].toString(36) : ''}`).join(',')}')
