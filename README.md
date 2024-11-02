@@ -37,7 +37,7 @@ And extra utilities for combined use cases.
 
 - [`unicode-segmenter/emoji`](#export-unicode-segmenteremoji): Matches single codepoint emojis
 - [`unicode-segmenter/general`](#export-unicode-segmentergeneral): Matches single codepoint alphanumerics
-- [`unicode-segmenter/utils`](#export-unicode-segmenterutils): Handles UTF-8 and UTF-16 surrogates
+- [`unicode-segmenter/utils`](#export-unicode-segmenterutils): Handles UTF-16 codepoints
 
 ### Export `unicode-segmenter/grapheme`
 [![](https://edge.bundlejs.com/badge?q=unicode-segmenter/grapheme&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fgrapheme&treeshake=%5B*%5D)
