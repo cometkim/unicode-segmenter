@@ -548,7 +548,11 @@ let printBreakModule = (f, breakTable, breakCats, name) => {
 
   f.write(preamble);
   f.write(`
-import { createRanges, createCats } from './core.js';
+import {
+  bsearchRange,
+  createTable,
+  createRangeTable,
+} from './core.js';
 
 /**
 `,
@@ -607,32 +611,52 @@ export const ${typeName} = {
   f.write('};\n');
 
   f.write(`
-export const ${name}_basic_table = createRanges(
-  new Uint16Array(${basicTable.length * 2}),
-  '${basicTable.map(x => `${x[0] === 0 ? '' : x[0].toString(36)},${x[1] === 0 ? '' : x[1].toString(36)}`).join(',')}',
+export const ${name}_ranges = createRangeTable(
+  new Uint32Array(${breakTable.length * 2}),
+  '${breakTable.map(x => `${x[0] === 0 ? '' : x[0].toString(36)},${x[1] === 0 ? '' : x[1].toString(36)}`).join(',')}',
 );
 `);
 
   f.write(`
-export const ${name}_basic_cats = createCats(
-  new Uint8Array(${basicTable.length}),
-  '${basicTable.map(x => inversed[x[2]].toString(36)).join('')}',
+export const ${name}_cats = createTable(
+  new Uint8Array(${breakTable.length}),
+  '${breakTable.map(x => inversed[x[2]].toString(36)).join('')}',
+  '',
 );
 `,
   );
 
   f.write(`
-export const ${name}_supplementary_table = createRanges(
-  new Uint32Array(${supplementaryTable.length * 2}),
-  '${supplementaryTable.map(x => `${(x[0] - 0x10000).toString(36)},${x[1] === 0 ? '' : x[1].toString(36)}`).join(',')}',
+const ${name}_lookup = createTable(
+  new Uint16Array(${lookupTable.length}),
+  '${lookupTable.map(x => x === 0 ? '' : x.toString(36)).join(',')}',
 );
-`);
+`,
+  );
 
   f.write(`
-export const ${name}_supplementary_cats = createCats(
-  new Uint8Array(${supplementaryTable.length}),
-  '${supplementaryTable.map(x => inversed[x[2]].toString(36)).join('')}',
-);
+/**
+ * @param {number} cp
+ * @return An {@link ${typeName}Range} if found, or approx \`start\` and \`padding\` values with {@link ${typeName[0]}C_Any} category.
+ */
+export function find${capitalName}Index(cp) {
+  // Perform a quick O(1) lookup in a precomputed table to determine
+  // the slice of the range table to search in.
+  let lookup_table = ${name}_lookup;
+  let lookup_interval = ${lookupInterval};
+
+  let idx = cp / lookup_interval | 0;
+  // If the \`idx\` is outside of the precomputed table - use the slice
+  // starting from the last covered index in the precomputed table and
+  // ending with the length of the range table.
+  let sliceFrom = ${j}, sliceTo = ${breakTable.length};
+  if (idx + 1 < lookup_table.length) {
+    sliceFrom = lookup_table[idx];
+    sliceTo = lookup_table[idx + 1] + 1;
+  }
+
+  return bsearchRange(cp, ${name}_ranges, sliceFrom * 2, sliceTo * 2);
+}
 `,
   );
 };
@@ -647,12 +671,12 @@ let printIncbModule = async f => {
 
   f.write(preamble);
   f.write(`
-import { createRanges } from './core.js';
+import { createRangeTable } from './core.js';
 
 /**
  * The Unicode \`Indic_Conjunct_Break=Consonant\` derived property table
  */
-export const consonant_table = createRanges(
+export const consonant_table = createRangeTable(
   new Uint16Array(${table.length * 2}),
   '${table.map(x => `${x[0] ? x[0].toString(36) : ''},${x[1] ? x[1].toString(36) : ''}`).join(',')}',
 );

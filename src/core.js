@@ -61,10 +61,11 @@ export function bsearchRange(x, table, sliceFrom = 0, sliceTo = table.length) {
  * @param {string} value
  * @return {ArrayLike<number>}
  */
-export function createCats(table, value) {
-  for (let i = 0; i < value.length; i++)
+export function createTable(table, value, sep = ',') {
+  let nums = value.split(sep).map(s => s ? parseInt(s, 36) : 0);
+  for (let i = 0; i < nums.length; i++)
     // @ts-ignore
-    table[i] = parseInt(value[i], 36);
+    table[i] = nums[i];
   return table;
 };
 
@@ -73,7 +74,7 @@ export function createCats(table, value) {
  * @param {string} value
  * @return {ArrayLike<number>}
  */
-export function createRanges(table, value) {
+export function createRangeTable(table, value) {
   let nums = value.split(',').map(s => s ? parseInt(s, 36) : 0);
   for (let i = 0, n = 0; i < nums.length; i++)
     // @ts-ignore
