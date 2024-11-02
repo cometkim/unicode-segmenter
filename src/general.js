@@ -5,7 +5,7 @@ import {
   letter_buffer,
   alphabetic_buffer,
   numeric_buffer,
-} from './_general_table.js';
+} from './_general_data.js';
 
 /**
  * Check if the given code point is included in Unicode \\p{L} general property

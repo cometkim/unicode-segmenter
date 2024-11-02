@@ -4,7 +4,7 @@ import { searchUnicodeRange } from './core.js';
 import {
   emoji_presentation_buffer,
   extended_pictographic_buffer,
-} from './_emoji_table.js';
+} from './_emoji_data.js';
 
 /**
  * An alias to {@link isExtendedPictographic}

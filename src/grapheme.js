@@ -20,16 +20,16 @@ import {
   findGraphemeIndex,
   grapheme_buffer,
   grapheme_cats,
-} from './_grapheme_table.js';
+} from './_grapheme_data.js';
 import {
   consonant_buffer,
-} from './_incb_table.js';
+} from './_incb_data.js';
 
 /**
- * @typedef {import('./_grapheme_table.js').GC_Any} GC_Any
+ * @typedef {import('./_grapheme_data.js').GC_Any} GC_Any
  *
- * @typedef {import('./_grapheme_table.js').GraphemeCategoryNum} GraphemeCategoryNum
- * @typedef {import('./_grapheme_table.js').GraphemeCategoryRange} GraphemeCategoryRange
+ * @typedef {import('./_grapheme_data.js').GraphemeCategoryNum} GraphemeCategoryNum
+ * @typedef {import('./_grapheme_data.js').GraphemeCategoryRange} GraphemeCategoryRange
  *
  * @typedef {object} GraphemeSegmentExtra
  * @property {GraphemeCategoryNum} _catBegin Beginning Grapheme_Cluster_Break category of the segment
@@ -88,7 +88,7 @@ export function* graphemeSegments(input) {
   /** @type {GraphemeCategoryNum | null} Beginning category of a segment */
   let catBegin = null;
 
-  /** @type {import('./_grapheme_table.js').GraphemeCategoryRange} */
+  /** @type {import('./_grapheme_data.js').GraphemeCategoryRange} */
   let cache = [0, 0, 2 /* GC_Control */];
 
   /** @type {number} The number of RIS codepoints preceding `cursor`. */
@@ -201,7 +201,7 @@ export function countGrapheme(str) {
  * @see https://www.unicode.org/reports/tr29/tr29-43.html#Default_Grapheme_Cluster_Table
  *
  * @param {number} cp
- * @param {import('./_grapheme_table.js').GraphemeCategoryRange} cache
+ * @param {import('./_grapheme_data.js').GraphemeCategoryRange} cache
  * @return {GraphemeCategoryNum}
  */
 function cat(cp, cache) {

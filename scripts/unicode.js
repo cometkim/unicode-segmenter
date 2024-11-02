@@ -948,7 +948,7 @@ for (let chars of graphemeTable) {
 // sentenceTable.sort((a, b) => a[0] - b[0]);
 
 await emitSrc(
-  '_grapheme_table.js',
+  '_grapheme_data.js',
   async f => printBreakModule(
     f,
     graphemeTable,
@@ -958,7 +958,7 @@ await emitSrc(
 );
 
 // emitSrc(
-//   '_word_table.js',
+//   '_word_data.js',
 //   async f => printBreakModule(
 //     f,
 //     wordTable,
@@ -968,7 +968,7 @@ await emitSrc(
 // );
 
 // emitSrc(
-//   '_sentence_table.js',
+//   '_sentence_data.js',
 //   async f => printBreakModule(
 //     f,
 //     sentenceTable,
@@ -978,17 +978,17 @@ await emitSrc(
 // );
 
 await emitSrc(
-  '_incb_table.js',
+  '_incb_data.js',
   printIncbModule,
 );
 
 await emitSrc(
-  '_general_table.js',
+  '_general_data.js',
   printGeneralModule,
 );
 
 await emitSrc(
-  '_emoji_table.js',
+  '_emoji_data.js',
   printEmojiModule,
 );
 
