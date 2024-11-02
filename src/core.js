@@ -64,7 +64,7 @@
  * @param {UnicodeRangeBuffer} buffer
  * @param {number} [sliceFrom]
  * @param {number} [sliceTo]
- * @return {number} index of including range, or (-low) if there isn't
+ * @return {number} index of including range, or -(low+1) if there isn't
  */
 export function searchUnicodeRange(x, buffer, sliceFrom = 0, sliceTo = buffer.length) {
   let lo = sliceFrom;
@@ -82,7 +82,7 @@ export function searchUnicodeRange(x, buffer, sliceFrom = 0, sliceTo = buffer.le
     }
   }
 
-  return -lo;
+  return -lo - 1;
 }
 
 /**
