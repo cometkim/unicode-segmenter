@@ -16,7 +16,9 @@
 import { bsearchRange } from './core.js';
 import { isBMP } from './utils.js';
 import {
-  searchGraphemeCategory,
+  searchGraphemeIndex,
+  grapheme_range_table,
+  grapheme_cat_table,
   GraphemeCategory,
 } from './_grapheme_table.js';
 import {
@@ -34,12 +36,14 @@ import {
  * @typedef {import('./core.js').Segmenter<GraphemeSegmentExtra>} GraphemeSegmenter
  */
 
+export function searchGraphemeCategory(cp) {
+}
+
 export {
   /**
    * @deprecated Use `searchGraphemeCategory` instead
    */
   searchGraphemeCategory as searchGrapheme,
-  searchGraphemeCategory,
   GraphemeCategory,
 };
 
@@ -143,7 +147,7 @@ export function* graphemeSegments(input) {
       ) {
         emoji = true;
 
-      // Note: Put GB9c rule checking here to reduce.
+        // Note: Put GB9c rule checking here to reduce.
       } else if (catAfter === 0 /* Any */) {
         incb = consonant && linker && (consonant = isIndicConjunctCosonant(cp));
         // It cannot be both a linker and a consonant.
@@ -208,11 +212,15 @@ function cat(cp, cache) {
   } else {
     // If this char isn't within the cached range, update the cache to the
     // range that includes it.
-    if (cp < cache[0] || cp > cache[0] + cache[1]) {
-      let result = searchGraphemeCategory(cp);
-      cache[0] = result[0];
-      cache[1] = result[1];
-      cache[2] = result[2];
+    if (cp < cache[0] || cp > cache[1]) {
+      let index = searchGraphemeIndex(cp);
+      if (index < 0) {
+        return 0;
+      }
+      cache[0] = grapheme_range_table[index];
+      cache[1] = grapheme_range_table[index + 1];
+      // @ts-ignore
+      cache[2] = grapheme_cat_table[index >> 1];
     }
     return cache[2];
   }

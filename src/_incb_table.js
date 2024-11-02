@@ -5,7 +5,13 @@
 
 /**
  * The Unicode `Indic_Conjunct_Break=Consonant` derived property table
- *
- * @type {import('./core.js').UnicodeRange[]}
  */
-export const consonant_table = JSON.parse('[[2325,36],[2392,7],[2424,7],[2453,19],[2474,6],[2482,0],[2486,3],[2524,1],[2527,0],[2544,1],[2709,19],[2730,6],[2738,1],[2741,4],[2809,0],[2837,19],[2858,6],[2866,1],[2869,4],[2908,1],[2911,0],[2929,0],[3093,19],[3114,15],[3160,2],[3349,37]]');
+const consonant_str = '1sl,10,1ug,7,1vc,7,1w5,j,1wq,6,1wy,,1x2,3,1y4,1,1y7,,1yo,1,239,j,23u,6,242,1,245,4,261,,26t,j,27e,6,27m,1,27p,4,28s,1,28v,,29d,,2dx,j,2ei,f,2fs,2,2l1,11';
+
+export const consonant_table = new Uint16Array(52);
+(function(table, value) {
+  let nums = value.split(',').map(s => s ? parseInt(s, 36) : 0);
+  for (let i = 0, n = 0; i < nums.length; i++)
+    table[i] = i % 2 ? n + nums[i] : (n = nums[i]);
+})(consonant_table, consonant_str);
+

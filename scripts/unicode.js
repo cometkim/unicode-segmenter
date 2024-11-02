@@ -470,6 +470,28 @@ let printTableCompressed = (f, name, table, format) => {
  * @param {WriteStream} f
  * @param {string} name
  * @param {T[]} table
+ * @param {string} sep
+ * @param {(row: T) => string} format
+ */
+let printTableStr = (f, name, table, sep, format) => {
+  f.write(`const ${name} = '`);
+  let first = true;
+  for (let row of table) {
+    if (first) {
+      f.write(format(row));
+    } else {
+      f.write(sep + format(row));
+    }
+    first = false;
+  }
+  f.write(`';`);
+};
+
+/**
+ * @template T
+ * @param {WriteStream} f
+ * @param {string} name
+ * @param {T[]} table
  * @param {(row: T) => string} format
  */
 let printTableRaw = (f, name, table, format) => {
@@ -521,7 +543,7 @@ let printBreakModule = (f, breakTable, breakCats, name) => {
 
   f.write(preamble);
   f.write(`
-import { bsearchUnicodeRange } from './core.js';
+import { bsearchRange } from './core.js';
 
 /**
 `,
@@ -579,38 +601,71 @@ export const ${typeName} = {
   }
   f.write('};\n\n');
 
-  printTableCompressed(
+  printTableStr(
     f,
-    `${name}_cat_lookup`,
+    `${name}_lookup_str`,
     lookupTable,
-    x => x.toString(),
+    ',',
+    x => x === 0 ? '' : x.toString(36),
   );
-  f.write('\n\n');
-
+  f.write('\n');
   f.write(`
-/**
- * @type {${typeName}Range[]}
- */
-`.trimStart(),
+export const ${name}_lookup_table = new Uint16Array(${lookupTable.length});
+(function(table, value) {
+  let nums = value.split(',').map(s => s ? parseInt(s, 36) : 0);
+  for (let i = 0; i < nums.length; i++)
+    table[i] = nums[i];
+})(${name}_lookup_table, ${name}_lookup_str);
+
+`,
   );
 
-  printTableCompressed(
+  printTableStr(
     f,
-    `${name}_cat_table`,
+    `${name}_range_str`,
     breakTable,
-    x => `[${x[0]},${x[1]},${inversed[x[2]]}]`,
+    ',',
+    x => `${x[0] === 0 ? '' : x[0].toString(36)},${x[1] === 0 ? '' : x[1].toString(36)}`,
   );
-  f.write('\n\n');
+  f.write('\n');
+  f.write(`
+export const ${name}_range_table = new Uint32Array(${breakTable.length * 2});
+(function(table, value) {
+  let nums = value.split(',').map(s => s ? parseInt(s, 36) : 0);
+  for (let i = 0, n = 0; i < nums.length; i++)
+    table[i] = i % 2 ? n + nums[i] : (n = nums[i]);
+})(${name}_range_table, ${name}_range_str);
+
+`,
+  );
+
+  printTableStr(
+    f,
+    `${name}_cat_str`,
+    breakTable,
+    '',
+    x => inversed[x[2]].toString(36),
+  );
+  f.write('\n');
+  f.write(`
+export const ${name}_cat_table = new Uint8Array(${breakTable.length});
+(function(table, value) {
+  for (let i = 0; i < value.length; i++)
+    table[i] = parseInt(value[i], 36);
+})(${name}_cat_table, ${name}_cat_str);
+
+`,
+  );
 
   f.write(`
 /**
  * @param {number} cp
- * @return An exact {@link ${typeName}Range} if found, or garbage \`start\` and \`from\` values with {@link ${typeName[0]}C_Any} category.
+ * @return {number}
  */
-export function search${typeName}(cp) {
+export function search${capitalName}Index(cp) {
   // Perform a quick O(1) lookup in a precomputed table to determine
   // the slice of the range table to search in.
-  let lookup_table = ${name}_cat_lookup;
+  let lookup_table = ${name}_lookup_table;
   let lookup_interval = 0x${lookupInterval.toString(16)};
 
   let idx = cp / lookup_interval | 0;
@@ -623,12 +678,7 @@ export function search${typeName}(cp) {
     sliceTo = lookup_table[idx + 1] + 1;
   }
 
-  // Compute pessimistic default lower and upper bounds on the category.
-  // If character doesn't map to any range and there is no adjacent range
-  // in the table slice - these bounds has to apply.
-  let lower = idx * lookup_interval;
-  let upper = lower + lookup_interval - 1;
-  return bsearchUnicodeRange(cp, ${name}_cat_table, lower, upper, sliceFrom, sliceTo);
+  return bsearchRange(cp, ${name}_range_table, sliceFrom, sliceTo);
 }
 `.trimStart(),
   );
@@ -645,18 +695,28 @@ let printIncbModule = async f => {
   f.write(`
 /**
  * The Unicode \`Indic_Conjunct_Break=Consonant\` derived property table
- *
- * @type {import('./core.js').UnicodeRange[]}
  */
 `,
   );
-  printTableCompressed(
+  let table = props['Consonant'];
+  printTableStr(
     f,
-    'consonant_table',
-    props['Consonant'],
-    formatRange,
+    'consonant_str',
+    table,
+    ',',
+    x => `${x[0] ? x[0].toString(36) : ''},${x[1] ? x[1].toString(36) : ''}`,
   );
   f.write('\n');
+  f.write(`
+export const consonant_table = new Uint16Array(${table.length * 2});
+(function(table, value) {
+  let nums = value.split(',').map(s => s ? parseInt(s, 36) : 0);
+  for (let i = 0, n = 0; i < nums.length; i++)
+    table[i] = i % 2 ? n + nums[i] : (n = nums[i]);
+})(consonant_table, consonant_str);
+
+`,
+  );
 };
 
 /**
