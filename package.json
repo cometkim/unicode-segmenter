@@ -131,6 +131,7 @@
     "metro": "^0.82.0",
     "mitata": "^1.0.34",
     "os-browserify": "^0.3.0",
+    "porffor": "^0.50.5",
     "pretty-bytes": "^6.1.1",
     "rimraf": "^6.0.1",
     "typescript": "^5.7.3",
