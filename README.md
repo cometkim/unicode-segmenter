@@ -273,7 +273,6 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 | `unicode-segmenter/grapheme` |        24,538 |                12,788 |
 | `graphemer`                  |       133,949 |                31,710 |
 | `grapheme-splitter`          |        63,810 |                19,125 |
-| `@formatjs/intl-segmenter`*  |       315,865 |                99,063 |
 
 * It would be compressed when included as an app asset.
 
