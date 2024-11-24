@@ -1,5 +1,13 @@
 # unicode-segmenter
 
+## 0.11.1
+
+### Patch Changes
+
+- 9d688d8: grapheme: rename `countGrapheme()` to `countGraphemes()`. existing name is deprecated alias.
+- be49399: grapheme: Add `splitGraphemes()` utility
+- 5e86659: grapheme: add more detail to API JSDoc
+
 ## 0.11.0
 
 ### Minor Changes
