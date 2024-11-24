@@ -74,21 +74,21 @@ import { splitGraphemes } from 'unicode-segmenter/grapheme';
 #### Example: Count graphemes
 
 ```js
-import { countGrapheme } from 'unicode-segmenter/grapheme';
+import { countGraphemes } from 'unicode-segmenter/grapheme';
 
 '👋 안녕!'.length;
 // => 6
-countGrapheme('👋 안녕!');
+countGraphemes('👋 안녕!');
 // => 5
 
 'a̐éö̲'.length;
 // => 7
-countGrapheme('a̐éö̲');
+countGraphemes('a̐éö̲');
 // => 3
 ```
 
 > [!NOTE]
-> `countGrapheme()` is a small wrapper around `graphemeSegments()`.
+> `countGraphemes()` is a small wrapper around `graphemeSegments()`.
 > 
 > If you need it more than once at a time, consider memoization or use `graphemeSegments()` or `splitSegments()` once instead.
 
@@ -251,7 +251,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|
-| `unicode-segmenter/grapheme` |   16.0.0 |    ✔️ |    17,347 |     12,822 |           5,307 |         4,093 |
+| `unicode-segmenter/grapheme` |   16.0.0 |    ✔️ |    17,348 |     12,822 |           5,307 |         4,089 |
 | `graphemer`                  |   15.0.0 |    ✖️ ️|   410,435 |     95,104 |          15,752 |        10,660 |
 | `grapheme-splitter`          |   10.0.0 |    ✖️ |   122,252 |     23,680 |           7,852 |         4,841 |
 | `@formatjs/intl-segmenter`*  |   15.0.0 |    ✖️ |   491,043 |    318,721 |          54,248 |        34,380 |
@@ -267,7 +267,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Bytecode size | Bytecode size (gzip)* |
 |------------------------------|--------------:|----------------------:|
-| `unicode-segmenter/grapheme` |        24,521 |                12,773 |
+| `unicode-segmenter/grapheme` |        24,538 |                12,788 |
 | `graphemer`                  |       133,949 |                31,710 |
 | `grapheme-splitter`          |        63,810 |                19,125 |
 | `@formatjs/intl-segmenter`*  |       315,865 |                99,063 |

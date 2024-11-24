@@ -7,8 +7,8 @@ import fc from 'fast-check';
 import {
   GraphemeCategory,
   graphemeSegments,
-  countGrapheme,
   splitGraphemes,
+  countGraphemes,
 } from 'unicode-segmenter/grapheme';
 import { assertObjectContaining } from './_helper.js';
 
@@ -74,34 +74,34 @@ test('graphemeSegments', async t => {
   });
 });
 
-test('countGrapheme', async t => {
+test('countGraphemes', async t => {
   await t.test('latin', () => {
-    assert.equal(countGrapheme('abcd'), 4);
+    assert.equal(countGraphemes('abcd'), 4);
   });
 
   await t.test('flags', () => {
-    assert.equal(countGrapheme('🇷🇸🇮🇴'), 2);
+    assert.equal(countGraphemes('🇷🇸🇮🇴'), 2);
   });
 
   await t.test('emoji', () => {
-    assert.equal(countGrapheme('👻👩‍👩‍👦‍👦'), 2);
-    assert.equal(countGrapheme('🌷🎁💩😜👍🏳️‍🌈'), 6);
+    assert.equal(countGraphemes('👻👩‍👩‍👦‍👦'), 2);
+    assert.equal(countGraphemes('🌷🎁💩😜👍🏳️‍🌈'), 6);
   });
 
   await t.test('diacritics as combining marks', () => {
-    assert.equal(countGrapheme('Ĺo͂řȩm̅'), 5);
+    assert.equal(countGraphemes('Ĺo͂řȩm̅'), 5);
   });
 
   await t.test('Jamo', () => {
-    assert.equal(countGrapheme('뎌쉐'), 2);
+    assert.equal(countGraphemes('뎌쉐'), 2);
   });
 
   await t.test('Hindi', () => {
-    assert.equal(countGrapheme('अनुच्छेद'), 4);
+    assert.equal(countGraphemes('अनुच्छेद'), 4);
   });
 
   await t.test('demonic', () => {
-    assert.equal(countGrapheme('Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍A̴̵̜̰͔ͫ͗͢L̠ͨͧͩ͘G̴̻͈͍͔̹̑͗̎̅͛́Ǫ̵̹̻̝̳͂̌̌͘!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞'), 6);
+    assert.equal(countGraphemes('Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍A̴̵̜̰͔ͫ͗͢L̠ͨͧͩ͘G̴̻͈͍͔̹̑͗̎̅͛́Ǫ̵̹̻̝̳͂̌̌͘!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞'), 6);
   });
 });
 
