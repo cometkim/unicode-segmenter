@@ -21,6 +21,9 @@ A lightweight implementation of the [Unicode Text Segmentation (UAX \#29)](https
 
 - **ESM-first**: It natively supports ES Modules, and still supports CommonJS.
 
+> [!NOTE]
+> unicode-segmenter is now **[e18e] recommendation!**
+
 ## Unicode® Version
 
 Unicode® 16.0.0
@@ -300,6 +303,7 @@ Instead of trusting these claims, you can try `yarn perf:grapheme` directly in y
 > [!NOTE]
 > The initial implementation was ported manually from Rust's [unicode-segmentation] library, which is licensed under the [MIT](licenses/unicode-segmentation_MIT.txt) license.
 
+[e18e]: https://e18e.dev/
 [Hermes]: https://hermesengine.dev/
 [QuickJS]: https://bellard.org/quickjs/
 [unicode-segmentation]: https://github.com/unicode-rs/unicode-segmentation
