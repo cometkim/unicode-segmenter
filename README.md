@@ -74,8 +74,10 @@ countGrapheme('a̐éö̲');
 // => 3
 ```
 
-> [!INFO]
-> `countGrapheme()` is a small wrapper around `graphemeSegments()`. If you call it frequently, consider memoization or iterate once ahead.
+> [!NOTE]
+> `countGrapheme()` is a small wrapper around `graphemeSegments()`.
+> 
+> If you call it more than once, use `graphemeSegments()` once instead, Or memoize it yourself.
 
 #### Example: Build an advanced grapheme matcher
 
