@@ -25,3 +25,4 @@ lcov.info
 
 *.hermes.js
 *.hermes.hbc
+*.bundle.js
