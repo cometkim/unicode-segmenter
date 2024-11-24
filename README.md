@@ -271,6 +271,8 @@ Here is a brief explanation, and you can see [archived benchmark results](benchm
 
 **Performance in React Native**: `unicode-segmenter/grapheme` is significantly faster than alternatives when compiled to Hermes bytecode. It's 3\~8x faster than `graphemer` and 20\~26x faster than `grapheme-splitter`, with the performance gap increasing with input size.
 
+**Performance in QuickJS**: `unicode-segmenter/grapheme` is the only usable library in terms of performance.
+
 Instead of trusting these claims, you can try `yarn perf:grapheme` directly in your environment or build your own benchmark.
 
 ## LICENSE

@@ -107,7 +107,8 @@
     "perf:general": "node benchmark/general/perf.js",
     "perf:grapheme": "node benchmark/grapheme/perf.js",
     "perf:grapheme:browser": "vite benchmark/grapheme",
-    "perf:grapheme:hermes": "node benchmark/grapheme/perf-hermes.js"
+    "perf:grapheme:hermes": "node benchmark/grapheme/perf-hermes.js",
+    "perf:grapheme:quickjs": "node benchmark/grapheme/perf-quickjs.js"
   },
   "alias": {
     "process": false
