@@ -46,6 +46,18 @@ And extra utilities for combined use cases.
 
 Utilities for text segmentation by extended grapheme cluster rules.
 
+#### Example: Get grapheme segments
+
+```js
+import { graphemeSegments } from 'unicode-segmenter/grapheme';
+
+[...graphemeSegments('a̐éö̲\r\n')];
+// 0: { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n' }
+// 1: { segment: 'é', index: 2, input: 'a̐éö̲\r\n' }
+// 2: { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n' }
+// 3: { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n' }
+```
+
 #### Example: Count graphemes
 
 ```js
@@ -62,17 +74,8 @@ countGrapheme('a̐éö̲');
 // => 3
 ```
 
-#### Example: Get grapheme segments
-
-```js
-import { graphemeSegments } from 'unicode-segmenter/grapheme';
-
-[...graphemeSegments('a̐éö̲\r\n')];
-// 0: { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n' }
-// 1: { segment: 'é', index: 2, input: 'a̐éö̲\r\n' }
-// 2: { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n' }
-// 3: { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n' }
-```
+> [!INFO]
+> `countGrapheme()` is a small wrapper around `graphemeSegments()`. If you call it frequently, consider memoization or iterate once ahead.
 
 #### Example: Build an advanced grapheme matcher
 
