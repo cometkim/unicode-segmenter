@@ -64,8 +64,13 @@ export function searchGraphemeCategory(cp) {
 }
 
 /**
+ * Unicode segmentation by extended grapheme rules.
+ *
+ * This is fully compatible with the {@link Intl.Segmenter.segment} API
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter/segment
+ *
  * @param {string} input
- * @return {GraphemeSegmenter}
+ * @return {GraphemeSegmenter} iterator for grapheme cluster segments
  */
 export function* graphemeSegments(input) {
   // do nothing on empty string
@@ -186,12 +191,21 @@ export function* graphemeSegments(input) {
 }
 
 /**
- * @param {string} str
- * @return number count of graphemes
+ * Count number of extended grapheme clusters in given text.
+ *
+ * NOTE:
+ *
+ * This function is a small wrapper around {@link graphemeSegments}.
+ *
+ * If you call it more than once at a time, consider memoization
+ * or use {@link graphemeSegments} or {@link splitGraphemes} once instead
+ *
+ * @param {string} text
+ * @return {number} count of grapheme clusters
  */
-export function countGraphemes(str) {
+export function countGraphemes(text) {
   let count = 0;
-  for (let _ of graphemeSegments(str)) count += 1;
+  for (let _ of graphemeSegments(text)) count += 1;
   return count;
 }
 
@@ -203,11 +217,18 @@ export {
 };
 
 /**
- * @param {string} str
- * @return {IterableIterator<string>}
+ * Split given text into extended grapheme clusters.
+ *
+ * @param {string} text
+ * @return {IterableIterator<string>} iterator for grapheme clusters
+ *
+ * @see {@link graphemeSegments} if you need extra information.
+ *
+ * @example
+ * [...splitGraphemes('abc')] // => ['a', 'b', 'c']
  */
-export function* splitGraphemes(str) {
-  for (let s of graphemeSegments(str)) yield s.segment;
+export function* splitGraphemes(text) {
+  for (let s of graphemeSegments(text)) yield s.segment;
 }
 
 /**
@@ -358,4 +379,3 @@ function isBoundary(catBefore, catAfter, risCount, emoji, incb) {
   // GB999
   return true;
 }
-
