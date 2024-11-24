@@ -4,7 +4,12 @@ import { test } from 'node:test';
 import * as assert from 'node:assert/strict';
 import fc from 'fast-check';
 
-import { graphemeSegments, countGrapheme, GraphemeCategory } from 'unicode-segmenter/grapheme';
+import {
+  GraphemeCategory,
+  graphemeSegments,
+  countGrapheme,
+  splitGraphemes,
+} from 'unicode-segmenter/grapheme';
 import { assertObjectContaining } from './_helper.js';
 
 test('graphemeSegments', async t => {
@@ -74,10 +79,6 @@ test('countGrapheme', async t => {
     assert.equal(countGrapheme('abcd'), 4);
   });
 
-  await t.test('latin', () => {
-    assert.equal(countGrapheme('abcd'), 4);
-  });
-
   await t.test('flags', () => {
     assert.equal(countGrapheme('🇷🇸🇮🇴'), 2);
   });
@@ -101,6 +102,61 @@ test('countGrapheme', async t => {
 
   await t.test('demonic', () => {
     assert.equal(countGrapheme('Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍A̴̵̜̰͔ͫ͗͢L̠ͨͧͩ͘G̴̻͈͍͔̹̑͗̎̅͛́Ǫ̵̹̻̝̳͂̌̌͘!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞'), 6);
+  });
+});
+
+test('splitGrapheme', async t => {
+  await t.test('latin', () => {
+    assert.deepEqual(
+      [...splitGraphemes('abcd')],
+      ['a', 'b', 'c', 'd'],
+    );
+  });
+
+  await t.test('flags', () => {
+    assert.deepEqual(
+      [...splitGraphemes('🇷🇸🇮🇴')],
+      ['🇷🇸', '🇮🇴'],
+    );
+  });
+
+  await t.test('emoji', () => {
+    assert.deepEqual(
+      [...splitGraphemes('👻👩‍👩‍👦‍👦')],
+      ['👻', '👩‍👩‍👦‍👦'],
+    );
+    assert.deepEqual(
+      [...splitGraphemes('🌷🎁💩😜👍🏳️‍🌈')],
+      ['🌷', '🎁', '💩', '😜', '👍', '🏳️‍🌈'],
+    );
+  });
+
+  await t.test('diacritics as combining marks', () => {
+    assert.deepEqual(
+      [...splitGraphemes('Ĺo͂řȩm̅')],
+      ['Ĺ', 'o͂', 'ř', 'ȩ', 'm̅'],
+    );
+  });
+
+  await t.test('Jamo', () => {
+    assert.deepEqual(
+      [...splitGraphemes('가갉')],
+      ['가', '갉'],
+    );
+  });
+
+  await t.test('Hindi', () => {
+    assert.deepEqual(
+      [...splitGraphemes('अनुच्छेद')],
+      ['अ', 'नु', 'च्छे', 'द'],
+    );
+  });
+
+  await t.test('demonic', () => {
+    assert.deepEqual(
+      [...splitGraphemes('Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍A̴̵̜̰͔ͫ͗͢L̠ͨͧͩ͘G̴̻͈͍͔̹̑͗̎̅͛́Ǫ̵̹̻̝̳͂̌̌͘!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞')],
+      ['Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍', 'A̴̵̜̰͔ͫ͗͢', 'L̠ͨͧͩ͘', 'G̴̻͈͍͔̹̑͗̎̅͛́', 'Ǫ̵̹̻̝̳͂̌̌͘', '!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞'],
+    );
   });
 });
 

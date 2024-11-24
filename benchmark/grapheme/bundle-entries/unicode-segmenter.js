@@ -1,1 +1,5 @@
-export { graphemeSegments } from '../../../src/grapheme.js';
+export {
+  graphemeSegments,
+  countGrapheme,
+  splitGraphemes,
+} from '../../../src/grapheme.js';
