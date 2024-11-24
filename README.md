@@ -297,7 +297,7 @@ Instead of trusting these claims, you can try `yarn perf:grapheme` directly in y
 
 ## Acknowledgments
 
-- **[Rust Unicode team](https://unicode-rs.github.io/)**:\
+- **The Rust Unicode team ([@unicode-rs](https://github.com/unicode-rs))**:\
    The initial implementation was ported manually from [unicode-segmentation] library.
 
 - **Marijn Haverbeke ([@marijnh](https://github.com/marijnh))**:\
