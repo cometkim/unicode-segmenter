@@ -196,6 +196,14 @@ export function countGrapheme(str) {
 }
 
 /**
+ * @param {string} str
+ * @return {IterableIterator<string>}
+ */
+export function* splitGraphemes(str) {
+  for (let s of graphemeSegments(str)) yield s.segment;
+}
+
+/**
  * `Grapheme_Cluster_Break` property value of a given codepoint
  *
  * @see https://www.unicode.org/reports/tr29/tr29-43.html#Default_Grapheme_Cluster_Table
