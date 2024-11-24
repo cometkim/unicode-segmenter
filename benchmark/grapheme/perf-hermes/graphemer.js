@@ -1,5 +1,5 @@
 import Graphemer from 'graphemer';
-import { inputs, simpleBench } from './_suite.js';
+import { inputs, simpleBench } from '../../_simple-bench.js';
 
 const graphemer = new (Graphemer.default || Graphemer)();
 

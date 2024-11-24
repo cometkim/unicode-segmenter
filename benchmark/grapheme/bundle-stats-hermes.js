@@ -12,7 +12,7 @@ let config = await Metro.loadConfig(undefined, {
     babelTransformerPath: '@react-native/metro-babel-transformer',
   },
   reporter: {
-    update: () => {},
+    update: () => { },
   },
 });
 

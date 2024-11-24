@@ -1,5 +1,4 @@
 import * as path from 'node:path';
-import * as fs from 'node:fs/promises';
 import Metro from 'metro';
 import { $ } from 'zx';
 
@@ -11,14 +10,14 @@ let config = await Metro.loadConfig(undefined, {
     babelTransformerPath: '@react-native/metro-babel-transformer',
   },
   reporter: {
-    update: () => {},
+    update: () => { },
   },
 });
 
 let libs = [
-  ['unicode-segmenter/grapheme', 'hermes-perf/unicode-segmenter.js'],
-  ['graphemer', 'hermes-perf/graphemer.js'],
-  ['grapheme-splitter', 'hermes-perf/grapheme-splitter.js'],
+  ['unicode-segmenter/grapheme', 'perf-hermes/unicode-segmenter.js'],
+  ['graphemer', 'perf-hermes/graphemer.js'],
+  ['grapheme-splitter', 'perf-hermes/grapheme-splitter.js'],
 
   // Unmet `Intl` dependencies
   // ['@formatjs/intl-segmenter', 'hermes-perf/formatjs-intl-segmenter.js'],

@@ -1,5 +1,5 @@
 import { graphemeSegments } from '../../../src/grapheme.js';
-import { inputs, simpleBench } from './_suite.js';
+import { inputs, simpleBench } from '../../_simple-bench.js';
 
 {
   const result = simpleBench(1000, () => {

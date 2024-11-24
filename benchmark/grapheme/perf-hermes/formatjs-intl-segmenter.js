@@ -1,10 +1,10 @@
-import entry from './entry.js';
-import { inputs, simpleBench } from '../suite.js';
+import { Segmenter } from '@formatjs/intl-segmenter/src/segmenter.js';
+import { inputs, simpleBench } from '../../_simple-bench.js';
 
-let segmenter = entry;
+const segmenter = new Segmenter();
 
 {
-  let result = simpleBench(1000, () => {
+  const result = simpleBench(1000, () => {
     void [...segmenter.segment(inputs.small)];
   });
 
@@ -15,7 +15,7 @@ let segmenter = entry;
 
 
 {
-  let result = simpleBench(1000, () => {
+  const result = simpleBench(1000, () => {
     void [...segmenter.segment(inputs.medium)];
   });
 

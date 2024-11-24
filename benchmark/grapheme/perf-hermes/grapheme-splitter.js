@@ -1,10 +1,10 @@
-import entry from './entry.js';
-import { inputs, simpleBench } from '../suite.js';
+import GraphemeSplitter from 'grapheme-splitter';
+import { inputs, simpleBench } from '../../_simple-bench.js';
 
-let graphemeSplitter = entry;
+const graphemeSplitter = new (GraphemeSplitter.default || GraphemeSplitter)();
 
 {
-  let result = simpleBench(1000, () => {
+  const result = simpleBench(1000, () => {
     void [...graphemeSplitter.iterateGraphemes(inputs.small)];
   });
 
@@ -15,7 +15,7 @@ let graphemeSplitter = entry;
 
 
 {
-  let result = simpleBench(1000, () => {
+  const result = simpleBench(1000, () => {
     void [...graphemeSplitter.iterateGraphemes(inputs.medium)];
   });
 
