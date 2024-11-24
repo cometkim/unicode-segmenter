@@ -2,4 +2,4 @@
 "unicode-segmenter": patch
 ---
 
-Add `splitGraphemes()` utility
+grapheme: Add `splitGraphemes()` utility
