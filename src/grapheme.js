@@ -189,11 +189,18 @@ export function* graphemeSegments(input) {
  * @param {string} str
  * @return number count of graphemes
  */
-export function countGrapheme(str) {
+export function countGraphemes(str) {
   let count = 0;
   for (let _ of graphemeSegments(str)) count += 1;
   return count;
 }
+
+export {
+  /**
+   * @deprecated use {@link countGraphemes}
+   */
+  countGraphemes as countGrapheme,
+};
 
 /**
  * @param {string} str

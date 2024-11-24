@@ -1,5 +1,5 @@
 export {
   graphemeSegments,
-  countGrapheme,
   splitGraphemes,
+  countGraphemes,
 } from '../../../src/grapheme.js';
