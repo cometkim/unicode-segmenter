@@ -7,17 +7,19 @@
 
 A lightweight implementation of the [Unicode Text Segmentation (UAX \#29)](https://www.unicode.org/reports/tr29)
 
-- **Zero-dependencies**: It doesn't bloat `node_modules` or the networks tab.
+- **Verified spec-compliance**: Up-to-date Unicode data, passes the official Unicode test suites, verifies full compliance with the `Intl.Segmenter` API via additional property-based testing, maintaining 100% coverage.
 
-- **Excellent compatibility**: It works well on older browsers, edge runtimes, and embedded JavaScript runtimes like [Hermes] and [QuickJS].
+- **Excellent compatibility**: It works well on older browsers, edge runtimes, and React Native (Hermes).
 
-- **Small bundle size**: It effectively compresses Unicode data and provides a tree-shakeable format, allowing unnecessary codes to be eliminated.
+- **Zero-dependencies**: It doesn't bloat `node_modules` or the networks tab. Just a small minimal snippet.
+
+- **Small bundle size**: It effectively compresses Unicode data and provides a tree-shakeable format, eliminating unused codes.
 
 - **Extremely efficient**: It's carefully optimized for performance, making it the fastest one in the ecosystem—outperforming even the built-in `Intl.Segmenter`.
 
 - **TypeScript**: It's fully type-checked, and provides definitions with JSDoc.
 
-- **ESM-first**: It natively supports ES Modules, also supports CommonJS too.
+- **ESM-first**: It natively supports ES Modules, and still supports CommonJS.
 
 ## Unicode® Version
 
