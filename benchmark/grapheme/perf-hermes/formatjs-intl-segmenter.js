@@ -1,26 +1,26 @@
-import { Segmenter } from '@formatjs/intl-segmenter/src/segmenter.js';
 import { inputs, simpleBench } from '../../_simple-bench.js';
 
-const segmenter = new Segmenter();
+import { Segmenter } from '../bundle-entries/formatjs-intl-segmenter.js';
+let segmenter = new Segmenter();
 
 {
-  const result = simpleBench(1000, () => {
+  let result = simpleBench(1000, () => {
     void [...segmenter.segment(inputs.small)];
   });
 
   print(`@formatjs/intl-segmenter (small input)`);
   print(`samples: ${result.samples}`);
   print(`duration (avg): ${result.avgDuration}`);
+  print();
 }
 
-
 {
-  const result = simpleBench(1000, () => {
+  let result = simpleBench(1000, () => {
     void [...segmenter.segment(inputs.medium)];
   });
 
-  print();
   print(`@formatjs/intl-segmenter (medium input)`);
   print(`samples: ${result.samples}`);
   print(`duration (avg): ${result.avgDuration}`);
+  print();
 }

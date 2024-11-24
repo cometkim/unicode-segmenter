@@ -1,7 +1,6 @@
 import { inputs, simpleBench } from '../../_simple-bench.js';
 
 import { GraphemeSplitter } from '../bundle-entries/grapheme-splitter.bundle.js';
-
 let graphemeSplitter = new (GraphemeSplitter.default || GraphemeSplitter)();
 
 {

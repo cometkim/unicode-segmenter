@@ -1,27 +1,27 @@
-import Graphemer from 'graphemer';
 import { inputs, simpleBench } from '../../_simple-bench.js';
 
-const graphemer = new (Graphemer.default || Graphemer)();
+import { Graphemer } from '../bundle-entries/graphemer.js';
+let graphemer = new (Graphemer.default || Graphemer)();
 
 {
-  const result = simpleBench(1000, () => {
+  let result = simpleBench(1000, () => {
     void [...graphemer.iterateGraphemes(inputs.small)];
   });
 
   print(`graphemer (small input)`);
   print(`samples: ${result.samples}`);
   print(`duration (avg): ${result.avgDuration}`);
+  print();
 }
 
 
 {
-  const result = simpleBench(1000, () => {
+  let result = simpleBench(1000, () => {
     void [...graphemer.iterateGraphemes(inputs.medium)];
   });
 
-  print();
   print(`graphemer (medium input)`);
   print(`samples: ${result.samples}`);
   print(`duration (avg): ${result.avgDuration}`);
+  print();
 }
-

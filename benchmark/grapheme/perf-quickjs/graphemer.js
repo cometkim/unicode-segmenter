@@ -1,7 +1,6 @@
 import { inputs, simpleBench } from '../../_simple-bench.js';
 
 import { Graphemer } from '../bundle-entries/graphemer.bundle.js';
-
 let graphemer = new (Graphemer.default || Graphemer)();
 
 {

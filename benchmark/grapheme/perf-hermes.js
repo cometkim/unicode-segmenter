@@ -46,9 +46,9 @@ for (let lib of libs) {
   });
 }
 
-console.log('\nExecuting Hermes bytecodes...\n');
+console.log('\nExecuting Hermes benchmark...\n');
 
 for (let bench of benches) {
+  console.log(`--- ${bench.libName} ---\n`);
   await $({ stdio: 'inherit' })`hermes ${bench.hermesBin}`;
-  console.log();
 }
