@@ -108,53 +108,53 @@ test('countGrapheme', async t => {
 test('splitGrapheme', async t => {
   await t.test('latin', () => {
     assert.deepEqual(
-      splitGraphemes('abcd'),
+      [...splitGraphemes('abcd')],
       ['a', 'b', 'c', 'd'],
     );
   });
 
   await t.test('flags', () => {
     assert.deepEqual(
-      splitGraphemes('🇷🇸🇮🇴'),
+      [...splitGraphemes('🇷🇸🇮🇴')],
       ['🇷🇸', '🇮🇴'],
     );
   });
 
   await t.test('emoji', () => {
     assert.deepEqual(
-      splitGraphemes('👻👩‍👩‍👦‍👦'),
+      [...splitGraphemes('👻👩‍👩‍👦‍👦')],
       ['👻', '👩‍👩‍👦‍👦'],
     );
     assert.deepEqual(
-      splitGraphemes('🌷🎁💩😜👍🏳️‍🌈'),
+      [...splitGraphemes('🌷🎁💩😜👍🏳️‍🌈')],
       ['🌷', '🎁', '💩', '😜', '👍', '🏳️‍🌈'],
     );
   });
 
   await t.test('diacritics as combining marks', () => {
     assert.deepEqual(
-      splitGraphemes('Ĺo͂řȩm̅'),
+      [...splitGraphemes('Ĺo͂řȩm̅')],
       ['Ĺ', 'o͂', 'ř', 'ȩ', 'm̅'],
     );
   });
 
   await t.test('Jamo', () => {
     assert.deepEqual(
-      splitGraphemes('가갉'), 
+      [...splitGraphemes('가갉')],
       ['가', '갉'],
     );
   });
 
   await t.test('Hindi', () => {
     assert.deepEqual(
-      splitGraphemes('अनुच्छेद'),
+      [...splitGraphemes('अनुच्छेद')],
       ['अ', 'नु', 'च्छे', 'द'],
     );
   });
 
   await t.test('demonic', () => {
     assert.deepEqual(
-      splitGraphemes('Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍A̴̵̜̰͔ͫ͗͢L̠ͨͧͩ͘G̴̻͈͍͔̹̑͗̎̅͛́Ǫ̵̹̻̝̳͂̌̌͘!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞'),
+      [...splitGraphemes('Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍A̴̵̜̰͔ͫ͗͢L̠ͨͧͩ͘G̴̻͈͍͔̹̑͗̎̅͛́Ǫ̵̹̻̝̳͂̌̌͘!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞')],
       ['Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍', 'A̴̵̜̰͔ͫ͗͢', 'L̠ͨͧͩ͘', 'G̴̻͈͍͔̹̑͗̎̅͛́', 'Ǫ̵̹̻̝̳͂̌̌͘', '!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞'],
     );
   });
