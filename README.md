@@ -296,12 +296,17 @@ Here is a brief explanation, and you can see [archived benchmark results](benchm
 
 Instead of trusting these claims, you can try `yarn perf:grapheme` directly in your environment or build your own benchmark.
 
+## Acknowledgments
+
+- **[Rust Unicode team](https://unicode-rs.github.io/)**:\
+   The initial implementation was ported manually from [unicode-segmentation] library.
+
+- **Marijn Haverbeke ([@marijnh](https://github.com/marijnh))**:\
+   Inspired a technique that can greatly compress Unicode data table from [his library](https://github.com/marijnh/find-cluster-break).
+
 ## LICENSE
 
 [MIT](LICENSE)
-
-> [!NOTE]
-> The initial implementation was ported manually from Rust's [unicode-segmentation] library, which is licensed under the [MIT](licenses/unicode-segmentation_MIT.txt) license.
 
 [e18e]: https://e18e.dev/
 [Hermes]: https://hermesengine.dev/
