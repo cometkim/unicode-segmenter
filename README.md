@@ -17,7 +17,7 @@ A lightweight implementation of the [Unicode Text Segmentation (UAX \#29)](https
 
 - **Extremely efficient**: It's carefully optimized for performance, making it the fastest one in the ecosystem—outperforming even the built-in `Intl.Segmenter`.
 
-- **TypeScript**: It's fully type-checked, and provides definitions with JSDoc.
+- **TypeScript**: It's fully type-checked, and provides type definitions and JSDoc.
 
 - **ESM-first**: It natively supports ES Modules, and still supports CommonJS.
 
