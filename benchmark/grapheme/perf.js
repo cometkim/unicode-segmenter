@@ -33,6 +33,7 @@ const {
   barplot,
   bench,
   run,
+  do_not_optimize,
 } = await import('mitata');
 
 const intlSegmenter = new Intl.Segmenter();
@@ -99,27 +100,27 @@ for (const [title, input] of testcases) {
     summary(() => {
       barplot(() => {
         bench('unicode-segmenter/grapheme', () => {
-          void ([...graphemeSegments(input)]);
+          do_not_optimize([...graphemeSegments(input)]);
         }).baseline(true);
 
         bench('graphemer', () => {
-          void ([...graphemer.iterateGraphemes(input)]);
+          do_not_optimize([...graphemer.iterateGraphemes(input)]);
         });
 
         bench('grapheme-splitter', () => {
-          void ([...graphemeSplitter.iterateGraphemes(input)]);
+          do_not_optimize([...graphemeSplitter.iterateGraphemes(input)]);
         });
 
         bench('@formatjs/intl-segmenter', () => {
-          void ([...formatjsSegmenter.segment(input)]);
+          do_not_optimize([...formatjsSegmenter.segment(input)]);
         });
 
         bench('unicode-rs/unicode-segmentation (wasm-bindgen)', () => {
-          void unicodeSegmentation.collect(input);
+          do_not_optimize(unicodeSegmentation.collect(input));
         });
 
         bench('Intl.Segmenter', () => {
-          void ([...intlSegmenter.segment(input)]);
+          do_not_optimize([...intlSegmenter.segment(input)]);
         });
       });
     });

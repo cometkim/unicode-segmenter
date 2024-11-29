@@ -103,9 +103,9 @@
     "bundle-stats:general": "node benchmark/general/bundle-stats.js",
     "bundle-stats:grapheme": "node benchmark/grapheme/bundle-stats.js",
     "bundle-stats:grapheme:hermes": "node benchmark/grapheme/bundle-stats-hermes.js",
-    "perf:emoji": "node benchmark/emoji/perf.js",
-    "perf:general": "node benchmark/general/perf.js",
-    "perf:grapheme": "node benchmark/grapheme/perf.js",
+    "perf:emoji": "node --expose-gc benchmark/emoji/perf.js",
+    "perf:general": "node --expose-gc benchmark/general/perf.js",
+    "perf:grapheme": "node --expose-gc benchmark/grapheme/perf.js",
     "perf:grapheme:browser": "vite benchmark/grapheme",
     "perf:grapheme:hermes": "node benchmark/grapheme/perf-hermes.js",
     "perf:grapheme:quickjs": "node benchmark/grapheme/perf-quickjs.js"

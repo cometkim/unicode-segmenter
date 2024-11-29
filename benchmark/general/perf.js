@@ -1,5 +1,5 @@
 import * as assert from 'node:assert/strict';
-import { group, summary, barplot, bench, run } from 'mitata';
+import { group, summary, barplot, bench, run, do_not_optimize } from 'mitata';
 import XRegExp from 'xregexp';
 
 import { isBMP } from '../../src/utils.js';
@@ -34,15 +34,15 @@ group('checking any alphanumeric', () => {
   summary(() => {
     barplot(() => {
       bench('unicode-segmenter/general', () => {
-        void anyAlnum(input);
+        do_not_optimize(anyAlnum(input));
       }).baseline(true);
 
       bench('XRegExp', () => {
-        void XREGEXP_U.test(input);
+        do_not_optimize(XREGEXP_U.test(input));
       });
 
       bench('RegExp w/ unicode', () => {
-        void REGEXP_U.test(input);
+        do_not_optimize(REGEXP_U.test(input));
       });
     });
   });
@@ -75,18 +75,20 @@ group('match all alphanumeric', () => {
   summary(() => {
     barplot(() => {
       bench('unicode-segmenter/general', () => {
-        void [...matchAllAlnum(input)];
+        do_not_optimize([...matchAllAlnum(input)]);
       }).baseline(true);
 
       bench('XRegExp', () => {
-        void [...input.matchAll(XREGEXP_UG)];
+        do_not_optimize([...input.matchAll(XREGEXP_UG)]);
       });
 
       bench('RegExp w/ unicode', () => {
-        void [...input.matchAll(REGEXP_UG)];
+        do_not_optimize([...input.matchAll(REGEXP_UG)]);
       });
     });
   });
 });
 
-await run();
+await run({
+  format: process.env.MITATA_FORMAT || 'mitata',
+});

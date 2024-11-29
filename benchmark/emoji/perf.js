@@ -1,5 +1,5 @@
 import * as assert from 'node:assert/strict';
-import { group, summary, barplot, bench, run } from 'mitata';
+import { group, summary, barplot, bench, run, do_not_optimize } from 'mitata';
 import emojiRegex from 'emoji-regex';
 import EMOJIBASE_REGEX from 'emojibase-regex';
 
@@ -51,23 +51,23 @@ group('checking if any emoji (Extended_Pictographic)', () => {
   summary(() => {
     barplot(() => {
       bench('unicode-segmenter/emoji', () => {
-        void anyEmoji(input);
+        do_not_optimize(anyEmoji(input));
       }).baseline(true);
 
       bench('unicode-segmenter/grapheme', () => {
-        void anyEmojiByGrapheme(input);
+        do_not_optimize(anyEmojiByGrapheme(input));
       });
 
       bench('RegExp w/ unicode', () => {
-        void REGEXP_U.test(input);
+        do_not_optimize(REGEXP_U.test(input));
       });
 
       bench('emoji-regex', () => {
-        void EMOJI_REGEX.test(input);
+        do_not_optimize(EMOJI_REGEX.test(input));
       });
 
       bench('emojibase-regex', () => {
-        void EMOJIBASE_REGEX.test(input);
+        do_not_optimize(EMOJIBASE_REGEX.test(input));
       });
     });
   });
@@ -109,26 +109,28 @@ group('match all emoji (Extended_Pictographic)', () => {
   summary(() => {
     barplot(() => {
       bench('unicode-segmenter/emoji', () => {
-        void [...allEmojis(input)];
+        do_not_optimize([...allEmojis(input)]);
       }).baseline(true);
 
       bench('unicode-segmenter/grapheme', () => {
-        void [...allEmojisByGrapheme(input)];
+        do_not_optimize([...allEmojisByGrapheme(input)]);
       });
 
       bench('RegExp w/ unicode', () => {
-        void [...input.matchAll(REGEXP_U)];
+        do_not_optimize([...input.matchAll(REGEXP_U)]);
       });
 
       bench('emoji-regex', () => {
-        void [...input.matchAll(EMOJI_REGEX)];
+        do_not_optimize([...input.matchAll(EMOJI_REGEX)]);
       });
 
       bench('emojibase-regex', () => {
-        void [...input.matchAll(EMOJIBASE_REGEX_G)];
+        do_not_optimize([...input.matchAll(EMOJIBASE_REGEX_G)]);
       });
     });
   });
 });
 
-await run();
+await run({
+  format: process.env.MITATA_FORMAT || 'mitata',
+});
