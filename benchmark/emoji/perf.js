@@ -1,5 +1,5 @@
 import * as assert from 'node:assert/strict';
-import { group, baseline, bench, run } from 'mitata';
+import { group, summary, barplot, bench, run } from 'mitata';
 import emojiRegex from 'emoji-regex';
 import EMOJIBASE_REGEX from 'emojibase-regex';
 
@@ -48,24 +48,28 @@ group('checking if any emoji (Extended_Pictographic)', () => {
   assert.equal(EMOJI_REGEX.test(input), true);
   assert.equal(EMOJIBASE_REGEX.test(input), true);
 
-  baseline('unicode-segmenter/emoji', () => {
-    void anyEmoji(input);
-  });
+  summary(() => {
+    barplot(() => {
+      bench('unicode-segmenter/emoji', () => {
+        void anyEmoji(input);
+      }).baseline(true);
 
-  bench('unicode-segmenter/grapheme', () => {
-    void anyEmojiByGrapheme(input);
-  });
+      bench('unicode-segmenter/grapheme', () => {
+        void anyEmojiByGrapheme(input);
+      });
 
-  bench('RegExp w/ unicode', () => {
-    void REGEXP_U.test(input);
-  });
+      bench('RegExp w/ unicode', () => {
+        void REGEXP_U.test(input);
+      });
 
-  bench('emoji-regex', () => {
-    void EMOJI_REGEX.test(input);
-  });
+      bench('emoji-regex', () => {
+        void EMOJI_REGEX.test(input);
+      });
 
-  bench('emojibase-regex', () => {
-    void EMOJIBASE_REGEX.test(input);
+      bench('emojibase-regex', () => {
+        void EMOJIBASE_REGEX.test(input);
+      });
+    });
   });
 });
 
@@ -102,24 +106,28 @@ group('match all emoji (Extended_Pictographic)', () => {
   assert.deepEqual([...input.matchAll(EMOJI_REGEX)].map(match => match[0]), expected);
   assert.deepEqual([...input.matchAll(EMOJIBASE_REGEX_G)].map(match => match[0]), expected);
 
-  baseline('unicode-segmenter/emoji', () => {
-    void [...allEmojis(input)];
-  });
+  summary(() => {
+    barplot(() => {
+      bench('unicode-segmenter/emoji', () => {
+        void [...allEmojis(input)];
+      }).baseline(true);
 
-  bench('unicode-segmenter/grapheme', () => {
-    void [...allEmojisByGrapheme(input)];
-  });
+      bench('unicode-segmenter/grapheme', () => {
+        void [...allEmojisByGrapheme(input)];
+      });
 
-  bench('RegExp w/ unicode', () => {
-    void [...input.matchAll(REGEXP_U)];
-  });
+      bench('RegExp w/ unicode', () => {
+        void [...input.matchAll(REGEXP_U)];
+      });
 
-  bench('emoji-regex', () => {
-    void [...input.matchAll(EMOJI_REGEX)];
-  });
+      bench('emoji-regex', () => {
+        void [...input.matchAll(EMOJI_REGEX)];
+      });
 
-  bench('emojibase-regex', () => {
-    void [...input.matchAll(EMOJIBASE_REGEX_G)];
+      bench('emojibase-regex', () => {
+        void [...input.matchAll(EMOJIBASE_REGEX_G)];
+      });
+    });
   });
 });
 

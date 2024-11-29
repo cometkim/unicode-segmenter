@@ -21,7 +21,13 @@ if (isWebWorker) {
   };
 }
 
-const { group, baseline, bench, run } = await import('mitata');
+const {
+  group,
+  summary,
+  barplot,
+  bench,
+  run,
+} = await import('mitata');
 
 const intlSegmenter = new Intl.Segmenter();
 const graphemer = new (Graphemer.default || Graphemer)();
@@ -84,28 +90,32 @@ for (const [title, input] of testcases) {
   }
 
   group(title, () => {
-    baseline('unicode-segmenter/grapheme', () => {
-      void ([...graphemeSegments(input)]);
-    });
+    summary(() => {
+      barplot(() => {
+        bench('unicode-segmenter/grapheme', () => {
+          void ([...graphemeSegments(input)]);
+        }).baseline(true);
 
-    bench('graphemer', () => {
-      void ([...graphemer.iterateGraphemes(input)]);
-    });
+        bench('graphemer', () => {
+          void ([...graphemer.iterateGraphemes(input)]);
+        });
 
-    bench('grapheme-splitter', () => {
-      void ([...graphemeSplitter.iterateGraphemes(input)]);
-    });
+        bench('grapheme-splitter', () => {
+          void ([...graphemeSplitter.iterateGraphemes(input)]);
+        });
 
-    bench('@formatjs/intl-segmenter', () => {
-      void ([...formatjsSegmenter.segment(input)]);
-    });
+        bench('@formatjs/intl-segmenter', () => {
+          void ([...formatjsSegmenter.segment(input)]);
+        });
 
-    bench('unicode-rs/unicode-segmentation (wasm-bindgen)', () => {
-      void unicodeSegmentation.collect(input);
-    });
+        bench('unicode-rs/unicode-segmentation (wasm-bindgen)', () => {
+          void unicodeSegmentation.collect(input);
+        });
 
-    bench('Intl.Segmenter', () => {
-      void ([...intlSegmenter.segment(input)]);
+        bench('Intl.Segmenter', () => {
+          void ([...intlSegmenter.segment(input)]);
+        });
+      });
     });
   });
 }

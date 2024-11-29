@@ -126,7 +126,7 @@
     "grapheme-splitter": "1.0.4",
     "graphemer": "1.4.0",
     "metro": "^0.81.0",
-    "mitata": "^0.1.11",
+    "mitata": "^1.0.19",
     "os-browserify": "^0.3.0",
     "pretty-bytes": "^6.1.1",
     "rimraf": "^6.0.1",

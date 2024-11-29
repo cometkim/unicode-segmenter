@@ -1,5 +1,5 @@
 import * as assert from 'node:assert/strict';
-import { group, baseline, bench, run } from 'mitata';
+import { group, summary, barplot, bench, run } from 'mitata';
 import XRegExp from 'xregexp';
 
 import { isBMP } from '../../src/utils.js';
@@ -31,16 +31,20 @@ group('checking any alphanumeric', () => {
   assert.equal(REGEXP_U.test(input), true);
   assert.equal(XREGEXP_U.test(input), true);
 
-  baseline('unicode-segmenter/general', () => {
-    void anyAlnum(input);
-  });
+  summary(() => {
+    barplot(() => {
+      bench('unicode-segmenter/general', () => {
+        void anyAlnum(input);
+      }).baseline(true);
 
-  bench('XRegExp', () => {
-    void XREGEXP_U.test(input);
-  });
+      bench('XRegExp', () => {
+        void XREGEXP_U.test(input);
+      });
 
-  bench('RegExp w/ unicode', () => {
-    void REGEXP_U.test(input);
+      bench('RegExp w/ unicode', () => {
+        void REGEXP_U.test(input);
+      });
+    });
   });
 });
 
@@ -68,16 +72,20 @@ group('match all alphanumeric', () => {
   assert.deepEqual([...input.matchAll(REGEXP_UG)].map(match => match[0]), expected);
   assert.deepEqual([...input.matchAll(XREGEXP_UG)].map(match => match[0]), expected);
 
-  baseline('unicode-segmenter/general', () => {
-    void [...matchAllAlnum(input)];
-  });
+  summary(() => {
+    barplot(() => {
+      bench('unicode-segmenter/general', () => {
+        void [...matchAllAlnum(input)];
+      }).baseline(true);
 
-  bench('XRegExp', () => {
-    void [...input.matchAll(XREGEXP_UG)];
-  });
+      bench('XRegExp', () => {
+        void [...input.matchAll(XREGEXP_UG)];
+      });
 
-  bench('RegExp w/ unicode', () => {
-    void [...input.matchAll(REGEXP_UG)];
+      bench('RegExp w/ unicode', () => {
+        void [...input.matchAll(REGEXP_UG)];
+      });
+    });
   });
 });
 

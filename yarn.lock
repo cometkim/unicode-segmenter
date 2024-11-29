@@ -4835,10 +4835,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mitata@npm:^0.1.11":
-  version: 0.1.11
-  resolution: "mitata@npm:0.1.11"
-  checksum: 10c0/0e270f36e176de1ecc7eb86455182940281d85995b6e67294bfa58cbc132257c3fad8ecfcd2c9f1b1e31aff9df40cd21e600906791c1686b250bc4e866ea70ff
+"mitata@npm:^1.0.19":
+  version: 1.0.19
+  resolution: "mitata@npm:1.0.19"
+  checksum: 10c0/a585aeaac6c258df36e46ff1731a215583ccff2df0326e863dc7ac958a6f474266b53332ef945f3d191e47bf76104e581b0356dd16e762975357673857df062a
   languageName: node
   linkType: hard
 
@@ -6076,7 +6076,7 @@ __metadata:
     grapheme-splitter: "npm:1.0.4"
     graphemer: "npm:1.4.0"
     metro: "npm:^0.81.0"
-    mitata: "npm:^0.1.11"
+    mitata: "npm:^1.0.19"
     os-browserify: "npm:^0.3.0"
     pretty-bytes: "npm:^6.1.1"
     rimraf: "npm:^6.0.1"
