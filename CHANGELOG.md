@@ -1,5 +1,18 @@
 # unicode-segmenter
 
+## 0.11.2
+
+### Patch Changes
+
+- 94ed937: Improved perf and bundle size a bit
+
+  It seems using `TypedArray` isn't helpful,
+  and deref many prototypes may cause deopt.
+
+  `Array` is good enough while it ensures it's packed.
+
+- de71269: Update `Intl` type definition
+
 ## 0.11.1
 
 ### Patch Changes
