@@ -79,7 +79,7 @@ class SegmentsAdapter {
   }
 
   /**
-   * @return {IterableIterator<Intl.SegmentData>}
+   * @return {Intl.SegmentIterator<Intl.SegmentData>}
    */
   *[Symbol.iterator]() {
     // only grapheme segmenter is currently provided
