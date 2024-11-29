@@ -2122,6 +2122,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mitata/counters@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "@mitata/counters@npm:0.0.1"
+  checksum: 10c0/ac7a77bea1568482cc08388b2f4cc028081f8f14299eece696010eac5e2d0c69e70cdbc347920018d9270d07a925506ad89dbd960d54f972ad27594f5f9408de
+  languageName: node
+  linkType: hard
+
 "@nodelib/fs.scandir@npm:2.1.5":
   version: 2.1.5
   resolution: "@nodelib/fs.scandir@npm:2.1.5"
@@ -6066,6 +6073,7 @@ __metadata:
   dependencies:
     "@changesets/cli": "npm:^2.27.10"
     "@formatjs/intl-segmenter": "npm:11.5.7"
+    "@mitata/counters": "npm:^0.0.1"
     "@react-native/metro-babel-transformer": "npm:^0.75.2"
     "@types/node": "npm:^22.10.1"
     "@types/xregexp": "npm:^4.4.0"

@@ -19,6 +19,12 @@ if (isWebWorker) {
     self.postMessage({ type: 'log', message });
     defaultLog.apply(console, arguments);
   };
+
+  globalThis.process = {
+    env: {
+      NO_COLOR: true,
+    },
+  };
 }
 
 const {
@@ -120,7 +126,9 @@ for (const [title, input] of testcases) {
   });
 }
 
-await run();
+await run({
+  format: (!isWebWorker && process.env.MITATA_FORMAT) || 'mitata',
+});
 
 if (isWebWorker) {
   self.postMessage({ type: 'done' });
