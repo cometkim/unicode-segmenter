@@ -21,20 +21,7 @@ fc.configureGlobal({
 });
 
 test('takeChar', async t => {
-  await t.test('binary', () => {
-    fc.assert(
-      fc.property(
-        fc.string({ unit: 'binary', minLength: 1, maxLength: 1 }),
-        // @ts-ignore
-        fc.string({ unit: 'grapheme' }),
-        (data, extra) => {
-          return takeChar(data + extra, 0).length === 1;
-        }
-      ),
-    );
-  });
-
-  await t.test('binary (ascii)', () => {
+  await t.test('ascii', () => {
     fc.assert(
       fc.property(
         fc.string({ unit: 'binary-ascii', minLength: 1, maxLength: 1 }),
@@ -62,21 +49,8 @@ test('takeChar', async t => {
   });
 });
 
-test('takeChar', async t => {
-  await t.test('binary', () => {
-    fc.assert(
-      fc.property(
-        fc.string({ unit: 'binary', minLength: 1, maxLength: 1 }),
-        // @ts-ignore
-        fc.string({ unit: 'grapheme' }),
-        (data, extra) => {
-          return takeCodePoint(data + extra, 0) === (data + extra).codePointAt(0);
-        },
-      ),
-    );
-  });
-
-  await t.test('binary (ascii)', () => {
+test('takeCodePoint', async t => {
+  await t.test('ascii', () => {
     fc.assert(
       fc.property(
         fc.string({ unit: 'binary-ascii', minLength: 1, maxLength: 1 }),
