@@ -83,12 +83,15 @@ test('resolvedOptions', async t => {
 
   await t.test('locale as-is', () => {
     fc.assert(
-      // @ts-ignore
-      fc.property(fc.asciiString({ minLength: 2 }), (inputLocale) => {
-        let segmenter = new Segmenter(inputLocale);
-        let { locale } = segmenter.resolvedOptions();
-        assert.equal(locale, inputLocale);
-      }),
+      fc.property(
+        fc.string({ unit: 'binary-ascii', minLength: 2 }),
+        // @ts-ignore
+        (inputLocale) => {
+          let segmenter = new Segmenter(inputLocale);
+          let { locale } = segmenter.resolvedOptions();
+          return locale === inputLocale;
+        },
+      ),
     );
   });
 

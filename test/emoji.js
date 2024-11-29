@@ -1,7 +1,6 @@
 // @ts-check
 
 import { test } from 'node:test';
-import * as assert from 'node:assert/strict';
 import fc from 'fast-check';
 
 import {
@@ -19,13 +18,14 @@ fc.configureGlobal({
 test('isEmoji', async t => {
   await t.test('should match \\p{Extended_Pictographic}', () => {
     fc.assert(
-      // @ts-ignore
-      fc.property(fc.fullUnicode(), data => {
-        /** @type {number} */
+      fc.property(
+        fc.string({ unit: 'grapheme', minLength: 1, maxLength: 1 }),
         // @ts-ignore
-        let cp = data.codePointAt(0);
-        assert.equal(isEmoji(cp), isExtendedPictographic(cp));
-      }),
+        str => {
+          let cp = /** @type {number} */ (str.codePointAt(0));
+          return isEmoji(cp) === isExtendedPictographic(cp);
+        },
+      ),
     );
   });
 });
@@ -33,13 +33,14 @@ test('isEmoji', async t => {
 test('isEmojiPresentation', async t => {
   await t.test('should match \\p{Extended_Pictographic}', () => {
     fc.assert(
-      // @ts-ignore
-      fc.property(fc.fullUnicode(), data => {
-        /** @type {number} */
+      fc.property(
+        fc.string({ unit: 'grapheme', minLength: 1, maxLength: 1 }),
         // @ts-ignore
-        let cp = data.codePointAt(0);
-        assert.equal(isEmojiPresentation(cp), /\p{Emoji_Presentation}/u.test(data));
-      }),
+        str => {
+          let cp = /** @type {number} */ (str.codePointAt(0));
+          return isEmojiPresentation(cp) === /\p{Emoji_Presentation}/u.test(str);
+        },
+      ),
     );
   });
 });
@@ -47,13 +48,14 @@ test('isEmojiPresentation', async t => {
 test('isExtendedPictographic', async t => {
   await t.test('should match \\p{Extended_Pictographic}', () => {
     fc.assert(
-      // @ts-ignore
-      fc.property(fc.fullUnicode(), data => {
-        /** @type {number} */
+      fc.property(
+        fc.string({ unit: 'grapheme', minLength: 1, maxLength: 1 }),
         // @ts-ignore
-        let cp = data.codePointAt(0);
-        assert.equal(isExtendedPictographic(cp), /\p{Extended_Pictographic}/u.test(data));
-      }),
+        str => {
+          let cp = /** @type {number} */ (str.codePointAt(0));
+          return isExtendedPictographic(cp) === /\p{Extended_Pictographic}/u.test(str);
+        },
+      ),
     );
   });
 });

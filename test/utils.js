@@ -21,31 +21,41 @@ fc.configureGlobal({
 });
 
 test('takeChar', async t => {
-  await t.test('ascii', () => {
-    fc.assert(
-      // @ts-ignore
-      fc.property(fc.ascii(), fc.fullUnicodeString(), (data, extra) => {
-        assert.equal(takeChar(data + extra, 0).length, 1);
-      }),
-    );
-  });
-
-  await t.test('char16bits', () => {
-    fc.assert(
-      // @ts-ignore
-      fc.property(fc.char16bits(), fc.fullUnicodeString(), (data, extra) => {
-        assert.equal(takeChar(data + extra, 0).length, 1);
-      }),
-    );
-  });
-
-  await t.test('utf-8 (3-bytes)', () => {
+  await t.test('binary', () => {
     fc.assert(
       fc.property(
+        fc.string({ unit: 'binary', minLength: 1, maxLength: 1 }),
         // @ts-ignore
-        fc.integer({ min: 0xffff + 1, max: 0x10ffff }), fc.fullUnicodeString(), (data, extra) => {
+        fc.string({ unit: 'grapheme' }),
+        (data, extra) => {
+          return takeChar(data + extra, 0).length === 1;
+        }
+      ),
+    );
+  });
+
+  await t.test('binary (ascii)', () => {
+    fc.assert(
+      fc.property(
+        fc.string({ unit: 'binary-ascii', minLength: 1, maxLength: 1 }),
+        // @ts-ignore
+        fc.string({ unit: 'grapheme' }),
+        (data, extra) => {
+          return takeChar(data + extra, 0).length === 1;
+        }
+      ),
+    );
+  });
+
+  await t.test('over BMP', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0xffff + 1, max: 0x10ffff }),
+        // @ts-ignore
+        fc.string({ unit: 'grapheme' }),
+        (data, extra) => {
           let leading = String.fromCodePoint(data);
-          assert.equal(takeChar(leading + extra, 0).length, 2);
+          return takeChar(leading + extra, 0).length === 2;
         },
       ),
     );
@@ -53,31 +63,41 @@ test('takeChar', async t => {
 });
 
 test('takeChar', async t => {
-  await t.test('ascii', () => {
-    fc.assert(
-      // @ts-ignore
-      fc.property(fc.ascii(), fc.fullUnicodeString(), (data, extra) => {
-        assert.equal(takeCodePoint(data + extra, 0), (data + extra).codePointAt(0));
-      }),
-    );
-  });
-
-  await t.test('char16bits', () => {
-    fc.assert(
-      // @ts-ignore
-      fc.property(fc.char16bits(), fc.fullUnicodeString(), (data, extra) => {
-        assert.equal(takeCodePoint(data + extra, 0), (data + extra).codePointAt(0));
-      }),
-    );
-  });
-
-  await t.test('utf-8 (3-bytes)', () => {
+  await t.test('binary', () => {
     fc.assert(
       fc.property(
+        fc.string({ unit: 'binary', minLength: 1, maxLength: 1 }),
         // @ts-ignore
-        fc.integer({ min: 0xffff + 1, max: 0x10ffff }), fc.fullUnicodeString(), (data, extra) => {
+        fc.string({ unit: 'grapheme' }),
+        (data, extra) => {
+          return takeCodePoint(data + extra, 0) === (data + extra).codePointAt(0);
+        },
+      ),
+    );
+  });
+
+  await t.test('binary (ascii)', () => {
+    fc.assert(
+      fc.property(
+        fc.string({ unit: 'binary-ascii', minLength: 1, maxLength: 1 }),
+        // @ts-ignore
+        fc.string({ unit: 'grapheme' }),
+        (data, extra) => {
+          return takeCodePoint(data + extra, 0) === (data + extra).codePointAt(0);
+        },
+      ),
+    );
+  });
+
+  await t.test('over BMP', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0xffff + 1, max: 0x10ffff }),
+        // @ts-ignore
+        fc.string({ unit: 'grapheme' }),
+        (data, extra) => {
           let leading = String.fromCodePoint(data);
-          assert.equal(takeCodePoint(leading + extra, 0), (leading + extra).codePointAt(0));
+          return takeCodePoint(leading + extra, 0) === (leading + extra).codePointAt(0);
         },
       ),
     );
@@ -86,50 +106,50 @@ test('takeChar', async t => {
 
 test('isBMP', () => {
   fc.assert(
-    fc.property(fc.integer({ min: 0, max: 0xffff }),
-    // @ts-ignore
-    (data) => {
-      assert.ok(isBMP(data));
-    }),
+    fc.property(
+      fc.integer({ min: 0, max: 0xffff }),
+      // @ts-ignore
+      cp => isBMP(cp),
+    ),
   );
 });
 
 test('isSMP', () => {
   fc.assert(
-    fc.property(fc.integer({ min: 0x10000, max: 0x1ffff }),
-    // @ts-ignore
-    (data) => {
-      assert.ok(isSMP(data));
-    }),
+    fc.property(
+      fc.integer({ min: 0x10000, max: 0x1ffff }),
+      // @ts-ignore
+      cp => isSMP(cp),
+    ),
   );
 });
 
 test('isSIP', () => {
   fc.assert(
-    fc.property(fc.integer({ min: 0x20000, max: 0x2ffff }),
-    // @ts-ignore
-    (data) => {
-      assert.ok(isSIP(data));
-    }),
+    fc.property(
+      fc.integer({ min: 0x20000, max: 0x2ffff }),
+      // @ts-ignore
+      cp => isSIP(cp),
+    ),
   );
 });
 
 test('isTIP', () => {
   fc.assert(
-    fc.property(fc.integer({ min: 0x30000, max: 0x3ffff }),
-    // @ts-ignore
-    (data) => {
-      assert.ok(isTIP(data));
-    }),
+    fc.property(
+      fc.integer({ min: 0x30000, max: 0x3ffff }),
+      // @ts-ignore
+      cp => isTIP(cp),
+    ),
   );
 });
 
 test('isSSP', () => {
   fc.assert(
-    fc.property(fc.integer({ min: 0xe0000, max: 0xeffff }),
-    // @ts-ignore
-    (data) => {
-      assert.ok(isSSP(data));
-    }),
+    fc.property(
+      fc.integer({ min: 0xe0000, max: 0xeffff }),
+      // @ts-ignore
+      cp => isSSP(cp),
+    ),
   );
 });

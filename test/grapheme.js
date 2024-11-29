@@ -169,51 +169,93 @@ test('spec compliant', async t => {
 
   let intlSegmenter = new Intl.Segmenter();
 
-  await t.test('ascii string', () => {
+  await t.test('any string', () => {
     fc.assert(
-      // @ts-ignore
-      fc.property(fc.asciiString(), (data) => {
-        assertObjectContaining(
-          [...graphemeSegments(data)],
-          [...intlSegmenter.segment(data)],
-        );
-      }),
+      fc.property(
+        fc.string({ unit: 'binary' }),
+        // @ts-ignore
+        str => {
+          assertObjectContaining(
+            [...graphemeSegments(str)],
+            [...intlSegmenter.segment(str)],
+          );
+        },
+      ),
     );
   });
 
-  await t.test('BMP string', () => {
+  await t.test('binary', () => {
     fc.assert(
-      // @ts-ignore
-      fc.property(fc.unicodeString(), data => {
-        assertObjectContaining(
-          [...graphemeSegments(data)],
-          [...intlSegmenter.segment(data)],
-        );
-      }),
+      fc.property(
+        fc.string({ unit: 'binary' }),
+        // @ts-ignore
+        str => {
+          assertObjectContaining(
+            [...graphemeSegments(str)],
+            [...intlSegmenter.segment(str)],
+          );
+        },
+      ),
     );
   });
 
-  await t.test('unicode string', () => {
+  await t.test('binary (ascii)', () => {
     fc.assert(
-      // @ts-ignore
-      fc.property(fc.fullUnicodeString(), data => {
-        assertObjectContaining(
-          [...graphemeSegments(data)],
-          [...intlSegmenter.segment(data)],
-        );
-      }),
+      fc.property(
+        fc.string({ unit: 'binary-ascii' }),
+        // @ts-ignore
+        str => {
+          assertObjectContaining(
+            [...graphemeSegments(str)],
+            [...intlSegmenter.segment(str)],
+          );
+        },
+      ),
     );
   });
 
-  await t.test('16bits', () => {
+  await t.test('grapheme', () => {
     fc.assert(
-      // @ts-ignore
-      fc.property(fc.string16bits(), data => {
-        assertObjectContaining(
-          [...graphemeSegments(data)],
-          [...intlSegmenter.segment(data)],
-        );
-      }),
+      fc.property(
+        fc.string({ unit: 'grapheme' }),
+        // @ts-ignore
+        str => {
+          assertObjectContaining(
+            [...graphemeSegments(str)],
+            [...intlSegmenter.segment(str)],
+          );
+        },
+      ),
+    );
+  });
+
+  await t.test('grapheme (ascii)', () => {
+    fc.assert(
+      fc.property(
+        fc.string({ unit: 'grapheme-ascii' }),
+        // @ts-ignore
+        str => {
+          assertObjectContaining(
+            [...graphemeSegments(str)],
+            [...intlSegmenter.segment(str)],
+          );
+        },
+      ),
+    );
+  });
+
+  await t.test('grapheme (composite)', () => {
+    fc.assert(
+      fc.property(
+        fc.string({ unit: 'grapheme-composite' }),
+        // @ts-ignore
+        str => {
+          assertObjectContaining(
+            [...graphemeSegments(str)],
+            [...intlSegmenter.segment(str)],
+          );
+        },
+      ),
     );
   });
 });

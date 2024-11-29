@@ -1,7 +1,6 @@
 // @ts-check
 
 import { test } from 'node:test';
-import * as assert from 'node:assert/strict';
 import fc from 'fast-check';
 
 import {
@@ -20,13 +19,14 @@ fc.configureGlobal({
 test('isLetter', async t => {
   await t.test('should match \\p{L}', () => {
     fc.assert(
-      // @ts-ignore
-      fc.property(fc.fullUnicode(), data => {
-        /** @type {number} */
+      fc.property(
+        fc.string({ unit: 'grapheme', minLength: 1, maxLength: 1 }),
         // @ts-ignore
-        let cp = data.codePointAt(0);
-        assert.equal(isLetter(cp), /\p{L}/u.test(data));
-      }),
+        str => {
+          let cp = /** @type {number} */ (str.codePointAt(0));
+          return isLetter(cp) === /\p{L}/u.test(str);
+        },
+      ),
     );
   });
 });
@@ -34,13 +34,14 @@ test('isLetter', async t => {
 test('isNumeric', async t => {
   await t.test('should match \\p{N}', () => {
     fc.assert(
-      // @ts-ignore
-      fc.property(fc.fullUnicode(), data => {
-        /** @type {number} */
+      fc.property(
+        fc.string({ unit: 'grapheme', minLength: 1, maxLength: 1 }),
         // @ts-ignore
-        let cp = data.codePointAt(0);
-        assert.equal(isNumeric(cp), /\p{N}/u.test(data));
-      }),
+        str => {
+          let cp = /** @type {number} */ (str.codePointAt(0));
+          return isNumeric(cp) === /\p{N}/u.test(str);
+        }
+      ),
     );
   });
 });
@@ -48,13 +49,14 @@ test('isNumeric', async t => {
 test('isAlphabetic', async t => {
   await t.test('should match \\p{Alphabetic}(=\\p{Alpha})', () => {
     fc.assert(
-      // @ts-ignore
-      fc.property(fc.fullUnicode(), data => {
-        /** @type {number} */
+      fc.property(
+        fc.string({ unit: 'grapheme', minLength: 1, maxLength: 1 }),
         // @ts-ignore
-        let cp = data.codePointAt(0);
-        assert.equal(isAlphabetic(cp), /\p{Alpha}/u.test(data));
-      }),
+        str => {
+          let cp = /** @type {number} */ (str.codePointAt(0));
+          return isAlphabetic(cp) === /\p{Alpha}/u.test(str);
+        },
+      ),
     );
   });
 });
@@ -62,13 +64,14 @@ test('isAlphabetic', async t => {
 test('isAlphanumeric', async t => {
   await t.test('should match [\\p{N}\\p{Alpha}]', () => {
     fc.assert(
-      // @ts-ignore
-      fc.property(fc.fullUnicode(), data => {
-        /** @type {number} */
+      fc.property(
+        fc.string({ unit: 'grapheme', minLength: 1, maxLength: 1 }),
         // @ts-ignore
-        let cp = data.codePointAt(0);
-        assert.equal(isAlphanumeric(cp), /[\p{N}\p{Alpha}]/u.test(data));
-      }),
+        str => {
+          let cp = /** @type {number} */ (str.codePointAt(0));
+          return isAlphanumeric(cp) === /[\p{N}\p{Alpha}]/u.test(str);
+        },
+      ),
     );
   });
 });
