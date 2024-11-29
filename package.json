@@ -114,7 +114,7 @@
     "process": false
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.7",
+    "@changesets/cli": "^2.27.10",
     "@formatjs/intl-segmenter": "11.5.7",
     "@react-native/metro-babel-transformer": "^0.75.2",
     "@types/node": "^22.10.1",
@@ -125,16 +125,16 @@
     "fast-check": "^3.23.1",
     "grapheme-splitter": "1.0.4",
     "graphemer": "1.4.0",
-    "metro": "^0.80.10",
+    "metro": "^0.81.0",
     "mitata": "^0.1.11",
     "os-browserify": "^0.3.0",
     "pretty-bytes": "^6.1.1",
     "rimraf": "^6.0.1",
     "typescript": "^5.7.2",
     "unicode-segmentation-wasm": "github:cometkim/unicode-segmentation-wasm#230eb74d320ea2f31f95b74ddb2567186d496587",
-    "vite": "^5.4.2",
+    "vite": "^6.0.1",
     "xregexp": "5.1.1",
-    "zx": "^8.1.5"
+    "zx": "^8.2.4"
   },
   "packageManager": "yarn@4.5.1"
 }
