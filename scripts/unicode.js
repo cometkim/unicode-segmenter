@@ -573,19 +573,19 @@ export const ${typeName} = {
 
   f.write(`
 export const ${name}_buffer = initUnicodeRangeBuffer(
-  new Uint32Array(${breakTable.length * 2}),
+  Array(${breakTable.length * 2}),
   /** @type {UnicodeRangeEncoding} */
   ('${breakTable.map(x => `${x[0] === 0 ? '' : x[0].toString(36)},${x[1] === 0 ? '' : x[1].toString(36)}`).join(',')}')
 );
 
 export const ${name}_cats = initLookupTableBuffer(
-  new Uint8Array(${breakTable.length}),
+  Array(${breakTable.length}),
   /** @type {LookupTableEncoding} */
   ('${breakTable.map(x => inversed[x[2]].toString(36)).join('')}')
 );
 
 const ${name}_lookup = initLookupTableBuffer(
-  new Uint16Array(${lookupTable.length}),
+  Array(${lookupTable.length}),
   /** @type {LookupTableEncoding} */
   ('${lookupTable.map(x => x === 0 ? '' : x.toString(36)).join(',')}'),
   ','
@@ -637,7 +637,7 @@ import { initUnicodeRangeBuffer } from './core.js';
  * The Unicode \`Indic_Conjunct_Break=Consonant\` derived property table
  */
 export const consonant_buffer = initUnicodeRangeBuffer(
-  new Uint16Array(${table.length * 2}),
+  Array(${table.length * 2}),
   /** @type {UnicodeRangeEncoding} */
   ('${table.map(x => `${x[0] ? x[0].toString(36) : ''},${x[1] ? x[1].toString(36) : ''}`).join(',')}')
 );
@@ -675,7 +675,7 @@ import { initUnicodeRangeBuffer } from './core.js';
  * @type {UnicodeRangeBuffer}
  */
 export const letter_buffer = initUnicodeRangeBuffer(
-  new Uint32Array(${gencats['L'].length * 2}),
+  Array(${gencats['L'].length * 2}),
   /** @type {UnicodeRangeEncoding} */
   ('${encodeRanges(gencats['L'])}')
 );
@@ -686,7 +686,7 @@ export const letter_buffer = initUnicodeRangeBuffer(
  * @type {UnicodeRangeBuffer}
  */
 export const numeric_buffer = initUnicodeRangeBuffer(
-  new Uint32Array(${gencats['N'].length * 2}),
+  Array(${gencats['N'].length * 2}),
   /** @type {UnicodeRangeEncoding} */
   ('${encodeRanges(gencats['N'])}')
 );
@@ -697,7 +697,7 @@ export const numeric_buffer = initUnicodeRangeBuffer(
  * @type {UnicodeRangeBuffer}
  */
 export const alphabetic_buffer = initUnicodeRangeBuffer(
-  new Uint32Array(${derived['Alphabetic'].length * 2}),
+  Array(${derived['Alphabetic'].length * 2}),
   /** @type {UnicodeRangeEncoding} */
   ('${encodeRanges(derived['Alphabetic'])}')
 );
@@ -727,7 +727,7 @@ import { initUnicodeRangeBuffer } from './core.js';
  * @type {UnicodeRangeBuffer}
  */
 export const emoji_presentation_buffer = initUnicodeRangeBuffer(
-  new Uint32Array(${emojiProps['Emoji_Presentation'].length * 2}),
+  Array(${emojiProps['Emoji_Presentation'].length * 2}),
   /** @type {UnicodeRangeEncoding} */
   ('${encodeRanges(emojiProps['Emoji_Presentation'])}')
 );
@@ -738,7 +738,7 @@ export const emoji_presentation_buffer = initUnicodeRangeBuffer(
  * @type {UnicodeRangeBuffer}
  */
 export const extended_pictographic_buffer = initUnicodeRangeBuffer(
-  new Uint32Array(${emojiProps['Extended_Pictographic'].length * 2}),
+  Array(${emojiProps['Extended_Pictographic'].length * 2}),
   /** @type {UnicodeRangeEncoding} */
   ('${encodeRanges(emojiProps['Extended_Pictographic'])}')
 );

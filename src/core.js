@@ -20,13 +20,13 @@
  */
 
 /**
- * @typedef {ArrayLike<number> & { __tag: 'LookupTableBuffer' }} LookupTableBuffer
+ * @typedef {Array<number> & { __tag: 'LookupTableBuffer' }} LookupTableBuffer
  *
  * Value lookup table serialized into a TypedArray
  */
 
 /**
- * @typedef {ArrayLike<number> & { __tag: 'UnicodeRangeBuffer' }} UnicodeRangeBuffer
+ * @typedef {Array<number> & { __tag: 'UnicodeRangeBuffer' }} UnicodeRangeBuffer
  *
  * {@link UnicodeRange} data serialized into a TypedArray
  *
@@ -86,7 +86,7 @@ export function searchUnicodeRange(x, buffer, sliceFrom = 0, sliceTo = buffer.le
 }
 
 /**
- * @param {ArrayLike<number>} buffer 
+ * @param {Array<number>} buffer 
  * @param {LookupTableEncoding} value
  * @param {'' | ','} [sep = '']
  * @return {LookupTableBuffer}
@@ -94,20 +94,18 @@ export function searchUnicodeRange(x, buffer, sliceFrom = 0, sliceTo = buffer.le
 export function initLookupTableBuffer(buffer, value, sep = '') {
   let nums = value.split(sep).map(s => s ? parseInt(s, 36) : 0);
   for (let i = 0; i < nums.length; i++)
-    /** @type Array<number> */
-    (buffer)[i] = nums[i];
-  return /** @type {LookupTableBuffer} */(buffer);
+    buffer[i] = nums[i];
+  return /** @type {LookupTableBuffer} */ (buffer);
 };
 
 /**
- * @param {ArrayLike<number>} buffer
+ * @param {Array<number>} buffer
  * @param {UnicodeRangeEncoding} value
  * @return {UnicodeRangeBuffer}
  */
 export function initUnicodeRangeBuffer(buffer, value) {
   let nums = value.split(',').map(s => s ? parseInt(s, 36) : 0);
   for (let i = 0, n = 0; i < nums.length; i++)
-    /** @type Array<number> */
-    (buffer)[i] = i % 2 ? n + nums[i] : (n = nums[i]);
+    buffer[i] = i % 2 ? n + nums[i] : (n = nums[i]);
   return /** @type {UnicodeRangeBuffer} */ (buffer);
 };
