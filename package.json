@@ -39,15 +39,14 @@
   },
   "sideEffects": [
     "./intl-polyfill.js",
-    "./intl-polyfill.cjs",
-    "./bundle/intl-polyfill.js"
+    "./intl-polyfill.cjs"
   ],
   "publishConfig": {
     "main": "./index.js",
     "types": "./index.d.ts",
     "exports": {
       ".": {
-        "types": "./grapheme.d.ts",
+        "types": "./index.d.ts",
         "import": "./index.js",
         "require": "./index.cjs"
       },
@@ -81,16 +80,13 @@
         "import": "./intl-polyfill.js",
         "require": "./intl-polyfill.cjs"
       },
-      "./bundle/*": "./bundle/*",
       "./package.json": "./package.json"
     }
   },
   "files": [
     "/*.js",
     "/*.cjs",
-    "/*.cjs.map",
     "/*.d.ts",
-    "/src",
     "/licenses"
   ],
   "scripts": {
@@ -114,10 +110,13 @@
     "process": false
   },
   "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/plugin-transform-modules-commonjs": "^7.26.3",
     "@changesets/cli": "^2.27.10",
     "@formatjs/intl-segmenter": "11.5.7",
     "@mitata/counters": "^0.0.1",
     "@react-native/metro-babel-transformer": "^0.75.2",
+    "@types/babel__core": "^7",
     "@types/node": "^22.10.1",
     "@types/xregexp": "^4.4.0",
     "emoji-regex": "10.4.0",

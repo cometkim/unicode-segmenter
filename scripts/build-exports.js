@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 
+import { transformFileAsync } from '@babel/core';
 import { build } from 'esbuild';
 
 let rootDir = path.join(import.meta.dirname, '..');
@@ -28,20 +29,45 @@ function rewriteCjs(content) {
     ),
   );
 
-  let { outputFiles: cjsOutputs } = await build({
-    entryPoints: modules.map(src),
-    outdir: distDir,
-    outExtension: { '.js': '.cjs' },
-    format: 'cjs',
-    treeShaking: true,
-    write: false,
-    sourcemap: true,
-  });
   await Promise.all(
-    cjsOutputs.map(
-      ({ path, text }) => fs.writeFile(path, rewriteCjs(text), 'utf8'),
+    modules.map(
+      async module => {
+        const result = await transformFileAsync(dist(module), {
+          plugins: [
+            ['@babel/plugin-transform-modules-commonjs', {
+              loose: true,
+              strict: true,
+              lazy: false,
+              importInterop: 'none',
+            }],
+          ],
+          assumptions: {
+            enumerableModuleMeta: true,
+            constantReexports: true,
+          },
+        });
+        await fs.writeFile(
+          dist(module).replace('.js', '.cjs'),
+          rewriteCjs(result.code),
+        );
+      },
     ),
   );
+  // let { outputFiles: cjsOutputs } = await build({
+  //   entryPoints: modules.map(dist),
+  //   outdir: distDir,
+  //   bundle: false,
+  //   outExtension: { '.js': '.cjs' },
+  //   format: 'cjs',
+  //   platform: 'node',
+  //   write: false,
+  //   sourcemap: true,
+  // });
+  // await Promise.all(
+  //   cjsOutputs.map(
+  //     ({ path, text }) => fs.writeFile(path, rewriteCjs(text), 'utf8'),
+  //   ),
+  // );
 }
 
 {

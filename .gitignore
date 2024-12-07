@@ -17,6 +17,7 @@ node_modules/
 /*.cjs
 /*.cjs.map
 /bundle/
+*.tgz
 
 lcov.info
 
