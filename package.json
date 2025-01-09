@@ -114,7 +114,7 @@
     "@babel/plugin-transform-modules-commonjs": "^7.26.3",
     "@changesets/cli": "^2.27.11",
     "@formatjs/intl-segmenter": "11.5.7",
-    "@mitata/counters": "^0.0.7",
+    "@mitata/counters": "^0.0.5",
     "@react-native/metro-babel-transformer": "^0.76.5",
     "@types/babel__core": "^7.20.5",
     "@types/node": "^22.10.5",
