@@ -1957,10 +1957,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mitata/counters@npm:^0.0.7":
-  version: 0.0.7
-  resolution: "@mitata/counters@npm:0.0.7"
-  checksum: 10c0/61a1987a93f7d953d4aa60b28fcef44e427051a0745e8a6308d8985af7d5d7623f10cb043b067d8a01aaeae47973b15493e0d5e0f716cf7e09a096a422651da6
+"@mitata/counters@npm:^0.0.5":
+  version: 0.0.5
+  resolution: "@mitata/counters@npm:0.0.5"
+  checksum: 10c0/918ffc5a24de902a8d1201b21c8d1726f18cab6ada8800f5fa52a9e0a41a30dbab5173996a073d4d3a10dfd33ec8a049d3a410677fd268e91990170f8a2887b3
   languageName: node
   linkType: hard
 
@@ -5894,7 +5894,7 @@ __metadata:
     "@babel/plugin-transform-modules-commonjs": "npm:^7.26.3"
     "@changesets/cli": "npm:^2.27.11"
     "@formatjs/intl-segmenter": "npm:11.5.7"
-    "@mitata/counters": "npm:^0.0.7"
+    "@mitata/counters": "npm:^0.0.5"
     "@react-native/metro-babel-transformer": "npm:^0.76.5"
     "@types/babel__core": "npm:^7.20.5"
     "@types/node": "npm:^22.10.5"
