@@ -166,17 +166,6 @@ let encodeRanges = ranges => {
 };
 
 /**
- * @param {UnicodeRange} range
- * @param {boolean} [compressed=true]
- * @return {string}
- */
-let formatRange = (range, compressed = true) => {
-  return compressed
-    ? `[${range[0]},${range[1]}]`
-    : `[${range[0]}, ${range[1]}]`
-};
-
-/**
  * @param {UnicodeRange[]} ranges
  * @return {UnicodeValues}
  */
