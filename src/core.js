@@ -8,7 +8,7 @@
 
 /**
  * @template {number} T
- * @typedef {[fro: number, to: number, category: T]} CategorizedUnicodeRange
+ * @typedef {[from: number, to: number, category: T]} CategorizedUnicodeRange
  */
 
 /**
