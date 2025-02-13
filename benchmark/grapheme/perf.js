@@ -12,19 +12,8 @@ const isSystemRuntime = typeof process === 'object' || typeof Deno === 'object' 
 const isWebWorker = !isSystemRuntime && typeof self === 'object';
 
 if (isWebWorker) {
+  // Init WASM module
   await unicodeSegmentation.default();
-
-  const defaultLog = console.log.bind(console);
-  console.log = function(message) {
-    self.postMessage({ type: 'log', message });
-    defaultLog.apply(console, arguments);
-  };
-
-  globalThis.process = {
-    env: {
-      NO_COLOR: true,
-    },
-  };
 }
 
 const {
@@ -64,7 +53,7 @@ let testcases = [
   ],
   [
     'Code snippet (combined)',
-`
+    `
 // 'unicode-segmenter' 라이브러리를 사용한 유니코드 문자 분할 예제 코드 🚀
 
 // ESM supported!
@@ -129,6 +118,12 @@ for (const [title, input] of testcases) {
 
 await run({
   format: (!isWebWorker && process.env.MITATA_FORMAT) || 'mitata',
+  ...isWebWorker && {
+    colors: false,
+    print(s) {
+      self.postMessage({ type: 'log', message: s });
+    },
+  },
 });
 
 if (isWebWorker) {
