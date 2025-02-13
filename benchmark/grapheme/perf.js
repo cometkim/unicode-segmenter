@@ -1,4 +1,12 @@
 import * as assert from 'node:assert/strict';
+import {
+  group,
+  summary,
+  barplot,
+  bench,
+  run,
+  do_not_optimize,
+} from 'mitata';
 
 import Graphemer from 'graphemer';
 import GraphemeSplitter from 'grapheme-splitter';
@@ -15,15 +23,6 @@ if (isWebWorker) {
   // Init WASM module
   await unicodeSegmentation.default();
 }
-
-const {
-  group,
-  summary,
-  barplot,
-  bench,
-  run,
-  do_not_optimize,
-} = await import('mitata');
 
 const intlSegmenter = new Intl.Segmenter();
 const graphemer = new (Graphemer.default || Graphemer)();
