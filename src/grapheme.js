@@ -17,7 +17,6 @@ import { searchUnicodeRange } from './core.js';
 import { isBMP } from './utils.js';
 import {
   GraphemeCategory,
-  findGraphemeIndex,
   grapheme_buffer,
   grapheme_cats,
 } from './_grapheme_data.js';
@@ -52,7 +51,7 @@ export {
  * @return A {@link GraphemeCategoryRange} value if found, or garbage value with {@link GC_Any} category.
  */
 export function searchGraphemeCategory(cp) {
-  let index = findGraphemeIndex(cp);
+  let index = searchUnicodeRange(cp, grapheme_buffer);
   if (index < 0) {
     return [0, 0, 0 /* GC_Any */];
   }
@@ -259,7 +258,7 @@ function cat(cp, cache) {
     // If this char isn't within the cached range, update the cache to the
     // range that includes it.
     if (cp < cache[0] || cp > cache[1]) {
-      let index = findGraphemeIndex(cp);
+      let index = searchUnicodeRange(cp, grapheme_buffer);
 
       if (index < 0) {
         return 0;

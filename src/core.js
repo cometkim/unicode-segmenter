@@ -62,13 +62,11 @@
  * @template {number} T
  * @param {T} x
  * @param {UnicodeRangeBuffer} buffer
- * @param {number} [sliceFrom]
- * @param {number} [sliceTo]
  * @return {number} index of including range, or -(low+1) if there isn't
  */
-export function searchUnicodeRange(x, buffer, sliceFrom = 0, sliceTo = buffer.length) {
-  let lo = sliceFrom;
-  let hi = sliceTo - 2;
+export function searchUnicodeRange(x, buffer) {
+  let lo = 0;
+  let hi = buffer.length - 2;
 
   while (lo <= hi) {
     let mid = lo + hi >> 1 & ~1;

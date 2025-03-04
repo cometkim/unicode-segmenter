@@ -498,7 +498,6 @@ let printBreakModule = (f, breakTable, breakCats, name) => {
   f.write(preamble);
   f.write(`
 import {
-  searchUnicodeRange,
   initLookupTableBuffer,
   initUnicodeRangeBuffer,
 } from './core.js';
@@ -572,36 +571,6 @@ export const ${name}_cats = initLookupTableBuffer(
   /** @type {LookupTableEncoding} */
   ('${breakTable.map(x => inversed[x[2]].toString(36)).join('')}')
 );
-
-const ${name}_lookup = initLookupTableBuffer(
-  Array(${lookupTable.length}),
-  /** @type {LookupTableEncoding} */
-  ('${lookupTable.map(x => x === 0 ? '' : x.toString(36)).join(',')}'),
-  ','
-);
-
-/**
- * @param {number} cp
- * @return Index of {@link ${name}_ranges} if found, or negation of last visited low cursor.
- */
-export function find${capitalName}Index(cp) {
-  // Perform a quick O(1) lookup in a precomputed table to determine
-  // the slice of the range table to search in.
-  let lookup_table = ${name}_lookup;
-  let lookup_interval = ${lookupInterval};
-
-  let idx = cp / lookup_interval | 0;
-  // If the \`idx\` is outside of the precomputed table - use the slice
-  // starting from the last covered index in the precomputed table and
-  // ending with the length of the range table.
-  let sliceFrom = ${j}, sliceTo = ${breakTable.length};
-  if (idx + 1 < lookup_table.length) {
-    sliceFrom = lookup_table[idx];
-    sliceTo = lookup_table[idx + 1] + 1;
-  }
-
-  return searchUnicodeRange(cp, ${name}_buffer, sliceFrom * 2, sliceTo * 2);
-}
 `,
   );
 };
