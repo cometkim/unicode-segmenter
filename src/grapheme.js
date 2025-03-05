@@ -15,14 +15,8 @@
 
 import { searchUnicodeRange } from './core.js';
 import { isBMP } from './utils.js';
-import {
-  GraphemeCategory,
-  grapheme_buffer,
-  grapheme_cats,
-} from './_grapheme_data.js';
-import {
-  consonant_buffer,
-} from './_incb_data.js';
+import { GraphemeCategory, grapheme_ranges } from './_grapheme_data.js';
+import { consonant_ranges } from './_incb_data.js';
 
 /**
  * @typedef {import('./_grapheme_data.js').GC_Any} GC_Any
@@ -51,15 +45,11 @@ export {
  * @return A {@link GraphemeCategoryRange} value if found, or garbage value with {@link GC_Any} category.
  */
 export function searchGraphemeCategory(cp) {
-  let index = searchUnicodeRange(cp, grapheme_buffer);
+  let index = searchUnicodeRange(cp, grapheme_ranges);
   if (index < 0) {
     return [0, 0, 0 /* GC_Any */];
   }
-  return [
-    grapheme_buffer[index],
-    grapheme_buffer[index + 1],
-    grapheme_cats[index >> 1],
-  ];
+  return grapheme_ranges[index];
 }
 
 /**
@@ -258,16 +248,18 @@ function cat(cp, cache) {
     // If this char isn't within the cached range, update the cache to the
     // range that includes it.
     if (cp < cache[0] || cp > cache[1]) {
-      let index = searchUnicodeRange(cp, grapheme_buffer);
+      let index = searchUnicodeRange(cp, grapheme_ranges);
 
       if (index < 0) {
         return 0;
       }
 
-      cache[0] = grapheme_buffer[index];
-      cache[1] = grapheme_buffer[index + 1];
-      cache[2] = /** @type {GraphemeCategoryNum} */ (grapheme_cats[index >> 1]);
+      let range = grapheme_ranges[index];
+      cache[0] = range[0];
+      cache[1] = range[1];
+      cache[2] = range[2];
     }
+
     return cache[2];
   }
 };
@@ -277,7 +269,7 @@ function cat(cp, cache) {
  * @return {boolean}
  */
 function isIndicConjunctCosonant(cp) {
-  return searchUnicodeRange(cp, consonant_buffer) >= 0;
+  return searchUnicodeRange(cp, consonant_ranges) >= 0;
 }
 
 /**

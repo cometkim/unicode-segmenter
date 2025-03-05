@@ -3,31 +3,29 @@
 //
 // @ts-check
 
-import { initUnicodeRangeBuffer } from './core.js';
+import { decodeUnicodeData } from './core.js';
 
 /**
- * @typedef {import('./core.js').UnicodeRangeBuffer} UnicodeRangeBuffer
- * @typedef {import('./core.js').UnicodeRangeEncoding} UnicodeRangeEncoding
+ * @typedef {import('./core.js').UnicodeRange} UnicodeRange
+ * @typedef {import('./core.js').UnicodeDataEncoding} UnicodeDataEncoding
  */
 
 /**
  * The Unicode `Emoji_Presentation` properties data
  *
- * @type {UnicodeRangeBuffer}
+ * @type {UnicodeRange[]}
  */
-export const emoji_presentation_buffer = initUnicodeRangeBuffer(
-  Array(160),
-  /** @type {UnicodeRangeEncoding} */
-  ('6xm,1,73d,3,73k,,73n,,7i5,1,7is,1,7k8,b,7lr,,7mb,,7mp,,7my,1,7nh,1,7no,1,7ny,,7o4,,7oq,,7oy,1,7p1,,7p6,,7p9,,7ph,,7pm,1,7qg,,7rg,,7ri,,7rn,2,7rr,,7th,2,7u8,,7un,,8ij,1,8k0,,8k5,,2pz8,,2q4v,,2qa6,,2qa9,9,2qcm,p,2qdd,,2qe2,,2qen,,2qeq,4,2qew,2,2qfk,1,2qkg,w,2qlp,8,2qlz,1x,2qny,l,2qow,16,2qq7,4,2qqo,g,2qr8,,2qrc,1y,2qtc,,2qte,56,2qyn,1q,2r0r,3,2r0w,n,2r22,,2r2t,1,2r38,,2r5n,2c,2r9c,1x,2rbg,,2rbk,2,2rbp,2,2rbw,3,2rcb,1,2rck,8,2rj4,b,2rjk,,2rrg,1a,2rss,9,2rt3,54,2s1c,c,2s1s,9,2s27,1j,2s3y,e,2s4f,a,2s4w,8')
+export const emoji_presentation_ranges = decodeUnicodeData(
+  /** @type {UnicodeDataEncoding} */
+  ('1,6xm,3,73d,,73k,,73n,1,7i5,1,7is,b,7k8,,7lr,,7mb,,7mp,1,7my,1,7nh,1,7no,,7ny,,7o4,,7oq,1,7oy,,7p1,,7p6,,7p9,,7ph,1,7pm,,7qg,,7rg,,7ri,2,7rn,,7rr,2,7th,,7u8,,7un,1,8ij,,8k0,,8k5,,2pz8,,2q4v,,2qa6,9,2qa9,p,2qcm,,2qdd,,2qe2,,2qen,4,2qeq,2,2qew,1,2qfk,w,2qkg,8,2qlp,1x,2qlz,l,2qny,16,2qow,4,2qq7,g,2qqo,,2qr8,1y,2qrc,,2qtc,56,2qte,1q,2qyn,3,2r0r,n,2r0w,,2r22,1,2r2t,,2r38,2c,2r5n,1x,2r9c,,2rbg,2,2rbk,2,2rbp,3,2rbw,1,2rcb,8,2rck,b,2rj4,,2rjk,1a,2rrg,9,2rss,54,2rt3,c,2s1c,9,2s1s,1j,2s27,e,2s3y,a,2s4f,8,2s4w')
 );
 
 /**
  * The Unicode `Extended_Pictographic` properties data
  *
- * @type {UnicodeRangeBuffer}
+ * @type {UnicodeRange[]}
  */
-export const extended_pictographic_buffer = initUnicodeRangeBuffer(
-  Array(156),
-  /** @type {UnicodeRangeEncoding} */
-  ('4p,,4u,,6d8,,6dl,,6jm,,6k9,,6ms,5,6nd,1,6xm,1,6y0,,70o,,72n,,73d,a,73s,2,79e,,7fu,1,7g6,,7gg,,7i3,3,7i8,5,7if,b,7is,35,7m8,39,7pk,a,7pw,,7py,,7q5,,7q9,,7qg,,7qr,1,7r8,,7rb,,7rg,,7ri,,7rn,2,7rr,,7s3,4,7th,2,7tt,,7u8,,7un,,850,1,8hx,2,8ij,1,8k0,,8k5,,9io,,9j1,,9zr,,9zt,,2pz4,73,2q6l,2,2q7j,,2q98,5,2q9q,1,2qa6,,2qa9,9,2qb1,1k,2qdd,e,2qe2,,2qen,,2qeq,8,2qf0,3,2qfd,c1,2qrk,8t,2r0m,7d,2r9c,3j,2rg4,b,2rit,16,2rkc,3,2rm0,7,2rmi,5,2rns,7,2rou,29,2rrg,1a,2rss,9,2rt3,c8,2scg,sd')
+export const extended_pictographic_ranges = decodeUnicodeData(
+  /** @type {UnicodeDataEncoding} */
+  (',4p,,4u,,6d8,,6dl,,6jm,,6k9,5,6ms,1,6nd,1,6xm,,6y0,,70o,,72n,a,73d,2,73s,,79e,1,7fu,,7g6,,7gg,3,7i3,5,7i8,b,7if,35,7is,39,7m8,a,7pk,,7pw,,7py,,7q5,,7q9,,7qg,1,7qr,,7r8,,7rb,,7rg,,7ri,2,7rn,,7rr,4,7s3,2,7th,,7tt,,7u8,,7un,1,850,2,8hx,1,8ij,,8k0,,8k5,,9io,,9j1,,9zr,,9zt,73,2pz4,2,2q6l,,2q7j,5,2q98,1,2q9q,,2qa6,9,2qa9,1k,2qb1,e,2qdd,,2qe2,,2qen,8,2qeq,3,2qf0,c1,2qfd,8t,2qrk,7d,2r0m,3j,2r9c,b,2rg4,16,2rit,3,2rkc,7,2rm0,5,2rmi,7,2rns,29,2rou,1a,2rrg,9,2rss,c8,2rt3,sd,2scg')
 );

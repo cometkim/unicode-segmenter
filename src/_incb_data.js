@@ -3,17 +3,19 @@
 //
 // @ts-check
 
-import { initUnicodeRangeBuffer } from './core.js';
+import { decodeUnicodeData } from './core.js';
 
 /**
- * @typedef {import('./core.js').UnicodeRangeEncoding} UnicodeRangeEncoding
+ * @typedef {import('./core.js').UnicodeRange} UnicodeRange
+ * @typedef {import('./core.js').UnicodeDataEncoding} UnicodeDataEncoding
  */
 
 /**
  * The Unicode `Indic_Conjunct_Break=Consonant` derived property table
+ *
+ * @type {UnicodeRange[]}
  */
-export const consonant_buffer = initUnicodeRangeBuffer(
-  Array(52),
-  /** @type {UnicodeRangeEncoding} */
-  ('1sl,10,1ug,7,1vc,7,1w5,j,1wq,6,1wy,,1x2,3,1y4,1,1y7,,1yo,1,239,j,23u,6,242,1,245,4,261,,26t,j,27e,6,27m,1,27p,4,28s,1,28v,,29d,,2dx,j,2ei,f,2fs,2,2l1,11')
+export const consonant_ranges = decodeUnicodeData(
+  /** @type {UnicodeDataEncoding} */
+  ('10,1sl,7,1ug,7,1vc,j,1w5,6,1wq,,1wy,3,1x2,1,1y4,,1y7,1,1yo,j,239,6,23u,1,242,4,245,,261,j,26t,6,27e,1,27m,4,27p,1,28s,,28v,,29d,j,2dx,f,2ei,2,2fs,11,2l1')
 );

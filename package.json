@@ -37,6 +37,9 @@
       "require": "./intl-adapter.cjs"
     }
   },
+  "imports": {
+    "#src/*": "./src/*"
+  },
   "sideEffects": [
     "./intl-polyfill.js",
     "./intl-polyfill.cjs"

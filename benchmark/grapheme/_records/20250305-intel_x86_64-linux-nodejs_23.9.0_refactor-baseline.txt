@@ -1,0 +1,335 @@
+clk: ~4.42 GHz
+cpu: Intel(R) Core(TM) Ultra 7 258V
+runtime: node 23.9.0 (x64-linux)
+
+benchmark                                     avg (min … max) p75 / p99    (min … top 1%)
+------------------------------------------------------------- -------------------------------
+• Lorem ipsum (ascii)
+------------------------------------------------------------- -------------------------------
+unicode-segmenter/grapheme                       4.15 µs/iter   4.16 µs     █                
+                                          (4.09 µs … 4.25 µs)   4.23 µs     █▆ ▃▆ ▆          
+                                      (  8.08  b …  31.09  b)  15.96  b ▄▄█▄█████▄█▁▄▁▄▁▄▁█▄▄
+                                     7.70 ipc ( 56.14% cache)    8.08 branch misses
+                           15.59k cycles 120.03k instructions  274.27 c-refs  120.28 c-misses
+
+graphemer                                       37.93 µs/iter  37.99 µs      █▇              
+                                       (33.10 µs … 212.78 µs)  46.21 µs     ▇███             
+                                      (  4.45 kb …   1.47 mb)  78.43 kb ▁▁▃▆█████▆▅▄▃▂▂▂▁▁▁▁▁
+                                     5.61 ipc ( 41.89% cache)   27.58 branch misses
+                          150.10k cycles 842.19k instructions   1.34k c-refs  775.86 c-misses
+
+grapheme-splitter                               66.70 µs/iter  66.62 µs            █ ▃       
+                                       (51.94 µs … 937.41 µs)  73.74 µs           ▃█▇██      
+                                      (  3.40 kb …   2.44 mb)  48.74 kb ▁▁▁▁▁▁▂▂▃▅█████▄▂▂▂▁▁
+                                     5.20 ipc ( 60.45% cache)   24.41 branch misses
+                          288.67k cycles   1.50M instructions  771.11 c-refs  304.95 c-misses
+
+@formatjs/intl-segmenter                        37.05 µs/iter  37.12 µs █    █               
+                                        (36.82 µs … 37.57 µs)  37.22 µs █▅   █     ▅ ▅▅▅  ▅ ▅
+                                      (  3.59 kb …   3.66 kb)   3.62 kb ██▁▁▁█▁▁▁▁▁█▁███▁▁█▁█
+                                     5.92 ipc ( 39.35% cache)   54.36 branch misses
+                          134.60k cycles 796.52k instructions   1.51k c-refs  914.43 c-misses
+
+unicode-rs/unicode-segmentation (wasm-bindgen)  14.77 µs/iter  14.71 µs     █▂               
+                                       (12.93 µs … 257.68 µs)  19.62 µs     ██               
+                                      (112.00  b … 460.95 kb)  16.22 kb ▁▁▃███▇▅▃▂▁▁▁▁▁▁▁▁▁▁▁
+                                     4.85 ipc ( 36.19% cache)   46.60 branch misses
+                           61.93k cycles 300.59k instructions  256.07 c-refs  163.39 c-misses
+
+Intl.Segmenter                                   8.86 µs/iter   9.08 µs      █             █ 
+                                          (8.53 µs … 9.18 µs)   9.12 µs      █             █ 
+                                      (  1.91 kb …   1.92 kb)   1.92 kb ██▁█▁█▁█▁▁█▁▁▁██▁█▁██
+                                     4.63 ipc ( 52.79% cache)   33.02 branch misses
+                           35.38k cycles 163.92k instructions  575.84 c-refs  271.87 c-misses
+
+                                               ┌                                            ┐
+                    unicode-segmenter/grapheme ┤ 4.15 µs
+                                     graphemer ┤■■■■■■■■■■■■■■■■■■ 37.93 µs
+                             grapheme-splitter ┤■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 66.70 µs
+                      @formatjs/intl-segmenter ┤■■■■■■■■■■■■■■■■■■ 37.05 µs
+unicode-rs/unicode-segmentation (wasm-bindgen) ┤■■■■■■ 14.77 µs
+                                Intl.Segmenter ┤■■■ 8.86 µs
+                                               └                                            ┘
+
+summary
+  unicode-segmenter/grapheme
+   2.14x faster than Intl.Segmenter
+   3.56x faster than unicode-rs/unicode-segmentation (wasm-bindgen)
+   8.94x faster than @formatjs/intl-segmenter
+   9.15x faster than graphemer
+   16.09x faster than grapheme-splitter
+
+• Emojis
+------------------------------------------------------------- -------------------------------
+unicode-segmenter/grapheme                       1.62 µs/iter   1.64 µs         ▆ █          
+                                          (1.57 µs … 1.70 µs)   1.68 µs   ▂▄  ▅▅███▂▂▅ ▂     
+                                      (  2.60 kb …   2.60 kb)   2.60 kb █▃██▃███████████▃▁▃▃▆
+                                     6.63 ipc ( 45.27% cache)   15.87 branch misses
+                            6.09k cycles  40.39k instructions  112.97 c-refs   61.83 c-misses
+
+graphemer                                       10.77 µs/iter  10.82 µs           █          
+                                        (10.68 µs … 10.87 µs)  10.86 µs ▅▅▅  ▅ ▅▅ █     ▅▅  ▅
+                                      (  3.51 kb …   3.57 kb)   3.54 kb ███▁▁█▁██▁█▁▁▁▁▁██▁▁█
+                                     5.54 ipc ( 49.61% cache)   37.35 branch misses
+                           41.56k cycles 230.14k instructions  404.32 c-refs  203.75 c-misses
+
+grapheme-splitter                               26.79 µs/iter  26.69 µs         █            
+                                       (19.67 µs … 469.11 µs)  34.85 µs         ██           
+                                      (312.00  b … 821.80 kb)  14.48 kb ▁▁▁▃▂▂▅████▄▂▂▁▁▁▁▁▁▁
+                                     4.76 ipc ( 59.95% cache)   54.49 branch misses
+                          111.91k cycles 532.53k instructions  216.83 c-refs   86.85 c-misses
+
+@formatjs/intl-segmenter                        13.64 µs/iter  13.66 µs █ ██  █      █   ██ █
+                                        (13.59 µs … 13.70 µs)  13.67 µs █ ██  █      █   ██ █
+                                      (  1.41 kb …   1.51 kb)   1.50 kb █▁██▁▁█▁▁▁▁▁▁█▁▁▁██▁█
+                                     5.06 ipc ( 47.83% cache)   71.10 branch misses
+                           50.71k cycles 256.43k instructions  440.46 c-refs  229.77 c-misses
+
+unicode-rs/unicode-segmentation (wasm-bindgen)   5.28 µs/iter   5.30 µs   █       ▃          
+                                          (5.20 µs … 5.42 µs)   5.36 µs   █   ▂  ▂█▂▂  ▂ ▂   
+                                      (945.28  b …   1.03 kb) 960.68  b ▆▁█▆▁▆█▆▁████▆▁█▁█▆▁▆
+                                     5.07 ipc ( 53.60% cache)   21.45 branch misses
+                           19.70k cycles  99.88k instructions   83.41 c-refs   38.70 c-misses
+
+Intl.Segmenter                                   5.10 µs/iter   5.06 µs ▂█▂                  
+                                          (4.89 µs … 6.56 µs)   6.16 µs ███▇                 
+                                      (458.04  b … 473.51  b) 466.09  b ████▄▇▁▁▁▁▁▁▁▁▁▁▁▁▁▁▄
+                                     3.54 ipc ( 36.58% cache)   15.84 branch misses
+                           19.86k cycles  70.33k instructions  465.25 c-refs  295.08 c-misses
+
+                                               ┌                                            ┐
+                    unicode-segmenter/grapheme ┤ 1.62 µs
+                                     graphemer ┤■■■■■■■■■■■■ 10.77 µs
+                             grapheme-splitter ┤■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 26.79 µs
+                      @formatjs/intl-segmenter ┤■■■■■■■■■■■■■■■■ 13.64 µs
+unicode-rs/unicode-segmentation (wasm-bindgen) ┤■■■■■ 5.28 µs
+                                Intl.Segmenter ┤■■■■■ 5.10 µs
+                                               └                                            ┘
+
+summary
+  unicode-segmenter/grapheme
+   3.14x faster than Intl.Segmenter
+   3.25x faster than unicode-rs/unicode-segmentation (wasm-bindgen)
+   6.63x faster than graphemer
+   8.4x faster than @formatjs/intl-segmenter
+   16.5x faster than grapheme-splitter
+
+• Hindi
+------------------------------------------------------------- -------------------------------
+unicode-segmenter/grapheme                       5.31 µs/iter   5.33 µs █                    
+                                          (5.28 µs … 5.34 µs)   5.34 µs █  ██  █   ██     █ █
+                                      (  3.52 kb …   3.53 kb)   3.53 kb █████████▁███▁███████
+                                     6.60 ipc ( 51.79% cache)   49.47 branch misses
+                           19.03k cycles 125.56k instructions  271.93 c-refs  131.09 c-misses
+
+graphemer                                       44.88 µs/iter  45.34 µs    ▂█▃               
+                                       (38.13 µs … 203.94 µs)  63.15 µs    ███▅              
+                                      ( 10.62 kb …   1.53 mb)  88.16 kb ▁▃█████▇▄▃▂▂▂▁▁▁▁▁▁▁▁
+                                     5.24 ipc ( 54.64% cache)  201.97 branch misses
+                          164.40k cycles 860.68k instructions   1.50k c-refs  681.65 c-misses
+
+grapheme-splitter                               97.93 µs/iter  99.89 µs      ▇█  ▇           
+                                       (86.85 µs … 573.69 µs) 114.84 µs     ▄██  █▄          
+                                      (  7.07 kb … 354.15 kb)  49.24 kb ▁▂▂▆███████▅▅▃▃▂▁▁▁▁▁
+                                     2.98 ipc ( 59.75% cache)  272.62 branch misses
+                          424.23k cycles   1.26M instructions  857.03 c-refs  344.93 c-misses
+
+@formatjs/intl-segmenter                        40.10 µs/iter  40.19 µs       █              
+                                        (39.89 µs … 40.50 µs)  40.31 µs ▅ ▅ ▅▅█▅ ▅    ▅  ▅  ▅
+                                      (  2.48 kb …   2.60 kb)   2.58 kb █▁█▁████▁█▁▁▁▁█▁▁█▁▁█
+                                     5.15 ipc ( 55.73% cache)  164.50 branch misses
+                          157.19k cycles 808.88k instructions   1.22k c-refs  540.64 c-misses
+
+unicode-rs/unicode-segmentation (wasm-bindgen)  16.22 µs/iter  16.26 µs         █            
+                                        (16.10 µs … 16.41 µs)  16.30 µs         █            
+                                      (  1.60 kb …   1.60 kb)   1.60 kb ▇▁▁▁▁▇▁▁█▁▇▇▁▁▁▁▇▇▁▁▇
+                                     4.48 ipc ( 46.37% cache)   95.39 branch misses
+                           66.70k cycles 298.75k instructions  232.93 c-refs  124.91 c-misses
+
+Intl.Segmenter                                   8.65 µs/iter   8.71 µs                █▂    
+                                          (8.23 µs … 8.83 µs)   8.81 µs           ▅  ▅ ██    
+                                      (  3.46 kb …   3.47 kb)   3.47 kb ▇▁▁▁▁▁▁▁▁▁█▁▁█▇██▇▇▁▇
+                                     4.17 ipc ( 47.31% cache)   69.20 branch misses
+                           34.09k cycles 142.10k instructions  569.12 c-refs  299.88 c-misses
+
+                                               ┌                                            ┐
+                    unicode-segmenter/grapheme ┤ 5.31 µs
+                                     graphemer ┤■■■■■■■■■■■■■■■ 44.88 µs
+                             grapheme-splitter ┤■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 97.93 µs
+                      @formatjs/intl-segmenter ┤■■■■■■■■■■■■■ 40.10 µs
+unicode-rs/unicode-segmentation (wasm-bindgen) ┤■■■■ 16.22 µs
+                                Intl.Segmenter ┤■ 8.65 µs
+                                               └                                            ┘
+
+summary
+  unicode-segmenter/grapheme
+   1.63x faster than Intl.Segmenter
+   3.06x faster than unicode-rs/unicode-segmentation (wasm-bindgen)
+   7.55x faster than @formatjs/intl-segmenter
+   8.45x faster than graphemer
+   18.45x faster than grapheme-splitter
+
+• Demonic characters
+------------------------------------------------------------- -------------------------------
+unicode-segmenter/grapheme                       1.47 µs/iter   1.48 µs       ▄▆ ▂█   ▂▂     
+                                          (1.43 µs … 1.52 µs)   1.51 µs    ▆ ▅██▆██▅█ ██     
+                                      (851.34  b …   1.06 kb) 859.57  b ▃▃▅██████████▅██▃▇▃▅▃
+                                     7.13 ipc ( 53.75% cache)    5.78 branch misses
+                            5.47k cycles  38.97k instructions   82.32 c-refs   38.07 c-misses
+
+graphemer                                       24.80 µs/iter  24.94 µs    █                 
+                                        (23.87 µs … 26.77 µs)  26.33 µs    █  █              
+                                      (710.14  b … 751.65  b) 714.37  b ████▁▁█▁▁█▁▁▁▁▁█▁▁▁▁█
+                                     5.44 ipc ( 55.90% cache)   85.03 branch misses
+                           86.86k cycles 472.67k instructions  909.68 c-refs  401.15 c-misses
+
+grapheme-splitter                               20.75 µs/iter  21.07 µs                 ███ █
+                                        (19.27 µs … 21.24 µs)  21.18 µs ▅  ▅            ███▅█
+                                      (  2.79 kb …   2.98 kb)   2.83 kb █▁▁█▁▁▁▁▁▁▁▁▁▁▁▁█████
+                                     4.52 ipc ( 57.83% cache)   70.98 branch misses
+                           72.48k cycles 327.72k instructions  466.41 c-refs  196.71 c-misses
+
+@formatjs/intl-segmenter                        14.86 µs/iter  14.80 µs ███  █               
+                                        (14.36 µs … 16.40 µs)  16.12 µs ███▅ █▅             ▅
+                                      (  3.55 kb …   3.57 kb)   3.56 kb ████▁██▁▁▁▁▁▁▁▁▁▁▁▁▁█
+                                     5.64 ipc ( 60.01% cache)  102.27 branch misses
+                           52.38k cycles 295.50k instructions  198.97 c-refs   79.56 c-misses
+
+unicode-rs/unicode-segmentation (wasm-bindgen)   3.72 µs/iter   3.74 µs   ██▂▂█   █▂▂        
+                                          (3.68 µs … 3.80 µs)   3.79 µs  ▅█████▅▅▅███      ▅ 
+                                      (  1.28 kb …   1.32 kb)   1.28 kb ▇████████████▁▁▇▁▇▁█▇
+                                     3.92 ipc ( 23.16% cache)   20.87 branch misses
+                           15.11k cycles  59.17k instructions   22.66 c-refs   17.41 c-misses
+
+Intl.Segmenter                                   3.65 µs/iter   4.05 µs █                    
+                                          (1.65 µs … 8.89 µs)   8.80 µs █                    
+                                      (  1.22 kb …   1.23 kb)   1.23 kb █▂▁▁▄▁▁▂▁▁▁▁▁▁▁▁▁▁▁█▃
+                                     2.11 ipc ( 17.79% cache)    2.90 branch misses
+                           15.17k cycles  32.03k instructions  414.70 c-refs  340.91 c-misses
+
+                                               ┌                                            ┐
+                    unicode-segmenter/grapheme ┤ 1.47 µs
+                                     graphemer ┤■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 24.80 µs
+                             grapheme-splitter ┤■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 20.75 µs
+                      @formatjs/intl-segmenter ┤■■■■■■■■■■■■■■■■■■■■ 14.86 µs
+unicode-rs/unicode-segmentation (wasm-bindgen) ┤■■■ 3.72 µs
+                                Intl.Segmenter ┤■■■ 3.65 µs
+                                               └                                            ┘
+
+summary
+  unicode-segmenter/grapheme
+   2.49x faster than Intl.Segmenter
+   2.54x faster than unicode-rs/unicode-segmentation (wasm-bindgen)
+   10.12x faster than @formatjs/intl-segmenter
+   14.13x faster than grapheme-splitter
+   16.9x faster than graphemer
+
+• Tweet text (combined)
+------------------------------------------------------------- -------------------------------
+unicode-segmenter/grapheme                       7.05 µs/iter   7.07 µs     █                
+                                          (6.95 µs … 7.19 µs)   7.14 µs   █ █  █  ███    █   
+                                      (307.66  b … 317.20  b) 314.97  b █▁█▁█▁▁██▁████▁▁██▁▁█
+                                     7.43 ipc ( 50.98% cache)   10.61 branch misses
+                           24.42k cycles 181.35k instructions  422.10 c-refs  206.92 c-misses
+
+graphemer                                       59.83 µs/iter  60.45 µs     ▂█▃              
+                                       (49.70 µs … 244.69 µs)  82.16 µs     ███▅             
+                                      ( 11.16 kb …   1.43 mb) 111.41 kb ▁▁▃█████▇▄▂▂▁▁▁▁▁▁▁▁▁
+                                     5.41 ipc ( 54.41% cache)  202.79 branch misses
+                          218.16k cycles   1.18M instructions   1.91k c-refs  870.03 c-misses
+
+grapheme-splitter                              145.73 µs/iter 148.60 µs        ▅█            
+                                      (133.18 µs … 461.69 µs) 160.16 µs      ▄▃██   ▃▃       
+                                      ( 20.41 kb … 454.82 kb)  63.97 kb ▁▁▁▄▃█████▇▆██▄▃▂▂▁▁▁
+                                     3.19 ipc ( 61.56% cache)  220.90 branch misses
+                          635.20k cycles   2.02M instructions   1.11k c-refs  427.25 c-misses
+
+@formatjs/intl-segmenter                        57.31 µs/iter  57.46 µs      ▇█▃             
+                                       (50.47 µs … 235.11 µs)  68.48 µs     ▆███▇            
+                                      ( 14.57 kb … 376.58 kb) 125.88 kb ▁▁▂▆██████▅▃▂▂▁▁▁▁▁▁▁
+                                     5.38 ipc ( 47.02% cache)  227.50 branch misses
+                          222.23k cycles   1.20M instructions   2.16k c-refs   1.14k c-misses
+
+unicode-rs/unicode-segmentation (wasm-bindgen)  22.30 µs/iter  22.37 µs        ██            
+                                        (22.14 µs … 22.52 µs)  22.46 µs ▅  ▅ ▅▅██     ▅   ▅ ▅
+                                      (132.58  b … 134.32  b) 133.07  b █▁▁█▁████▁▁▁▁▁█▁▁▁█▁█
+                                     4.92 ipc ( 42.92% cache)   83.43 branch misses
+                           89.25k cycles 439.38k instructions  413.93 c-refs  236.29 c-misses
+
+Intl.Segmenter                                  12.91 µs/iter  12.93 µs █    █ █ ██ ██ █    █
+                                        (12.79 µs … 13.04 µs)  13.00 µs █    █ █ ██ ██ █    █
+                                      (191.36  b … 192.57  b) 191.63  b █▁▁▁▁█▁█▁██▁██▁█▁▁▁▁█
+                                     4.64 ipc ( 50.29% cache)   96.32 branch misses
+                           49.84k cycles 231.05k instructions  667.66 c-refs  331.92 c-misses
+
+                                               ┌                                            ┐
+                    unicode-segmenter/grapheme ┤ 7.05 µs
+                                     graphemer ┤■■■■■■■■■■■■■ 59.83 µs
+                             grapheme-splitter ┤■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 145.73 µs
+                      @formatjs/intl-segmenter ┤■■■■■■■■■■■■ 57.31 µs
+unicode-rs/unicode-segmentation (wasm-bindgen) ┤■■■■ 22.30 µs
+                                Intl.Segmenter ┤■ 12.91 µs
+                                               └                                            ┘
+
+summary
+  unicode-segmenter/grapheme
+   1.83x faster than Intl.Segmenter
+   3.17x faster than unicode-rs/unicode-segmentation (wasm-bindgen)
+   8.13x faster than @formatjs/intl-segmenter
+   8.49x faster than graphemer
+   20.68x faster than grapheme-splitter
+
+• Code snippet (combined)
+------------------------------------------------------------- -------------------------------
+unicode-segmenter/grapheme                      15.94 µs/iter  15.99 µs   ██                 
+                                        (15.79 µs … 16.18 µs)  16.16 µs ▅ ██▅  ▅ ▅ ▅    ▅   ▅
+                                      (  2.30 kb …   2.31 kb)   2.30 kb █▁███▁▁█▁█▁█▁▁▁▁█▁▁▁█
+                                     7.10 ipc ( 49.74% cache)   66.04 branch misses
+                           59.38k cycles 421.72k instructions   1.01k c-refs  507.23 c-misses
+
+graphemer                                      136.03 µs/iter 136.42 µs   █                  
+                                      (120.96 µs … 312.14 µs) 242.99 µs   █▂                 
+                                      ( 57.99 kb …   1.74 mb) 265.07 kb ▁███▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+                                     5.39 ipc ( 54.82% cache)  506.32 branch misses
+                          520.17k cycles   2.81M instructions   4.54k c-refs   2.05k c-misses
+
+grapheme-splitter                              351.38 µs/iter 354.72 µs       ▆█             
+                                      (320.23 µs … 749.95 µs) 399.71 µs      ▆███▆           
+                                      (  9.65 kb … 544.31 kb) 150.85 kb ▁▁▁▄███████▆▃▂▂▁▁▁▁▁▁
+                                     3.22 ipc ( 58.90% cache)  545.56 branch misses
+                            1.47M cycles   4.73M instructions   2.68k c-refs   1.10k c-misses
+
+@formatjs/intl-segmenter                       139.95 µs/iter 140.93 µs   █▅                 
+                                      (116.96 µs … 403.46 µs) 276.91 µs   ██                 
+                                      ( 15.06 kb … 646.77 kb) 300.54 kb ▁▅██▅▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+                                     5.45 ipc ( 47.50% cache)  455.12 branch misses
+                          505.87k cycles   2.76M instructions   5.24k c-refs   2.75k c-misses
+
+unicode-rs/unicode-segmentation (wasm-bindgen)  53.00 µs/iter  53.16 µs       █    █         
+                                        (52.55 µs … 53.40 µs)  53.23 µs ▅     █    █▅  ▅▅ ▅▅▅
+                                      (  2.71 kb …   2.72 kb)   2.72 kb █▁▁▁▁▁█▁▁▁▁██▁▁██▁███
+                                     4.86 ipc ( 35.09% cache)  172.91 branch misses
+                          213.13k cycles   1.04M instructions   1.01k c-refs  656.88 c-misses
+
+Intl.Segmenter                                  29.57 µs/iter  29.73 µs              █ █     
+                                        (28.79 µs … 30.13 µs)  30.01 µs ▅    ▅ ▅  ▅  █ █▅▅  ▅
+                                      (  1.12 kb …   1.13 kb)   1.13 kb █▁▁▁▁█▁█▁▁█▁▁█▁███▁▁█
+                                     4.89 ipc ( 51.73% cache)  268.51 branch misses
+                          106.80k cycles 522.73k instructions   1.15k c-refs  555.42 c-misses
+
+                                               ┌                                            ┐
+                    unicode-segmenter/grapheme ┤ 15.94 µs
+                                     graphemer ┤■■■■■■■■■■■■ 136.03 µs
+                             grapheme-splitter ┤■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 351.38 µs
+                      @formatjs/intl-segmenter ┤■■■■■■■■■■■■■ 139.95 µs
+unicode-rs/unicode-segmentation (wasm-bindgen) ┤■■■■ 53.00 µs
+                                Intl.Segmenter ┤■ 29.57 µs
+                                               └                                            ┘
+
+summary
+  unicode-segmenter/grapheme
+   1.85x faster than Intl.Segmenter
+   3.32x faster than unicode-rs/unicode-segmentation (wasm-bindgen)
+   8.53x faster than graphemer
+   8.78x faster than @formatjs/intl-segmenter
+   22.04x faster than grapheme-splitter

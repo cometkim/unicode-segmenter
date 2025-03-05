@@ -2,9 +2,9 @@
 
 import { searchUnicodeRange } from './core.js';
 import {
-  letter_buffer,
-  alphabetic_buffer,
-  numeric_buffer,
+  letter_ranges,
+  alphabetic_ranges,
+  numeric_ranges,
 } from './_general_data.js';
 
 /**
@@ -14,7 +14,7 @@ import {
  * @return boolean
  */
 export function isLetter(cp) {
-  return searchUnicodeRange(cp, letter_buffer) >= 0;
+  return searchUnicodeRange(cp, letter_ranges) >= 0;
 }
 
 /**
@@ -24,7 +24,7 @@ export function isLetter(cp) {
  * @return boolean
  */
 export function isAlphabetic(cp) {
-  return searchUnicodeRange(cp, alphabetic_buffer) >= 0;
+  return searchUnicodeRange(cp, alphabetic_ranges) >= 0;
 }
 
 /**
@@ -34,7 +34,7 @@ export function isAlphabetic(cp) {
  * @return boolean true if 
  */
 export function isNumeric(cp) {
-  return searchUnicodeRange(cp, numeric_buffer) >= 0;
+  return searchUnicodeRange(cp, numeric_ranges) >= 0;
 }
 
 /**

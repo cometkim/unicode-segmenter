@@ -23,9 +23,11 @@
 
 /**
  * @import { WriteStream } from 'node:fs';
- * @import { UnicodeRange, CategorizedUnicodeRange } from '../src/core.js';
+ * @import { UnicodeRange } from '#src/core.js';
  * 
  * @typedef {number[]} UnicodeValues
+ *
+ * @typedef {[from: number, to: number, categoryName: string]} CategorizedUnicodeRange
  */
 
 import * as assert from 'node:assert/strict';
@@ -33,6 +35,8 @@ import * as path from 'node:path';
 import { existsSync, createWriteStream } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+
+import { encodeUnicodeData } from './lib/encoding.js';
 
 let __dirname = path.dirname(fileURLToPath(import.meta.url));
 let srcPath = path.resolve(__dirname, '../src');
@@ -52,7 +56,7 @@ const UNICODE_VERSION_STRING = UNICODE_VERSION.join('.');
 
 // these are the surrogate codepoints, which are not valid rust characters
 /** @type {UnicodeRange} */
-let surrogateCodepoints = [0xd800, 0xdfff];
+let surrogateCodepoints = [0xd800, 0xdfff, 0];
 
 /** @type {Record<string, string[]>} */
 let expandedCategories = {
@@ -134,47 +138,15 @@ let isSurrogate = n => {
 };
 
 /**
- * @template T
- * @param {Set<T>} a 
- * @param {Set<T>} b 
- * @return {Set<T>}
- */
-let difference = (a, b) => {
-  const result = new Set(a);
-  if (a.size <= b.size) {
-    for (const elem of a) {
-      if (b.has(elem)) {
-        result.delete(elem);
-      }
-    }
-  } else {
-    for (const elem of b.keys()) {
-      if (result.has(elem)) {
-        result.delete(elem);
-      }
-    }
-  }
-  return result;
-};
-
-/**
- * @param {UnicodeRange[]} ranges
- * @return {string}
- */
-let encodeRanges = ranges => {
-  return ranges.map(x => `${x[0] ? x[0].toString(36) : ''},${x[1] ? x[1].toString(36) : ''}`).join(',');
-};
-
-/**
  * @param {UnicodeRange[]} ranges
  * @return {UnicodeValues}
  */
 let ungroupCat = ranges => {
   /** @type {UnicodeValues} */
   let catOut = [];
-  for (let [point, padding] of ranges) {
-    let cur = point;
-    while (cur <= point + padding) {
+  for (let [from, to] of ranges) {
+    let cur = from;
+    while (cur <= to) {
       catOut.push(cur);
       cur += 1;
     }
@@ -201,11 +173,11 @@ let groupCat = values => {
     if (letter === curEnd + 1) {
       curEnd = letter;
     } else {
-      catOut.push([curStart, curEnd - curStart]);
+      catOut.push([curStart, curEnd, 0]);
       curStart = curEnd = letter;
     }
   }
-  catOut.push([curStart, curEnd - curStart]);
+  catOut.push([curStart, curEnd, 0]);
   return catOut;
 };
 
@@ -262,7 +234,7 @@ let parseGencats = (data) => {
       old, iso, upcase, lowcase, titlecase] = data;
 
     // place letter in categories as appropriate
-    for (let cat of [gencat, "Assigned"].concat(expandedCategories[gencat] || [])) {
+    for (let cat of [gencat, 'Assigned'].concat(expandedCategories[gencat] || [])) {
       gencats[cat] ||= [];
       gencats[cat].push(Number.parseInt(code));
     }
@@ -304,7 +276,7 @@ let parseProperties = (data, interestingProps) => {
     let hi = Number.parseInt(d_hi, 16);
 
     props[propValue] ||= [];
-    props[propValue].push([lo, hi - lo]);
+    props[propValue].push([lo, hi, 0]);
   }
 
   for (let [key, ranges] of Object.entries(props)) {
@@ -458,53 +430,26 @@ let printTableRaw = (f, name, table, format) => {
 
 /**
  * @param {WriteStream} f 
- * @param {CategorizedUnicodeRange<any>[]} breakTable 
+ * @param {CategorizedUnicodeRange[]} breakTable 
  * @param {string[]} breakCats 
  * @param {string} name 
  * @returns 
  */
 let printBreakModule = (f, breakTable, breakCats, name) => {
-  let cats = [...breakCats, 'Any'].toSorted();
+  let cats = ['Any', ...breakCats.toSorted()];
 
   let capitalName = capitalize(name);
   let typeName = `${capitalName}Category`;
   let keyTypeName = `${typeName}Key`;
   let numTypeName = `${typeName}Num`;
-
-  // We don't want the lookup table to be too large so choose a reasonable
-  // cutoff. 0x20000 is selected because most of the range table entries are
-  // within the interval of [0x0, 0x20000]
-  let lookupValueCutoff = 0x20000;
-
-  // Length of lookup table. It has to be a divisor of `lookup_value_cutoff`.
-  let lookupTableLen = 0x80;
-
-  let lookupInterval = Math.round(lookupValueCutoff / lookupTableLen);
-
-  let lookupTable = Array.from({ length: lookupTableLen }, _ => 0);
-  let j = 0;
-  for (let i of range(0, lookupTableLen)) {
-    let lookupFrom = i * lookupInterval;
-    while (j < breakTable.length) {
-      let [entryPoint, entryPadding] = breakTable[j];
-      if (entryPoint + entryPadding >= lookupFrom) {
-        break;
-      }
-      j += 1;
-    }
-    lookupTable[i] = j;
-  }
+  let rangeTypeName = `${typeName}Range`;
 
   f.write(preamble);
   f.write(`
-import {
-  initLookupTableBuffer,
-  initUnicodeRangeBuffer,
-} from './core.js';
+import { decodeUnicodeData } from './core.js';
 
 /**
- * @typedef {import('./core.js').LookupTableEncoding} LookupTableEncoding
- * @typedef {import('./core.js').UnicodeRangeEncoding} UnicodeRangeEncoding
+ * @typedef {import('./core.js').UnicodeDataEncoding} UnicodeDataEncoding
  */
 
 /**
@@ -526,7 +471,7 @@ import {
 
   f.write(`
 /**
- * @typedef {import('./core.js').CategorizedUnicodeRange<${numTypeName}>} ${typeName}Range
+ * @typedef {import('./core.js').CategorizedUnicodeRange<${numTypeName}>} ${rangeTypeName}
  */
 `,
   );
@@ -560,16 +505,12 @@ export const ${typeName} = {
   f.write('};\n');
 
   f.write(`
-export const ${name}_buffer = initUnicodeRangeBuffer(
-  Array(${breakTable.length * 2}),
-  /** @type {UnicodeRangeEncoding} */
-  ('${breakTable.map(x => `${x[0] === 0 ? '' : x[0].toString(36)},${x[1] === 0 ? '' : x[1].toString(36)}`).join(',')}')
-);
-
-export const ${name}_cats = initLookupTableBuffer(
-  Array(${breakTable.length}),
-  /** @type {LookupTableEncoding} */
-  ('${breakTable.map(x => inversed[x[2]].toString(36)).join('')}')
+/**
+ * @type {${rangeTypeName}[]}
+ */
+export const ${name}_ranges = decodeUnicodeData(
+  /** @type {UnicodeDataEncoding} */
+  ('${encodeUnicodeData(breakTable.map(row => [row[0], row[1], inversed[row[2]]]))}')
 );
 `,
   );
@@ -585,19 +526,21 @@ let printIncbModule = async f => {
 
   f.write(preamble);
   f.write(`
-import { initUnicodeRangeBuffer } from './core.js';
+import { decodeUnicodeData } from './core.js';
 
 /**
- * @typedef {import('./core.js').UnicodeRangeEncoding} UnicodeRangeEncoding
+ * @typedef {import('./core.js').UnicodeRange} UnicodeRange
+ * @typedef {import('./core.js').UnicodeDataEncoding} UnicodeDataEncoding
  */
 
 /**
  * The Unicode \`Indic_Conjunct_Break=Consonant\` derived property table
+ *
+ * @type {UnicodeRange[]}
  */
-export const consonant_buffer = initUnicodeRangeBuffer(
-  Array(${table.length * 2}),
-  /** @type {UnicodeRangeEncoding} */
-  ('${table.map(x => `${x[0] ? x[0].toString(36) : ''},${x[1] ? x[1].toString(36) : ''}`).join(',')}')
+export const consonant_ranges = decodeUnicodeData(
+  /** @type {UnicodeDataEncoding} */
+  ('${encodeUnicodeData(table)}')
 );
 `,
   );
@@ -620,44 +563,41 @@ let printGeneralModule = async f => {
 
   f.write(preamble);
   f.write(`
-import { initUnicodeRangeBuffer } from './core.js';
+import { decodeUnicodeData } from './core.js';
 
 /**
- * @typedef {import('./core.js').UnicodeRangeBuffer} UnicodeRangeBuffer
- * @typedef {import('./core.js').UnicodeRangeEncoding} UnicodeRangeEncoding
+ * @typedef {import('./core.js').UnicodeRange} UnicodeRange
+ * @typedef {import('./core.js').UnicodeDataEncoding} UnicodeDataEncoding
  */
 
 /**
  * The Unicode \`L\` (Letter) properties data
  *
- * @type {UnicodeRangeBuffer}
+ * @type {UnicodeRange[]}
  */
-export const letter_buffer = initUnicodeRangeBuffer(
-  Array(${gencats['L'].length * 2}),
-  /** @type {UnicodeRangeEncoding} */
-  ('${encodeRanges(gencats['L'])}')
+export const letter_ranges = decodeUnicodeData(
+  /** @type {UnicodeDataEncoding} */
+  ('${encodeUnicodeData(gencats['L'])}')
 );
 
 /**
  * The Unicode \`N\` (Numeric) properties data
  *
- * @type {UnicodeRangeBuffer}
+ * @type {UnicodeRange[]}
  */
-export const numeric_buffer = initUnicodeRangeBuffer(
-  Array(${gencats['N'].length * 2}),
-  /** @type {UnicodeRangeEncoding} */
-  ('${encodeRanges(gencats['N'])}')
+export const numeric_ranges = decodeUnicodeData(
+  /** @type {UnicodeDataEncoding} */
+  ('${encodeUnicodeData(gencats['N'])}')
 );
 
 /**
  * The Unicode \`Alphabetic\` properties data
  *
- * @type {UnicodeRangeBuffer}
+ * @type {UnicodeRange[]}
  */
-export const alphabetic_buffer = initUnicodeRangeBuffer(
-  Array(${derived['Alphabetic'].length * 2}),
-  /** @type {UnicodeRangeEncoding} */
-  ('${encodeRanges(derived['Alphabetic'])}')
+export const alphabetic_ranges = decodeUnicodeData(
+  /** @type {UnicodeDataEncoding} */
+  ('${encodeUnicodeData(derived['Alphabetic'])}')
 );
 `,
   );
@@ -672,33 +612,31 @@ let printEmojiModule = async f => {
 
   f.write(preamble);
   f.write(`
-import { initUnicodeRangeBuffer } from './core.js';
+import { decodeUnicodeData } from './core.js';
 
 /**
- * @typedef {import('./core.js').UnicodeRangeBuffer} UnicodeRangeBuffer
- * @typedef {import('./core.js').UnicodeRangeEncoding} UnicodeRangeEncoding
+ * @typedef {import('./core.js').UnicodeRange} UnicodeRange
+ * @typedef {import('./core.js').UnicodeDataEncoding} UnicodeDataEncoding
  */
 
 /**
  * The Unicode \`Emoji_Presentation\` properties data
  *
- * @type {UnicodeRangeBuffer}
+ * @type {UnicodeRange[]}
  */
-export const emoji_presentation_buffer = initUnicodeRangeBuffer(
-  Array(${emojiProps['Emoji_Presentation'].length * 2}),
-  /** @type {UnicodeRangeEncoding} */
-  ('${encodeRanges(emojiProps['Emoji_Presentation'])}')
+export const emoji_presentation_ranges = decodeUnicodeData(
+  /** @type {UnicodeDataEncoding} */
+  ('${encodeUnicodeData(emojiProps['Emoji_Presentation'])}')
 );
 
 /**
  * The Unicode \`Extended_Pictographic\` properties data
  *
- * @type {UnicodeRangeBuffer}
+ * @type {UnicodeRange[]}
  */
-export const extended_pictographic_buffer = initUnicodeRangeBuffer(
-  Array(${emojiProps['Extended_Pictographic'].length * 2}),
-  /** @type {UnicodeRangeEncoding} */
-  ('${encodeRanges(emojiProps['Extended_Pictographic'])}')
+export const extended_pictographic_ranges = decodeUnicodeData(
+  /** @type {UnicodeDataEncoding} */
+  ('${encodeUnicodeData(emojiProps['Extended_Pictographic'])}')
 );
 `,
   );
@@ -854,16 +792,15 @@ let graphemeCats = parseProperties(graphemeData);
 //  Note:
 // This category also includes Cs (surrogate codepoints).
 // We have to remove Cs from the Control category
-graphemeCats["Control"] = groupCat(Array.from(
-  difference(
-    new Set(ungroupCat(graphemeCats["Control"])),
-    new Set(ungroupCat([[surrogateCodepoints[0], surrogateCodepoints[1] - surrogateCodepoints[0]]])),
+graphemeCats['Control'] = groupCat(Array.from(
+  new Set(ungroupCat(graphemeCats['Control'])).difference(
+    new Set(ungroupCat([[surrogateCodepoints[0], surrogateCodepoints[1], 0]])),
   ),
 ));
 
 let emojiProps = parseProperties(emojiData, ['Extended_Pictographic']);
 
-/** @type {CategorizedUnicodeRange<any>[]} */
+/** @type {CategorizedUnicodeRange[]} */
 let graphemeTable = [];
 for (let [cat, ranges] of Object.entries(graphemeCats)) {
   for (let [from, to] of ranges) {
@@ -886,7 +823,7 @@ for (let chars of graphemeTable) {
 }
 
 // let wordCats = parseProperties(wordData);
-// /** @type {CategorizedUnicodeRange<any>[]}  */
+// /** @type {CategorizedUnicodeRange[]}  */
 // let wordTable = [];
 // for (let [cat, ranges] of Object.entries(wordCats)) {
 //   for (let [from, to] of ranges) {
@@ -896,7 +833,7 @@ for (let chars of graphemeTable) {
 // wordTable.sort((a, b) => a[0] - b[0]);
 
 // let sentenceCats = parseProperties(sentenceData);
-// /** @type {CategorizedUnicodeRange<any>[]}  */
+// /** @type {CategorizedUnicodeRange[]}  */
 // let sentenceTable = [];
 // for (let [cat, ranges] of Object.entries(sentenceCats)) {
 //   for (let [from, to] of ranges) {
