@@ -113,32 +113,32 @@
     "process": false
   },
   "devDependencies": {
-    "@babel/core": "^7.26.0",
+    "@babel/core": "^7.26.9",
     "@babel/plugin-transform-modules-commonjs": "^7.26.3",
-    "@changesets/cli": "^2.27.11",
+    "@changesets/cli": "^2.28.1",
     "@formatjs/intl-segmenter": "11.5.7",
     "@mitata/counters": "^0.0.8",
-    "@react-native/metro-babel-transformer": "^0.76.5",
+    "@react-native/metro-babel-transformer": "^0.78.0",
     "@types/babel__core": "^7.20.5",
-    "@types/node": "^22.10.5",
+    "@types/node": "^22.13.9",
     "@types/xregexp": "^4.4.0",
     "emoji-regex": "10.4.0",
     "emojibase-regex": "15.3.2",
-    "esbuild": "^0.24.2",
+    "esbuild": "^0.25.0",
     "fast-check": "^3.23.2",
     "grapheme-splitter": "1.0.4",
     "graphemer": "1.4.0",
-    "metro": "^0.81.0",
+    "metro": "^0.82.0",
     "mitata": "^1.0.34",
     "os-browserify": "^0.3.0",
     "pretty-bytes": "^6.1.1",
     "rimraf": "^6.0.1",
     "typescript": "^5.7.3",
     "unicode-segmentation-wasm": "github:cometkim/unicode-segmentation-wasm#230eb74d320ea2f31f95b74ddb2567186d496587",
-    "vite": "^6.0.7",
+    "vite": "^6.2.0",
     "vite-plugin-externals": "^0.6.2",
     "xregexp": "5.1.1",
-    "zx": "^8.3.0"
+    "zx": "^8.4.0"
   },
-  "packageManager": "yarn@4.6.0"
+  "packageManager": "yarn@4.7.0"
 }
