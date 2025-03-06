@@ -7,19 +7,19 @@
 
 A lightweight implementation of the [Unicode Text Segmentation (UAX \#29)](https://www.unicode.org/reports/tr29)
 
-- **Verified spec-compliance**: Up-to-date Unicode data, passes the official Unicode test suites, verifies full compliance with the `Intl.Segmenter` API via additional property-based testing, maintaining 100% coverage.
+- **Spec compliant**: Up-to-date Unicode data, verified by the official Unicode test suites and fuzzed with the native `Intl.Segmenter`, and maintaining 100% test coverage.
 
-- **Excellent compatibility**: It works well on older browsers, edge runtimes, and React Native (Hermes).
+- **Excellent compatibility**: It works well on older browsers, edge runtimes, React Native (Hermes) and QuickJS.
 
-- **Zero-dependencies**: It doesn't bloat `node_modules` or the networks tab. Just a small minimal snippet.
+- **Zero-dependencies**: It doesn't bloat `node_modules` or the network bandwidth. Like a small minimal snippet.
 
-- **Small bundle size**: It effectively compresses Unicode data and provides a tree-shakeable format, eliminating unused codes.
+- **Small bundle size**: It effectively compresses the Unicode data and provides a bundler-friendly format.
 
-- **Extremely efficient**: It's carefully optimized for performance, making it the fastest one in the ecosystem—outperforming even the built-in `Intl.Segmenter`.
+- **Extremely efficient**: It's carefully optimized for runtime performance, making it the fastest one in the ecosystem—outperforming even the built-in `Intl.Segmenter`.
 
 - **TypeScript**: It's fully type-checked, and provides type definitions and JSDoc.
 
-- **ESM-first**: It natively supports ES Modules, and still supports CommonJS.
+- **ESM-first**: It primarily supports ES modules, and still supports CommonJS.
 
 > [!NOTE]
 > unicode-segmenter is now **[e18e] recommendation!**
@@ -42,7 +42,7 @@ And extra utilities for combined use cases.
 
 - [`unicode-segmenter/emoji`](#export-unicode-segmenteremoji): Matches single codepoint emojis
 - [`unicode-segmenter/general`](#export-unicode-segmentergeneral): Matches single codepoint alphanumerics
-- [`unicode-segmenter/utils`](#export-unicode-segmenterutils): Handles UTF-16 codepoints
+- [`unicode-segmenter/utils`](#export-unicode-segmenterutils): Some utilities for handling codepoints 
 
 ### Export `unicode-segmenter/grapheme`
 [![](https://edge.bundlejs.com/badge?q=unicode-segmenter/grapheme&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fgrapheme&treeshake=%5B*%5D)
@@ -254,7 +254,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|
-| `unicode-segmenter/grapheme` |   16.0.0 |    ✔️ |    17,313 |     12,783 |           5,285 |         3,946 |
+| `unicode-segmenter/grapheme` |   16.0.0 |    ✔️ |    15,929 |     12,110 |           5,049 |         3,740 |
 | `graphemer`                  |   15.0.0 |    ✖️ ️|   410,435 |     95,104 |          15,752 |        10,660 |
 | `grapheme-splitter`          |   10.0.0 |    ✖️ |   122,252 |     23,680 |           7,852 |         4,841 |
 | `@formatjs/intl-segmenter`*  |   15.0.0 |    ✖️ |   491,043 |    318,721 |          54,248 |        34,380 |
@@ -270,9 +270,9 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Bytecode size | Bytecode size (gzip)* |
 |------------------------------|--------------:|----------------------:|
-| `unicode-segmenter/grapheme` |        24,386 |                12,690 |
-| `graphemer`                  |       133,949 |                31,710 |
-| `grapheme-splitter`          |        63,810 |                19,125 |
+| `unicode-segmenter/grapheme` |        23,037 |                12,058 |
+| `graphemer`                  |       133,952 |                31,708 |
+| `grapheme-splitter`          |        63,813 |                19,123 |
 
 * It would be compressed when included as an app asset.
 
