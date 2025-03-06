@@ -1,12 +1,9 @@
 // @ts-check
 
 import { test } from 'node:test';
-import * as assert from 'node:assert/strict';
 import fc from 'fast-check';
 
 import {
-  takeChar,
-  takeCodePoint,
   isBMP,
   isSMP,
   isSIP,
@@ -18,64 +15,6 @@ fc.configureGlobal({
   // Fix seed here for stable coverage report
   seed: 1713140942000,
   numRuns: 100_000,
-});
-
-test('takeChar', async t => {
-  await t.test('ascii', () => {
-    fc.assert(
-      fc.property(
-        fc.string({ unit: 'binary-ascii', minLength: 1, maxLength: 1 }),
-        // @ts-ignore
-        fc.string({ unit: 'grapheme' }),
-        (data, extra) => {
-          return takeChar(data + extra, 0).length === 1;
-        }
-      ),
-    );
-  });
-
-  await t.test('over BMP', () => {
-    fc.assert(
-      fc.property(
-        fc.integer({ min: 0xffff + 1, max: 0x10ffff }),
-        // @ts-ignore
-        fc.string({ unit: 'grapheme' }),
-        (data, extra) => {
-          let leading = String.fromCodePoint(data);
-          return takeChar(leading + extra, 0).length === 2;
-        },
-      ),
-    );
-  });
-});
-
-test('takeCodePoint', async t => {
-  await t.test('ascii', () => {
-    fc.assert(
-      fc.property(
-        fc.string({ unit: 'binary-ascii', minLength: 1, maxLength: 1 }),
-        // @ts-ignore
-        fc.string({ unit: 'grapheme' }),
-        (data, extra) => {
-          return takeCodePoint(data + extra, 0) === (data + extra).codePointAt(0);
-        },
-      ),
-    );
-  });
-
-  await t.test('over BMP', () => {
-    fc.assert(
-      fc.property(
-        fc.integer({ min: 0xffff + 1, max: 0x10ffff }),
-        // @ts-ignore
-        fc.string({ unit: 'grapheme' }),
-        (data, extra) => {
-          let leading = String.fromCodePoint(data);
-          return takeCodePoint(leading + extra, 0) === (leading + extra).codePointAt(0);
-        },
-      ),
-    );
-  });
 });
 
 test('isBMP', () => {

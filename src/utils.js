@@ -1,55 +1,5 @@
 // @ts-check
 
-/**
- * Take a Unicode code point from the given input by cursor
- *
- * @deprecated
- * Use this only if `String.prototype.codePointAt()` isn't available on the host environment
- *
- * @param {string} input
- * @param {number} cursor
- * @param {number} [length] length of input
- * @return {number} a code point of the character
- */
-export function takeCodePoint(input, cursor, length = input.length) {
-  let hi = input.charCodeAt(cursor);
-  if (isHighSurrogate(hi)) {
-    if (cursor + 1 < length) {
-      let lo = input.charCodeAt(cursor + 1);
-      if (isLowSurrogate(lo)) {
-        return surrogatePairToCodePoint(hi, lo);
-      }
-    }
-  }
-  return hi;
-}
-
-/**
- * Take a UTF-8 char from the given input by cursor
- *
- * @deprecated
- * Use this only if `String.fromCodePoint()` isn't available on the host environment
- *
- * @param {string} input
- * @param {number} cursor
- * @param {number} [length] length of input
- * @return {string} a UTF-8 character (its `.length` will be 1 or 2)
- */
-export function takeChar(input, cursor, length = input.length) {
-  let hi = input.charCodeAt(cursor);
-  if (isHighSurrogate(hi)) {
-    if (cursor + 1 < length) {
-      let lo = input.charCodeAt(cursor + 1);
-      if (isLowSurrogate(lo)) {
-        // This seems to be much slower in V8
-        // return String.fromCharCode(hi, lo);
-        return String.fromCharCode(hi) + String.fromCharCode(lo);
-      }
-    }
-  }
-  return String.fromCharCode(hi);
-}
-
 /** 
  * @param {number} c UTF-16 code point
  */
