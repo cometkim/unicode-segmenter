@@ -16,35 +16,30 @@
  *
  * Each {@link UnicodeDataRow} packed as a base36 integer:
  *
- *         | category | padding  |
- * base36( | -------- | -------- | ) + ',' + base36(codepoint)
- *         | 16 bytes | 16 bytes |
+ * padding  = to - from
+ * encoding = base36(from) + ',' + base36(padding)
  *
  * Notes:
  * - base36 can hold surprisingly large numbers in a few characters.
  * - The biggest codepoint is 0xE01F0 (918,000) at this point
  * - The max value of a category is 23; https://www.unicode.org/reports/tr29/tr29-45.html#Table_Word_Break_Property_Values
  * - The longest range is 42,720; CJK UNIFIED IDEOGRAPH-20000..CJK UNIFIED IDEOGRAPH-2A6DF
- * - So largest number is (23 << 16) + 42,719 = 1,550,047, which can be fit in 32-bit, only 4 characters (x80v) in base36
- * - Even there is no category, it doesn't inflate the data size because it fills the zero value
  */
 
 /**
  * @template {number} [T=number]
  * @param {UnicodeDataEncoding} data
+ * @param {string} [cats='']
  * @returns {Array<CategorizedUnicodeRange<T>>}
  */
-export function decodeUnicodeData(data) {
-  let splits = data.split(',')
-    , buf = /** @type {Array<CategorizedUnicodeRange<T>>} */([])
-    , cat = 0
-    , pad = 0;
-  for (let i = 0; i < splits.length; i++) {
-    let s = splits[i], val = s ? parseInt(s, 36) : 0;
+export function decodeUnicodeData(data, cats = '') {
+  let buf = /** @type {Array<CategorizedUnicodeRange<T>>} */([])
+    , nums = data.split(',').map(s => s ? parseInt(s, 36) : 0)
+    , n = 0;
+  for (let i = 0; i < nums.length; i++)
     i % 2
-      ? buf.push([val, val + pad, /** @type {T} */ (cat)])
-      : cat = val >> 16, pad = val & 65535;
-  }
+      ? buf.push([n, n + nums[i], /** @type {T} */ (cats ? parseInt(cats[i >> 1], 36) : 0)])
+      : n = nums[i];
   return buf;
 }
 

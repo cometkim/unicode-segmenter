@@ -510,7 +510,8 @@ export const ${typeName} = {
  */
 export const ${name}_ranges = decodeUnicodeData(
   /** @type {UnicodeDataEncoding} */
-  ('${encodeUnicodeData(breakTable.map(row => [row[0], row[1], inversed[row[2]]]))}')
+  ('${encodeUnicodeData(breakTable.map(row => [row[0], row[1], 0]))}'),
+  '${breakTable.map(row => inversed[row[2]].toString(36)).join('')}',
 );
 `,
   );
