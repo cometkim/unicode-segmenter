@@ -27,6 +27,28 @@
  */
 
 /**
+ * Build eytzinger layout
+ *
+ * @template T
+ * @param {T[]} arr 
+ * @returns {T[]}
+ */
+export function eytzingerLayout(arr) {
+  let n = arr.length
+    , result = /** @type {T[]} */ (Array(n));
+  function build(i = 0, k = 1) {
+    if (k <= n) {
+      i = build(i, 2 * k);
+      result[k - 1] = arr[i++];
+      i = build(i, 2 * k + 1);
+    }
+    return i;
+  }
+  build();
+  return result;
+}
+
+/**
  * @template {number} [T=number]
  * @param {UnicodeDataEncoding} data
  * @param {string} [cats='']
@@ -40,7 +62,7 @@ export function decodeUnicodeData(data, cats = '') {
     i % 2
       ? buf.push([n, n + nums[i], /** @type {T} */ (cats ? parseInt(cats[i >> 1], 36) : 0)])
       : n = nums[i];
-  return buf;
+  return eytzingerLayout(buf);
 }
 
 /**

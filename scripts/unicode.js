@@ -36,7 +36,7 @@ import { existsSync, createWriteStream } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
-import { eytzingerLayout, encodeUnicodeData } from './lib/encoding.js';
+import { encodeUnicodeData } from './lib/encoding.js';
 
 let __dirname = path.dirname(fileURLToPath(import.meta.url));
 let srcPath = path.resolve(__dirname, '../src');
@@ -511,7 +511,7 @@ export const ${typeName} = {
 export const ${name}_ranges = decodeUnicodeData(
   /** @type {UnicodeDataEncoding} */
   ('${encodeUnicodeData(breakTable.map(row => [row[0], row[1], 0]))}'),
-  '${eytzingerLayout(breakTable).map(row => inversed[row[2]].toString(36)).join('')}',
+  '${breakTable.map(row => inversed[row[2]].toString(36)).join('')}',
 );
 `,
   );
