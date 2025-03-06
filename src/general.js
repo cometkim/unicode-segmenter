@@ -1,6 +1,6 @@
 // @ts-check
 
-import { searchUnicodeRange } from './core.js';
+import { findUnicodeRangeIndex } from './core.js';
 import {
   letter_ranges,
   alphabetic_ranges,
@@ -14,7 +14,7 @@ import {
  * @return boolean
  */
 export function isLetter(cp) {
-  return searchUnicodeRange(cp, letter_ranges) !== null;
+  return findUnicodeRangeIndex(cp, letter_ranges) >= 0;
 }
 
 /**
@@ -24,7 +24,7 @@ export function isLetter(cp) {
  * @return boolean
  */
 export function isAlphabetic(cp) {
-  return searchUnicodeRange(cp, alphabetic_ranges) !== null;
+  return findUnicodeRangeIndex(cp, alphabetic_ranges) >= 0;
 }
 
 /**
@@ -34,7 +34,7 @@ export function isAlphabetic(cp) {
  * @return boolean true if 
  */
 export function isNumeric(cp) {
-  return searchUnicodeRange(cp, numeric_ranges) !== null;
+  return findUnicodeRangeIndex(cp, numeric_ranges) >= 0;
 }
 
 /**

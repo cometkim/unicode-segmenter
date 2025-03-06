@@ -61,9 +61,9 @@ export function decodeUnicodeData(data, cats = '') {
  * @template {number} [T=number]
  * @param {number} cp
  * @param {CategorizedUnicodeRange<T>[]} ranges
- * @return {CategorizedUnicodeRange<T> | null}
+ * @return {number} index of matched unicode range, or -1 if no match
  */
-export function searchUnicodeRange(cp, ranges) {
+export function findUnicodeRangeIndex(cp, ranges) {
   let len = ranges.length
     , i = 1;
 
@@ -71,8 +71,8 @@ export function searchUnicodeRange(cp, ranges) {
     let range = ranges[i - 1]
       , l = range[0]
       , h = range[1];
-    if (l <= cp && cp <= h) return range;
+    if (l <= cp && cp <= h) return i - 1;
     i = 2 * i + (cp > h ? 1 : 0);
   }
-  return null;
+  return -1;
 }
