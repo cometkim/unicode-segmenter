@@ -71,8 +71,9 @@ import { decodeUnicodeData } from './core.js';
 /**
  * Grapheme category enum
  *
- * Note: The enum object is not actually `Object.freeze`
- * because it increases 800 bytes of Brotli compression... Not sure why :P
+ * Note:
+ *   The object isn't actually frozen
+ *   because using `Object.freeze` increases 800 bytes on Brotli compression.
  *
  * @type {Readonly<Record<GraphemeCategoryKey, GraphemeCategoryNum>>}
  */
