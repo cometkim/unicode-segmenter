@@ -9,12 +9,34 @@ import {
   isSIP,
   isTIP,
   isSSP,
+  isHighSurrogate,
+  isLowSurrogate,
+  surrogatePairToCodePoint,
 } from 'unicode-segmenter/utils';
 
 fc.configureGlobal({
   // Fix seed here for stable coverage report
   seed: 1713140942000,
   numRuns: 100_000,
+});
+
+test('surrogate pairs', () => {
+  fc.assert(
+    fc.property(
+      fc.integer({ min: 0xffff + 1, max: 0xeffff }),
+      // @ts-ignore
+      cp => {
+        let ch = String.fromCodePoint(cp);
+        let hi = ch.charCodeAt(0);
+        let lo = ch.charCodeAt(1);
+        return (
+          isHighSurrogate(hi) &&
+          isLowSurrogate(lo) &&
+          cp === surrogatePairToCodePoint(hi, lo)
+        );
+      }
+    )
+  )
 });
 
 test('isBMP', () => {
