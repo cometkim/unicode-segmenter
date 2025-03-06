@@ -254,7 +254,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) |
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|
-| `unicode-segmenter/grapheme` |   16.0.0 |    ✔️ |    15,929 |     12,110 |           5,049 |         3,740 |
+| `unicode-segmenter/grapheme` |   16.0.0 |    ✔️ |    15,929 |     12,110 |           5,050 |         3,738 |
 | `graphemer`                  |   15.0.0 |    ✖️ ️|   410,435 |     95,104 |          15,752 |        10,660 |
 | `grapheme-splitter`          |   10.0.0 |    ✖️ |   122,252 |     23,680 |           7,852 |         4,841 |
 | `@formatjs/intl-segmenter`*  |   15.0.0 |    ✖️ |   491,043 |    318,721 |          54,248 |        34,380 |
@@ -270,7 +270,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Bytecode size | Bytecode size (gzip)* |
 |------------------------------|--------------:|----------------------:|
-| `unicode-segmenter/grapheme` |        23,037 |                12,058 |
+| `unicode-segmenter/grapheme` |        21,997 |                11,505 |
 | `graphemer`                  |       133,952 |                31,708 |
 | `grapheme-splitter`          |        63,813 |                19,123 |
 

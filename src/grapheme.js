@@ -31,26 +31,7 @@ import { consonant_ranges } from './_incb_data.js';
  * @typedef {import('./core.js').Segmenter<GraphemeSegmentExtra>} GraphemeSegmenter
  */
 
-export {
-  /**
-   * @deprecated DO NOT USE directly, will be removed in v1
-   */
-  searchGraphemeCategory as searchGrapheme,
-  GraphemeCategory,
-};
-
-/**
- * @deprecated DO NOT USE directly, will be removed in v1
- * @param {number} cp
- * @return A {@link GraphemeCategoryRange} value if found, or garbage value with {@link GC_Any} category.
- */
-export function searchGraphemeCategory(cp) {
-  let index = findUnicodeRangeIndex(cp, grapheme_ranges);
-  if (index < 0) {
-    return [0, 0, 0 /* GC_Any */];
-  }
-  return grapheme_ranges[index];
-}
+export { GraphemeCategory };
 
 /**
  * Unicode segmentation by extended grapheme rules.
