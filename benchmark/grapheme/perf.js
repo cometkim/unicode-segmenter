@@ -123,6 +123,9 @@ await run({
       self.postMessage({ type: 'log', message: s });
     },
   },
+  ...isSystemRuntime && {
+    colors: !process.env.NO_COLOR,
+  },
 });
 
 if (isWebWorker) {
