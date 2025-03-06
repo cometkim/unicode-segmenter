@@ -45,11 +45,8 @@ export {
  * @return A {@link GraphemeCategoryRange} value if found, or garbage value with {@link GC_Any} category.
  */
 export function searchGraphemeCategory(cp) {
-  let index = searchUnicodeRange(cp, grapheme_ranges);
-  if (index < 0) {
-    return [0, 0, 0 /* GC_Any */];
-  }
-  return grapheme_ranges[index];
+  let range = searchUnicodeRange(cp, grapheme_ranges);
+  return range || [0, 0, 0 /* GC_Any */];
 }
 
 /**
@@ -248,18 +245,14 @@ function cat(cp, cache) {
     // If this char isn't within the cached range, update the cache to the
     // range that includes it.
     if (cp < cache[0] || cp > cache[1]) {
-      let index = searchUnicodeRange(cp, grapheme_ranges);
-
-      if (index < 0) {
+      let range = searchUnicodeRange(cp, grapheme_ranges);
+      if (!range) {
         return 0;
       }
-
-      let range = grapheme_ranges[index];
       cache[0] = range[0];
       cache[1] = range[1];
       cache[2] = range[2];
     }
-
     return cache[2];
   }
 };
@@ -269,7 +262,7 @@ function cat(cp, cache) {
  * @return {boolean}
  */
 function isIndicConjunctCosonant(cp) {
-  return searchUnicodeRange(cp, consonant_ranges) >= 0;
+  return searchUnicodeRange(cp, consonant_ranges) !== null;
 }
 
 /**

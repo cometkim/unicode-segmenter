@@ -58,28 +58,21 @@ export function decodeUnicodeData(data, cats = '') {
  */
 
 /**
- * @template {number} T
- * @param {T} x
- * @param {CategorizedUnicodeRange[]} ranges
- * @return {number} index of including range, or -(low+1) if there isn't
+ * @template {number} [T=number]
+ * @param {number} cp
+ * @param {CategorizedUnicodeRange<T>[]} ranges
+ * @return {CategorizedUnicodeRange<T> | null}
  */
-export function searchUnicodeRange(x, ranges) {
-  let lo = 0;
-  let hi = ranges.length - 1;
+export function searchUnicodeRange(cp, ranges) {
+  let len = ranges.length
+    , i = 1;
 
-  while (lo <= hi) {
-    let mid = lo + hi >> 1
-      , range = ranges[mid]
+  while (i <= len) {
+    let range = ranges[i - 1]
       , l = range[0]
       , h = range[1];
-    if (l <= x && x <= h) {
-      return mid;
-    } else if (h < x) {
-      lo = mid + 1;
-    } else {
-      hi = mid - 1;
-    }
+    if (l <= cp && cp <= h) return range;
+    i = 2 * i + (cp > h ? 1 : 0);
   }
-
-  return -lo - 1;
+  return null;
 }
