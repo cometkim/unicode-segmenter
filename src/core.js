@@ -27,28 +27,6 @@
  */
 
 /**
- * Build eytzinger layout
- *
- * @template T
- * @param {T[]} arr 
- * @returns {T[]}
- */
-export function eytzingerLayout(arr) {
-  let n = arr.length
-    , result = /** @type {T[]} */ (Array(n));
-  function build(i = 0, k = 1) {
-    if (k <= n) {
-      i = build(i, 2 * k);
-      result[k - 1] = arr[i++];
-      i = build(i, 2 * k + 1);
-    }
-    return i;
-  }
-  build();
-  return result;
-}
-
-/**
  * @template {number} [T=number]
  * @param {UnicodeDataEncoding} data
  * @param {string} [cats='']
@@ -62,7 +40,7 @@ export function decodeUnicodeData(data, cats = '') {
     i % 2
       ? buf.push([n, n + nums[i], /** @type {T} */ (cats ? parseInt(cats[i >> 1], 36) : 0)])
       : n = nums[i];
-  return eytzingerLayout(buf);
+  return buf;
 }
 
 /**
@@ -86,15 +64,16 @@ export function decodeUnicodeData(data, cats = '') {
  * @return {number} index of matched unicode range, or -1 if no match
  */
 export function findUnicodeRangeIndex(cp, ranges) {
-  let len = ranges.length
-    , i = 1;
-
-  while (i <= len) {
-    let range = ranges[i - 1]
+  let lo = 0
+    , hi = ranges.length - 1;
+  while (lo <= hi) {
+    let mid = lo + hi >> 1
+      , range = ranges[mid]
       , l = range[0]
       , h = range[1];
-    if (l <= cp && cp <= h) return i - 1;
-    i = 2 * i + (cp > h ? 1 : 0);
+    if (l <= cp && cp <= h) return mid;
+    else if (cp > h) lo = mid + 1;
+    else hi = mid - 1;
   }
   return -1;
 }
