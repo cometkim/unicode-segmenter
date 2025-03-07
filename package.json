@@ -107,7 +107,8 @@
     "perf:grapheme": "node --expose-gc benchmark/grapheme/perf.js",
     "perf:grapheme:browser": "vite -c benchmark/grapheme/vite.config.js",
     "perf:grapheme:hermes": "node benchmark/grapheme/perf-hermes.js",
-    "perf:grapheme:quickjs": "node benchmark/grapheme/perf-quickjs.js"
+    "perf:grapheme:quickjs": "node benchmark/grapheme/perf-quickjs.js",
+    "perf:grapheme:porffor": "node benchmark/grapheme/perf-porffor"
   },
   "alias": {
     "process": false
