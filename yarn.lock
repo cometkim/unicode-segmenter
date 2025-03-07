@@ -263,7 +263,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/parser@npm:^7.1.0, @babel/parser@npm:^7.20.7, @babel/parser@npm:^7.24.7, @babel/parser@npm:^7.25.3, @babel/parser@npm:^7.25.9, @babel/parser@npm:^7.26.9":
+"@babel/parser@npm:^7.1.0, @babel/parser@npm:^7.20.7, @babel/parser@npm:^7.24.4, @babel/parser@npm:^7.24.7, @babel/parser@npm:^7.25.3, @babel/parser@npm:^7.25.9, @babel/parser@npm:^7.26.9":
   version: 7.26.9
   resolution: "@babel/parser@npm:7.26.9"
   dependencies:
@@ -1872,12 +1872,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.4.0, acorn@npm:^8.8.2":
-  version: 8.14.0
-  resolution: "acorn@npm:8.14.0"
+"acorn@npm:^8.14.0, acorn@npm:^8.4.0, acorn@npm:^8.8.2":
+  version: 8.14.1
+  resolution: "acorn@npm:8.14.1"
   bin:
     acorn: bin/acorn
-  checksum: 10c0/6d4ee461a7734b2f48836ee0fbb752903606e576cc100eb49340295129ca0b452f3ba91ddd4424a1d4406a98adfb2ebb6bd0ff4c49d7a0930c10e462719bbfd7
+  checksum: 10c0/dbd36c1ed1d2fa3550140000371fcf721578095b18777b85a79df231ca093b08edc6858d75d6e48c73e431c174dcf9214edbd7e6fa5911b93bd8abfa54e47123
   languageName: node
   linkType: hard
 
@@ -2932,6 +2932,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"hermes-estree@npm:0.18.2":
+  version: 0.18.2
+  resolution: "hermes-estree@npm:0.18.2"
+  checksum: 10c0/6f3f53b8c9b48d75e682644eff1a35934d755df5532092c0248e1e59c305e55fceffc2396ac65377585ddeacc17cd7a3f0d2264565350661e13aa00a7c70b7d6
+  languageName: node
+  linkType: hard
+
 "hermes-estree@npm:0.25.1":
   version: 0.25.1
   resolution: "hermes-estree@npm:0.25.1"
@@ -2945,6 +2952,15 @@ __metadata:
   dependencies:
     hermes-estree: "npm:0.25.1"
   checksum: 10c0/3abaa4c6f1bcc25273f267297a89a4904963ea29af19b8e4f6eabe04f1c2c7e9abd7bfc4730ddb1d58f2ea04b6fee74053d8bddb5656ec6ebf6c79cc8d14202c
+  languageName: node
+  linkType: hard
+
+"hermes-parser@npm:^0.18.2":
+  version: 0.18.2
+  resolution: "hermes-parser@npm:0.18.2"
+  dependencies:
+    hermes-estree: "npm:0.18.2"
+  checksum: 10c0/d06f79064448cc9240d00115083a9f0a795078b493f275b2bfe39ead0039dc7e6f13c1f8bc0027c1293779269212e008402365df59a9f2fdaa5e45fa4a515818
   languageName: node
   linkType: hard
 
@@ -3533,6 +3549,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"meriyah@npm:^4.3.9":
+  version: 4.5.0
+  resolution: "meriyah@npm:4.5.0"
+  checksum: 10c0/184c9618a692d9a093c44d1fd8da66ec45035a5dd82574525560209356b200d7106155ad9773deaeaece564d250369fc6d2a4f9e4913221b2c145b3db1aac308
+  languageName: node
+  linkType: hard
+
 "metro-babel-transformer@npm:0.82.0":
   version: 0.82.0
   resolution: "metro-babel-transformer@npm:0.82.0"
@@ -3988,6 +4011,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-repl-polyfill@github:CanadaHonk/node-repl-polyfill":
+  version: 0.1.1
+  resolution: "node-repl-polyfill@https://github.com/CanadaHonk/node-repl-polyfill.git#commit=8d8a080a72971fefd822f41463d569a680632e3d"
+  checksum: 10c0/b559512406b40d27580819350c2c298090de4387e66955e9e4425bd86546d2aa8f992d5b9089bc0546e1e5502051e1e036dbf3d159af347caae81be122be3446
+  languageName: node
+  linkType: hard
+
 "nopt@npm:^7.0.0":
   version: 7.2.0
   resolution: "nopt@npm:7.2.0"
@@ -4240,6 +4270,28 @@ __metadata:
   dependencies:
     find-up: "npm:^3.0.0"
   checksum: 10c0/902a3d0c1f8ac43b1795fa1ba6ffeb37dfd53c91469e969790f6ed5e29ff2bdc50b63ba6115dc056d2efb4a040aa2446d512b3804bdafdf302f734fb3ec21847
+  languageName: node
+  linkType: hard
+
+"porffor@npm:^0.56.0":
+  version: 0.56.0
+  resolution: "porffor@npm:0.56.0"
+  dependencies:
+    "@babel/parser": "npm:^7.24.4"
+    acorn: "npm:^8.14.0"
+    hermes-parser: "npm:^0.18.2"
+    meriyah: "npm:^4.3.9"
+    node-repl-polyfill: "github:CanadaHonk/node-repl-polyfill"
+  dependenciesMeta:
+    "@babel/parser":
+      optional: true
+    hermes-parser:
+      optional: true
+    meriyah:
+      optional: true
+  bin:
+    porf: runner/index.js
+  checksum: 10c0/6ccc4aa560e27fb8243dd07f5688fe2c992437923916a2cd1c0dfd29cbedbd5b1fbd2e7351efd7829f51eb1a17afd1961a4d2ce4199b8859d291976cd53f5151
   languageName: node
   linkType: hard
 
@@ -5020,6 +5072,7 @@ __metadata:
     metro: "npm:^0.82.0"
     mitata: "npm:^1.0.34"
     os-browserify: "npm:^0.3.0"
+    porffor: "npm:^0.56.0"
     pretty-bytes: "npm:^6.1.1"
     rimraf: "npm:^6.0.1"
     typescript: "npm:^5.7.3"

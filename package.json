@@ -107,7 +107,8 @@
     "perf:grapheme": "node --expose-gc benchmark/grapheme/perf.js",
     "perf:grapheme:browser": "vite -c benchmark/grapheme/vite.config.js",
     "perf:grapheme:hermes": "node benchmark/grapheme/perf-hermes.js",
-    "perf:grapheme:quickjs": "node benchmark/grapheme/perf-quickjs.js"
+    "perf:grapheme:quickjs": "node benchmark/grapheme/perf-quickjs.js",
+    "perf:grapheme:porffor": "node benchmark/grapheme/perf-porffor"
   },
   "alias": {
     "process": false
@@ -131,6 +132,7 @@
     "metro": "^0.82.0",
     "mitata": "^1.0.34",
     "os-browserify": "^0.3.0",
+    "porffor": "^0.56.0",
     "pretty-bytes": "^6.1.1",
     "rimraf": "^6.0.1",
     "typescript": "^5.7.3",
