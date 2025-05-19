@@ -7,7 +7,7 @@ import { build } from 'esbuild';
 let rootDir = path.join(import.meta.dirname, '..');
 let srcDir = path.join(rootDir, 'src');
 let distDir = path.join(rootDir, '');
-let bundleDir = path.join(distDir, 'bundle');
+let bundleDir = path.join(distDir, 'bundles');
 
 await fs.mkdir(distDir, { recursive: true });
 
@@ -87,7 +87,7 @@ function rewriteCjs(content) {
     format: 'esm',
     treeShaking: true,
     write: true,
-    sourcemap: true,
+    sourcemap: false,
   });
   await build({
     bundle: true,
@@ -98,6 +98,6 @@ function rewriteCjs(content) {
     minify: true,
     treeShaking: true,
     write: true,
-    sourcemap: true,
+    sourcemap: false,
   });
 }

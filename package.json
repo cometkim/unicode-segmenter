@@ -83,6 +83,7 @@
         "import": "./intl-polyfill.js",
         "require": "./intl-polyfill.cjs"
       },
+      "./bundle/*": "./bundle/*.js",
       "./package.json": "./package.json"
     }
   },
@@ -90,7 +91,8 @@
     "/*.js",
     "/*.cjs",
     "/*.d.ts",
-    "/licenses"
+    "/licenses",
+    "/bundle"
   ],
   "scripts": {
     "prepack": "yarn clean && yarn build",
