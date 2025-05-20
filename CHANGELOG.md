@@ -1,5 +1,31 @@
 # unicode-segmenter
 
+## 0.13.0
+
+### Minor Changes
+
+- 75492dc: Expose an internal state: `_hd`;
+
+  The first codepoint of a segment, which is often need to be checked its bounds.
+
+  For example,
+
+  ```ts
+  for (const { segment } of graphemeSegments(text)) {
+    const cp = segment.codePointAt(0)!;
+    // Also need to `!` assertions in TypeScript.
+    if (isBMP(cp)) {
+      // ...
+    }
+  }
+  ```
+
+  It can be replaced by `_hd` state. no additional overhead.
+
+### Patch Changes
+
+- cd63858: Export bundled entries (`/bundle/*.js`)
+
 ## 0.12.0
 
 ### Minor Changes
