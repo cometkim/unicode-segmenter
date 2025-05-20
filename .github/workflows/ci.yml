@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     name: Checking build
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js 20.x
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: yarn
 
       - name: Install Dependencies
@@ -30,39 +30,23 @@ jobs:
 
   test:
     name: Running tests
-    runs-on: ubuntu-24.04
-    env:
-      PREBUILT_BINARY: prebuilt/node-v24.0.0-pre-linux-x64_icu76.1
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20.x
+      - name: Setup Node.js 24.x
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: yarn
 
       - name: Install Dependencies
         run: yarn install --immutable
 
-      - uses: actions/cache@v4
-        id: cache-prebuilt-node
-        with:
-          key: ${{ env.PREBUILT_BINARY }}
-          path: ${{ env.PREBUILT_BINARY }}
-
-      - name: Install prebuilt Node.js with custom ICU
-        if: steps.cache-prebuilt-node.cache-hit != 'true'
-        run: |
-          mkdir -p "$(dirname $PREBUILT_BINARY)"
-          curl -fsSL -o "$PREBUILT_BINARY" \
-            "https://github-actions-assets.cometkim.dev/$PREBUILT_BINARY"
-          chmod +x "$PREBUILT_BINARY"
-
       - name: Execute Tests
         run: |
-          $PREBUILT_BINARY \
+          node \
             --test --test-reporter spec --test-reporter-destination=stdout \
             --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info
 
