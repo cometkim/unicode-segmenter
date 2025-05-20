@@ -121,6 +121,8 @@ function* matchEmoji(str) {
 // 4: 👍
 ```
 
+Or build even more advanced one like an Unicode-aware [TTY string width](https://github.com/cometkim/unicode-string-width) utility.
+
 ### Export `unicode-segmenter/intl-adapter`
 [![](https://edge.bundlejs.com/badge?q=unicode-segmenter/intl-adapter&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fintl-adapter&treeshake=%5B*%5D)
 
@@ -271,8 +273,8 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 | Name                         | Bytecode size | Bytecode size (gzip)* |
 |------------------------------|--------------:|----------------------:|
 | `unicode-segmenter/grapheme` |        22,061 |                11,539 |
-| `graphemer`                  |       133,974 |                31,715 |
-| `grapheme-splitter`          |        63,855 |                19,133 |
+| `graphemer`                  |       133,974 |                31,719 |
+| `grapheme-splitter`          |        63,831 |                19,140 |
 
 * It would be compressed when included as an app asset.
 
