@@ -37,39 +37,39 @@ test('containing', async _ => {
 
   assert.deepEqual(
     segments.containing(0),
-    { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
+    { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n', _hd: 'a̐'.codePointAt(0), _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
   );
   assert.deepEqual(
     segments.containing(1),
-    { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
+    { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n', _hd: 'a̐'.codePointAt(0), _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
   );
   assert.deepEqual(
     segments.containing(2),
-    { segment: 'é', index: 2, input: 'a̐éö̲\r\n', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
+    { segment: 'é', index: 2, input: 'a̐éö̲\r\n', _hd: 'é'.codePointAt(0), _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
   );
   assert.deepEqual(
     segments.containing(3),
-    { segment: 'é', index: 2, input: 'a̐éö̲\r\n', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
+    { segment: 'é', index: 2, input: 'a̐éö̲\r\n', _hd: 'é'.codePointAt(0), _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
   );
   assert.deepEqual(
     segments.containing(4),
-    { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
+    { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n', _hd: 'ö̲'.codePointAt(0), _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
   );
   assert.deepEqual(
     segments.containing(5),
-    { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
+    { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n', _hd: 'ö̲'.codePointAt(0), _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
   );
   assert.deepEqual(
     segments.containing(6),
-    { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n', _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
+    { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n', _hd: 'ö̲'.codePointAt(0), _catBegin: GraphemeCategory.Any, _catEnd: GraphemeCategory.Extend },
   );
   assert.deepEqual(
     segments.containing(7),
-    { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n', _catBegin: GraphemeCategory.CR, _catEnd: GraphemeCategory.LF },
+    { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n', _hd: '\r\n'.codePointAt(0), _catBegin: GraphemeCategory.CR, _catEnd: GraphemeCategory.LF },
   );
   assert.deepEqual(
     segments.containing(8),
-    { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n', _catBegin: GraphemeCategory.CR, _catEnd: GraphemeCategory.LF  },
+    { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n', _hd: '\r\n'.codePointAt(0), _catBegin: GraphemeCategory.CR, _catEnd: GraphemeCategory.LF  },
   );
   assert.equal(segments.containing(9), undefined);
 });
