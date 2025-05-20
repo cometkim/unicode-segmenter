@@ -25,6 +25,7 @@ import { consonant_ranges } from './_incb_data.js';
  * @typedef {import('./_grapheme_data.js').GraphemeCategoryRange} GraphemeCategoryRange
  *
  * @typedef {object} GraphemeSegmentExtra
+ * @property {number} _hd The first code point of the segment
  * @property {GraphemeCategoryNum} _catBegin Beginning Grapheme_Cluster_Break category of the segment
  * @property {GraphemeCategoryNum} _catEnd Ending Grapheme_Cluster_Break category of the segment
  *
@@ -81,7 +82,10 @@ export function* graphemeSegments(input) {
   /** InCB=Consonant InCB=Linker x InCB=Consonant */
   let incb = false;
 
-  let cp = /** @type number */ (input.codePointAt(cursor));
+  let cp = /** @type {number} */ (input.codePointAt(cursor));
+
+  /** Memoize the beginnig code point a the segment. */
+  let _hd = cp;
 
   let index = 0;
   let segment = '';
@@ -117,6 +121,7 @@ export function* graphemeSegments(input) {
         segment,
         index,
         input,
+        _hd,
         _catBegin: /** @type {typeof catBefore} */ (catBegin),
         _catEnd: catBefore,
       };
@@ -146,6 +151,7 @@ export function* graphemeSegments(input) {
         segment,
         index,
         input,
+        _hd,
         _catBegin: /** @type {typeof catBefore} */ (catBegin),
         _catEnd: catBefore,
       };
@@ -156,6 +162,7 @@ export function* graphemeSegments(input) {
       emoji = false;
       incb = false;
       catBegin = catAfter;
+      _hd = cp;
     }
   }
 }
