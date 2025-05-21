@@ -91,3 +91,99 @@ function cat(cp, cache) {
     return cache[2];
   }
 }
+
+/**
+ * @param {WordCategoryNum} catBefore
+ * @param {WordCategoryNum} catAfter
+ * @param {number} risCount Regional_Indicator state
+ * @param {boolean} emoji Extended_Pictographic state
+ * @return {boolean}
+ *
+ * @see https://www.unicode.org/reports/tr29/tr29-43.html#Word_Boundary_Rules
+ */
+function isBoundary(catBefore, catAfter, risCount, emoji) {
+  // WB3
+  if (catBefore === WordCategory.CR && catAfter === WordCategory.LF) {
+    return false;
+  }
+
+  // WB3a
+  if (
+    catBefore === WordCategory.Newline ||
+    catBefore === WordCategory.CR ||
+    catBefore === WordCategory.LF
+  ) {
+    return true;
+  }
+
+  // WB3b
+  if (
+    catAfter === WordCategory.Newline ||
+    catAfter === WordCategory.CR ||
+    catAfter === WordCategory.LF
+  ) {
+    return true;
+  }
+
+  // WB3c
+  if (catBefore === WordCategory.ZWJ && emoji) {
+    return false;
+  }
+
+  // WB3d
+  if (
+    catBefore === WordCategory.WSegSpace &&
+    catAfter === WordCategory.WSegSpace
+  ) {
+    return false;
+  }
+
+  // WB5
+  if (
+    (catBefore === WordCategory.ALetter ||
+      catBefore === WordCategory.Hebrew_Letter) &&
+    (catAfter === WordCategory.ALetter ||
+      catAfter === WordCategory.Hebrew_Letter)
+  ) {
+    return false;
+  }
+
+  // WB13
+  if (
+    catBefore === WordCategory.Katakana &&
+    catAfter === WordCategory.Katakana
+  ) {
+    return false;
+  }
+
+  // WB13a
+  if (
+    (catBefore === WordCategory.ALetter ||
+      catBefore === WordCategory.Hebrew_Letter ||
+      catBefore === WordCategory.Numeric ||
+      catBefore === WordCategory.Katakana ||
+      catBefore === WordCategory.ExtendNumLet) &&
+    catAfter === WordCategory.ExtendNumLet
+  ) {
+    return false;
+  }
+
+  // WB13b
+  if (
+    catBefore === WordCategory.ExtendNumLet &&
+    (catBefore === WordCategory.ALetter ||
+      catBefore === WordCategory.Hebrew_Letter ||
+      catBefore === WordCategory.Numeric ||
+      catBefore === WordCategory.Katakana)
+  ) {
+    return false;
+  }
+
+  // WB15, WB16
+  if (catBefore === 10 && catAfter === 10) {
+    return risCount % 2 === 0;
+  }
+
+  // WB999
+  return true;
+}
