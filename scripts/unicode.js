@@ -779,12 +779,12 @@ let emitTest = async (file, print) => {
 let [
   graphemeData,
   emojiData,
-  // wordData,
+  wordData,
   // sentenceData,
 ] = await Promise.all([
   fetchData('auxiliary/GraphemeBreakProperty.txt'),
   fetchData('emoji/emoji-data.txt'),
-  // fetchData('auxiliary/WordBreakProperty.txt'),
+  fetchData('auxiliary/WordBreakProperty.txt'),
   // fetchData('auxiliary/SentenceBreakProperty.txt'),
 ]);
 
@@ -823,15 +823,15 @@ for (let chars of graphemeTable) {
   last = chars[1];
 }
 
-// let wordCats = parseProperties(wordData);
-// /** @type {CategorizedUnicodeRange[]}  */
-// let wordTable = [];
-// for (let [cat, ranges] of Object.entries(wordCats)) {
-//   for (let [from, to] of ranges) {
-//     graphemeTable.push([from, to, cat]);
-//   }
-// }
-// wordTable.sort((a, b) => a[0] - b[0]);
+let wordCats = parseProperties(wordData);
+/** @type {CategorizedUnicodeRange[]}  */
+let wordTable = [];
+for (let [cat, ranges] of Object.entries(wordCats)) {
+  for (let [from, to] of ranges) {
+    wordTable.push([from, to, cat]);
+  }
+}
+wordTable.sort((a, b) => a[0] - b[0]);
 
 // let sentenceCats = parseProperties(sentenceData);
 // /** @type {CategorizedUnicodeRange[]}  */
@@ -853,15 +853,15 @@ await emitSrc(
   ),
 );
 
-// emitSrc(
-//   '_word_data.js',
-//   async f => printBreakModule(
-//     f,
-//     wordTable,
-//     Object.keys(wordCats),
-//     'word',
-//   ),
-// );
+emitSrc(
+  '_word_data.js',
+  async f => printBreakModule(
+    f,
+    wordTable,
+    Object.keys(wordCats),
+    'word',
+  ),
+);
 
 // emitSrc(
 //   '_sentence_data.js',
