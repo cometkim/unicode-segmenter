@@ -36,6 +36,127 @@ import { WordCategory, word_ranges } from "./_word_data.js";
 export { WordCategory };
 
 /**
+ * Unicode segmentation by extended word rules.
+ *
+ * This is fully compatible with the {@link Intl.Segmenter.segment} API
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter/segment
+ *
+ * @param {string} input
+ * @return {WordSegmenter} iterator for grapheme cluster segments
+ */
+export function* wordSegments(input) {
+  // do nothing on empty string
+  if (input === "") {
+    return;
+  }
+
+  let takeCurr = true;
+  let takeCat = true;
+
+  /** @type {number} Current cursor position. */
+  let cursor = 0;
+
+  /** @type {number} Total length of the input string. */
+  let len = input.length;
+
+  /** @type {WordCategoryNum | null} Category of codepoint immediately preceding cursor, if known. */
+  let catBefore = null;
+
+  /** @type {WordCategoryNum | null} Category of codepoint immediately preceding cursor, if known. */
+  let catAfter = null;
+
+  /** @type {WordCategoryNum | null} Beginning category of a segment */
+  let catBegin = null;
+
+  let saveidx = 0;
+  let state = -1; // start?
+  let saveCat = WordCategory.Any;
+
+  /** @type {import('./_word_data.js').WordCategoryRange} */
+  let cache = [0, 0, 0 /* GC_Any */];
+
+  /** @type {number} The number of RIS codepoints preceding `cursor`. */
+  let risCount = 0;
+
+  /** Emoji state */
+  let emoji = false;
+
+  let skippedFormatExtend = true;
+
+  let cp = /** @type {number} */ (input.codePointAt(cursor));
+
+  /** Memoize the beginnig code point a the segment. */
+  let _hd = cp;
+
+  let index = 0;
+  let segment = "";
+
+  while (true) {
+    segment += input[cursor++];
+
+    // Note: Of course the nullish coalescing is useful here,
+    // but avoid it for aggressive compatibility and perf claim
+    catBefore = catAfter;
+    if (catBefore === null) {
+      catBefore = cat(cp, cache);
+      catBegin = catBefore;
+    }
+    takeCat = true;
+
+    if (cursor < len) {
+      cp = /** @type {number} */ (input.codePointAt(cursor));
+      catAfter = cat(cp, cache);
+    } else {
+      yield {
+        segment,
+        index,
+        input,
+        _hd,
+        _catBegin: /** @type {typeof catBefore} */ (catBegin),
+        _catEnd: catBefore,
+      };
+      return;
+    }
+
+    if (catBefore === WordCategory.Regional_Indicator) {
+      risCount += 1;
+    } else {
+      risCount = 0;
+    }
+
+    // TODO: emoji
+
+    if (
+      state !== -1 &&
+      (catBegin === WordCategory.Extend ||
+        catBegin === WordCategory.Format ||
+        catBegin === WordCategory.ZWJ)
+    ) {
+      skippedFormatExtend = true;
+      continue;
+    }
+
+    if (isBoundary(catBefore, catAfter, risCount, emoji)) {
+      yield {
+        segment,
+        index,
+        input,
+        _hd,
+        _catBegin: /** @type {typeof catBefore} */ (catBegin),
+        _catEnd: catBefore,
+      };
+
+      // flush
+      index = cursor;
+      segment = "";
+      emoji = false;
+      catBegin = catAfter;
+      _hd = cp;
+    }
+  }
+}
+
+/**
  * `Word_break` property value of a given codepoint
  *
  * @see https://www.unicode.org/reports/tr29/tr29-43.html#Default_Word_Boundaries
