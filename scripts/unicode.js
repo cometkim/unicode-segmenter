@@ -693,12 +693,14 @@ let printTestDataModule = async f => {
   };
 
   let grapehmeTestDataSrc = await fetchData('auxiliary/GraphemeBreakTest.txt');
+  let wordTestDataSrc = await fetchData('auxiliary/WordBreakTest.txt');
   // rules 9.1 and 9.2 are for extended graphemes only
   let optsplits = ['9.1', '9.2'];
   let graphemeTestData = parseTestData(grapehmeTestDataSrc, optsplits);
+  let wordTestData = parseTestData(wordTestDataSrc, optsplits);
 
   /** @type {TestCaseRow[]} */
-  let tests = [];
+  let graphemeTests = [];
 
   for (let [c, i] of graphemeTestData) {
     let allChars = c.flatMap(s => s);
@@ -725,9 +727,44 @@ let printTestDataModule = async f => {
     extgraphs.push(extwork);
 
     if (arraysEqual(extgraphs, c)) {
-      tests.push([allChars, c]);
+      graphemeTests.push([allChars, c]);
     } else {
-      tests.push([allChars, extgraphs]);
+      graphemeTests.push([allChars, extgraphs]);
+    }
+  }
+
+
+  /** @type {TestCaseRow[]} */
+  let wordTests = [];
+
+  for (let [c, i] of wordTestData) {
+    let allChars = c.flatMap(s => s);
+
+    /** @type {UnicodeValues[]} */
+    let extgraphs = [];
+
+    /** @type {UnicodeValues} */
+    let extwork = [];
+
+    extwork = extwork.concat(c[0]);
+    for (let n of range(0, i.length)) {
+      if (optsplits.includes(i[n])) {
+        extwork = extwork.concat(c[n + 1]);
+      } else {
+        extgraphs.push(extwork);
+        extwork = [];
+        extwork = extwork.concat(c[n + 1]);
+      }
+    }
+
+    // These are the extended grapheme clusters
+    // And the JS' segmenter only cares extended grapheme clusters
+    extgraphs.push(extwork);
+
+    if (arraysEqual(extgraphs, c)) {
+      wordTests.push([allChars, c]);
+    } else {
+      wordTests.push([allChars, extgraphs]);
     }
   }
 
@@ -741,7 +778,20 @@ let printTestDataModule = async f => {
  */
 `,
   );
-  printTableRaw(f, 'TESTDATA_GRAPHEME', tests, formatTestCase);
+  printTableRaw(f, 'TESTDATA_GRAPHEME', graphemeTests, formatTestCase);
+  f.write('\n');
+
+  f.write(`
+/**
+ * Official Unicode test data for word break
+ *
+ * @see http://www.unicode.org/Public/${UNICODE_VERSION_STRING}/ucd/auxiliary/WordBreakTest.txt
+ *
+ * @type {TestCase[]}
+ */
+`,
+  );
+  printTableRaw(f, 'TESTDATA_WORD', wordTests, formatTestCase);
   f.write('\n');
 };
 
