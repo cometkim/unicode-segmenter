@@ -108,7 +108,7 @@ export function* graphemeSegments(input) {
       // Note: Lazily update `consonant` and `linker` state
       // which is a extra overhead only for Hindi text.
       if (!consonant && catBefore === 0) {
-        consonant = isIndicConjunctCosonant(cp);
+        consonant = isIndicConjunctConsonant(cp);
       } else if (catBefore === 3 /* Extend */) {
         // Note: \p{InCB=Linker} is a subset of \p{Extend}
         linker = isIndicConjunctLinker(cp);
@@ -142,7 +142,7 @@ export function* graphemeSegments(input) {
 
       } else if (catAfter === 0 /* Any */ && cp >= 2325) {
         // Note: Put GB9c rule checking here to reduce.
-        incb = consonant && linker && (consonant = isIndicConjunctCosonant(cp));
+        incb = consonant && linker && (consonant = isIndicConjunctConsonant(cp));
         // It cannot be both a linker and a consonant.
         linker = linker && !consonant;
       }
@@ -255,7 +255,7 @@ function cat(cp, cache) {
  * @param {number} cp
  * @return {boolean}
  */
-function isIndicConjunctCosonant(cp) {
+function isIndicConjunctConsonant(cp) {
   return findUnicodeRangeIndex(cp, consonant_ranges) >= 0;
 }
 
