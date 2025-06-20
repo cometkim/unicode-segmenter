@@ -1,5 +1,11 @@
 # unicode-segmenter
 
+## 0.13.1
+
+### Patch Changes
+
+- 88a22e2: grapheme: improve runtime perf by ~9% for most common use cases
+
 ## 0.13.0
 
 ### Minor Changes
