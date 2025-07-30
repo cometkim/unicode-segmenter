@@ -334,12 +334,12 @@ function isBoundary(catBefore, catAfter, risCount, emoji, incb) {
       return false;
     }
 
-    // GB11 - ZWJ x Extended Pictographic
+    // GB11
     if (catBefore === 14 && catAfter === 4) {
       return !emoji;
     }
 
-    // GB12, GB13 - Regional Indicators
+    // GB12, GB13
     if (catBefore === 10 && catAfter === 10) {
       return risCount % 2 === 0;
     }
