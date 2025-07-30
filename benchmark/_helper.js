@@ -3,6 +3,7 @@ import { promisify } from 'node:util';
 
 let gzip = promisify(zlib.gzip);
 let brotli = promisify(zlib.brotliCompress);
+let zstd = promisify(zlib.zstdCompress);
 
 function byteLength(bytes, pretty = process.env.PRETTY === 'true') {
   let len = bytes;
@@ -19,6 +20,7 @@ export async function reportBundleStats(name, bundle, minBundle) {
     'Size (min)': byteLength(minBundle),
     'Size (min+gzip)': byteLength(await gzip(minBundle)),
     'Size (min+br)': byteLength(await brotli(minBundle)),
+    'Size (min+zstd)': byteLength(await zstd(minBundle)),
   };
 }
 
@@ -29,6 +31,7 @@ export async function reportWasmBindingStats(name, bundle, minBundle, wasm) {
     'Size (min)': byteLength(minBundle.byteLength + wasm.byteLength),
     'Size (min+gzip)': byteLength((await gzip(minBundle)).byteLength + (await gzip(wasm)).byteLength),
     'Size (min+br)': byteLength((await brotli(minBundle)).byteLength + (await brotli(wasm)).byteLength),
+    'Size (min+zstd)': byteLength((await zstd(minBundle)).byteLength + (await zstd(wasm)).byteLength),
   };
 }
 
