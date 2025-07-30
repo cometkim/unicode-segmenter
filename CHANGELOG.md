@@ -1,5 +1,16 @@
 # unicode-segmenter
 
+## 0.13.2
+
+### Patch Changes
+
+- f2018ed: Optimize grapheme segmenter.
+
+  By eliminating unnecessary string concatenation, it significantly improved performance when creating large segments. (e.g. Demonic, Hindi, Flags, Skin tones)
+  Also reduced the memory footprint by internal segment buffer.
+
+- fa9d58e: Optimize grapheme cluster boundary checking.
+
 ## 0.13.1
 
 ### Patch Changes
