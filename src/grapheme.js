@@ -345,6 +345,6 @@ function isBoundary(catBefore, catAfter, risCount, emoji, incb) {
     }
   }
 
- // GB999
+  // GB999
   return true;
 }
