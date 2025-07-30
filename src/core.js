@@ -67,13 +67,15 @@ export function findUnicodeRangeIndex(cp, ranges) {
   let lo = 0
     , hi = ranges.length - 1;
   while (lo <= hi) {
-    let mid = lo + hi >> 1
-      , range = ranges[mid]
-      , l = range[0]
-      , h = range[1];
-    if (l <= cp && cp <= h) return mid;
-    else if (cp > h) lo = mid + 1;
-    else hi = mid - 1;
+    const mid = (lo + hi) >>> 1
+      , range = ranges[mid];
+    if (cp < range[0]) {
+      hi = mid - 1;
+    } else if (cp > range[1]) {
+      lo = mid + 1;
+    } else {
+      return mid;
+    }
   }
   return -1;
 }

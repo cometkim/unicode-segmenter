@@ -53,7 +53,7 @@ export function* graphemeSegments(input) {
   let cursor = 0;
 
   /** @type {number} Total length of the input string. */
-  let len = input.length;
+  const len = input.length;
 
   /** @type {GraphemeCategoryNum | null} Category of codepoint immediately preceding cursor, if known. */
   let catBefore = null;
@@ -65,7 +65,7 @@ export function* graphemeSegments(input) {
   let catBegin = null;
 
   /** @type {import('./_grapheme_data.js').GraphemeCategoryRange} */
-  let cache = [0, 0, 2 /* GC_Control */];
+  const cache = [0, 0, 2 /* GC_Control */];
 
   /** @type {number} The number of RIS codepoints preceding `cursor`. */
   let risCount = 0;
@@ -88,19 +88,30 @@ export function* graphemeSegments(input) {
   let _hd = cp;
 
   let index = 0;
-  let segment = '';
+  let segmentStart = 0;
 
   while (true) {
-    segment += input[cursor++];
-    if (!isBMP(cp)) {
-      segment += input[cursor++];
-    }
+    const charSize = cp > 0xFFFF ? 2 : 1;
+    cursor += charSize;
 
     // Note: Of course the nullish coalescing is useful here,
     // but avoid it for aggressive compatibility and perf claim
     catBefore = catAfter;
     if (catBefore === null) {
-      catBefore = cat(cp, cache);
+      // Inline cat() for ASCII optimization
+      if (cp < 127) {
+        if (cp >= 32) {
+          catBefore = 0; // GC_Any
+        } else if (cp === 10) {
+          catBefore = 6; // GC_LF
+        } else if (cp === 13) {
+          catBefore = 1; // GC_CR
+        } else {
+          catBefore = 2; // GC_Control
+        }
+      } else {
+        catBefore = cat(cp, cache);
+      }
       catBegin = catBefore;
     }
 
@@ -117,10 +128,23 @@ export function* graphemeSegments(input) {
 
     if (cursor < len) {
       cp = /** @type {number} */ (input.codePointAt(cursor));
-      catAfter = cat(cp, cache);
+      // Inline cat() for ASCII optimization
+      if (cp < 127) {
+        if (cp >= 32) {
+          catAfter = 0; // GC_Any
+        } else if (cp === 10) {
+          catAfter = 6; // GC_LF
+        } else if (cp === 13) {
+          catAfter = 1; // GC_CR
+        } else {
+          catAfter = 2; // GC_Control
+        }
+      } else {
+        catAfter = cat(cp, cache);
+      }
     } else {
       yield {
-        segment,
+        segment: input.slice(segmentStart, cursor),
         index,
         input,
         _hd,
@@ -150,7 +174,7 @@ export function* graphemeSegments(input) {
 
     if (isBoundary(catBefore, catAfter, risCount, emoji, incb)) {
       yield {
-        segment,
+        segment: input.slice(segmentStart, cursor),
         index,
         input,
         _hd,
@@ -160,7 +184,7 @@ export function* graphemeSegments(input) {
 
       // flush
       index = cursor;
-      segment = '';
+      segmentStart = cursor;
       emoji = false;
       incb = false;
       catBegin = catAfter;
@@ -285,52 +309,23 @@ function isIndicConjunctLinker(cp) {
  * @see https://www.unicode.org/reports/tr29/tr29-43.html#Grapheme_Cluster_Boundary_Rules
  */
 function isBoundary(catBefore, catAfter, risCount, emoji, incb) {
-  // GB3
+  // GB3 - CR x LF (must come first)
   if (catBefore === 1 && catAfter === 6) {
     return false;
   }
 
-  // GB4
+  // GB4 - Break after controls
   if (catBefore === 1 || catBefore === 2 || catBefore === 6) {
     return true;
   }
 
-  // GB5
+  // GB5 - Break before controls
   if (catAfter === 1 || catAfter === 2 || catAfter === 6) {
     return true;
   }
 
-  // GB6
-  if (
-    catBefore === 5 &&
-    (catAfter === 5 || catAfter === 7 || catAfter === 8 || catAfter === 13)
-  ) {
-    return false;
-  }
-
-  // GB7
-  if (
-    (catBefore === 7 || catBefore === 13) &&
-    (catAfter === 12 || catAfter === 13)
-  ) {
-    return false;
-  }
-
-  // GB8
-  if (
-    catAfter === 12 &&
-    (catBefore === 8 || catBefore === 12)
-  ) {
-    return false;
-  }
-
-  // GB9
-  if (catAfter === 3 || catAfter === 14) {
-    return false;
-  }
-
-  // GB9a
-  if (catAfter === 11) {
+  // Most common cases - GB9, GB9a extend rules
+  if (catAfter === 3 || catAfter === 14 || catAfter === 11) {
     return false;
   }
 
@@ -339,19 +334,42 @@ function isBoundary(catBefore, catAfter, risCount, emoji, incb) {
     return false;
   }
 
-  // GB9c
+  // GB9c - Indic conjunct break
   if (catAfter === 0 && incb) {
     return false;
   }
 
-  // GB11
+  // GB11 - ZWJ x Extended_Pictographic
   if (catBefore === 14 && catAfter === 4) {
     return !emoji;
   }
 
-  // GB12, GB13
+  // GB12, GB13 - Regional indicators
   if (catBefore === 10 && catAfter === 10) {
     return risCount % 2 === 0;
+  }
+
+  // GB6 - L × (L | V | LV | LVT)
+  if (catBefore === 5) {
+    if (catAfter === 5 || catAfter === 7 || catAfter === 8 || catAfter === 13) {
+      return false;
+    }
+  }
+
+  // GB7 - (LV | V) × (V | T)
+  if (
+    (catBefore === 7 || catBefore === 13) &&
+    (catAfter === 13 || catAfter === 12)
+  ) {
+    return false;
+  }
+
+  // GB8 - (LVT | T) × T
+  if (
+    (catBefore === 8 || catBefore === 12) &&
+    catAfter === 12
+  ) {
+    return false;
   }
 
   // GB999
