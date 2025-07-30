@@ -88,13 +88,10 @@ export function* graphemeSegments(input) {
   let _hd = cp;
 
   let index = 0;
-  let segment = '';
 
   while (true) {
-    segment += input[cursor++];
-    if (!isBMP(cp)) {
-      segment += input[cursor++];
-    }
+    let chSize = isBMP(cp) ? 1 : 2;
+    cursor += chSize;
 
     // Note: Of course the nullish coalescing is useful here,
     // but avoid it for aggressive compatibility and perf claim
@@ -120,7 +117,7 @@ export function* graphemeSegments(input) {
       catAfter = cat(cp, cache);
     } else {
       yield {
-        segment,
+        segment: input.slice(index, cursor),
         index,
         input,
         _hd,
@@ -150,7 +147,7 @@ export function* graphemeSegments(input) {
 
     if (isBoundary(catBefore, catAfter, risCount, emoji, incb)) {
       yield {
-        segment,
+        segment: input.slice(index, cursor),
         index,
         input,
         _hd,
@@ -160,7 +157,6 @@ export function* graphemeSegments(input) {
 
       // flush
       index = cursor;
-      segment = '';
       emoji = false;
       incb = false;
       catBegin = catAfter;
