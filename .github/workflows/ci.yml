@@ -31,6 +31,8 @@ jobs:
   test:
     name: Running tests
     runs-on: ubuntu-24.04-arm
+    permissions:
+      id-token: write
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -51,8 +53,6 @@ jobs:
             --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.0.1
+        uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: cometkim/unicode-segmenter
-          file: lcov.info
+          use_oidc: true
