@@ -14,7 +14,6 @@
 // @ts-check
 
 import { findUnicodeRangeIndex } from './core.js';
-import { isBMP } from './utils.js';
 import { GraphemeCategory, grapheme_ranges } from './_grapheme_data.js';
 import { consonant_ranges } from './_incb_data.js';
 
@@ -92,7 +91,7 @@ export function* graphemeSegments(input) {
 
   while (true) {
     segment += input[cursor++];
-    if (!isBMP(cp)) {
+    if (cp > 0xFFFF) {
       segment += input[cursor++];
     }
 
@@ -100,7 +99,19 @@ export function* graphemeSegments(input) {
     // but avoid it for aggressive compatibility and perf claim
     catBefore = catAfter;
     if (catBefore === null) {
-      catBefore = cat(cp, cache);
+      if (cp < 127) {
+        if (cp >= 32) {
+          catBefore = 0 /* GC_Any */;
+        } else if (cp === 10) {
+          catBefore = 6 /* GC_LF */;
+        } else if (cp === 13) {
+          catBefore = 1 /* GC_CR */;
+        } else {
+          catBefore = 2 /* GC_Control */;
+        }
+      } else {
+        catBefore = cat(cp, cache);
+      }
       catBegin = catBefore;
     }
 
@@ -117,7 +128,19 @@ export function* graphemeSegments(input) {
 
     if (cursor < len) {
       cp = /** @type {number} */ (input.codePointAt(cursor));
-      catAfter = cat(cp, cache);
+      if (cp < 127) {
+        if (cp >= 32) {
+          catAfter = 0 /* GC_Any */;
+        } else if (cp === 10) {
+          catAfter = 6 /* GC_LF */;
+        } else if (cp === 13) {
+          catAfter = 1 /* GC_CR */;
+        } else {
+          catAfter = 2 /* GC_Control */;
+        }
+      } else {
+        catAfter = cat(cp, cache);
+      }
     } else {
       yield {
         segment,
@@ -220,35 +243,19 @@ export function* splitGraphemes(text) {
  * @return {GraphemeCategoryNum}
  */
 function cat(cp, cache) {
-  if (cp < 127) {
-    // Special-case optimization for ascii, except U+007F.  This
-    // improves performance even for many primarily non-ascii texts,
-    // due to use of punctuation and white space characters from the
-    // ascii range.
-    if (cp >= 32) {
-      return 0 /* GC_Any */;
-    } else if (cp === 10) {
-      return 6 /* GC_LF */;
-    } else if (cp === 13) {
-      return 1 /* GC_CR */;
-    } else {
-      return 2 /* GC_Control */;
+  // If this char isn't within the cached range, update the cache to the
+  // range that includes it.
+  if (cp < cache[0] || cp > cache[1]) {
+    let index = findUnicodeRangeIndex(cp, grapheme_ranges);
+    if (index < 0) {
+      return 0;
     }
-  } else {
-    // If this char isn't within the cached range, update the cache to the
-    // range that includes it.
-    if (cp < cache[0] || cp > cache[1]) {
-      let index = findUnicodeRangeIndex(cp, grapheme_ranges);
-      if (index < 0) {
-        return 0;
-      }
-      let range = grapheme_ranges[index];
-      cache[0] = range[0];
-      cache[1] = range[1];
-      cache[2] = range[2];
-    }
-    return cache[2];
+    let range = grapheme_ranges[index];
+    cache[0] = range[0];
+    cache[1] = range[1];
+    cache[2] = range[2];
   }
+  return cache[2];
 };
 
 /**
