@@ -296,60 +296,55 @@ function isBoundary(catBefore, catAfter, risCount, emoji, incb) {
     return true;
   }
 
-  // GB6
-  if (
-    catBefore === 5 &&
-    (catAfter === 5 || catAfter === 7 || catAfter === 8 || catAfter === 13)
-  ) {
+  // Most common cases - GB9, GB9a extend rules
+  if (catAfter === 3 || catAfter === 14 || catAfter === 11) {
     return false;
   }
 
-  // GB7
-  if (
-    (catBefore === 7 || catBefore === 13) &&
-    (catAfter === 12 || catAfter === 13)
-  ) {
-    return false;
+  // GB6 - L x (L | V | LV | LVT)
+  if (catBefore === 5) {
+    if (catAfter === 5 || catAfter === 7 || catAfter === 8 || catAfter === 13) {
+      return false;
+    }
+
+  } else {
+    // GB7 - (LV | V) x (V | T)
+    if (
+      (catBefore === 7 || catBefore === 13) &&
+      (catAfter === 13 || catAfter === 12)
+    ) {
+      return false;
+    }
+
+    // GB8 - (LVT | T) x T
+    if (
+      (catBefore === 8 || catBefore === 12) &&
+      catAfter === 12
+    ) {
+      return false;
+    }
+
+    // GB9b
+    if (catBefore === 9) {
+      return false;
+    }
+
+    // GB9c
+    if (catAfter === 0 && incb) {
+      return false;
+    }
+
+    // GB11 - ZWJ x Extended Pictographic
+    if (catBefore === 14 && catAfter === 4) {
+      return !emoji;
+    }
+
+    // GB12, GB13 - Regional Indicators
+    if (catBefore === 10 && catAfter === 10) {
+      return risCount % 2 === 0;
+    }
   }
 
-  // GB8
-  if (
-    catAfter === 12 &&
-    (catBefore === 8 || catBefore === 12)
-  ) {
-    return false;
-  }
-
-  // GB9
-  if (catAfter === 3 || catAfter === 14) {
-    return false;
-  }
-
-  // GB9a
-  if (catAfter === 11) {
-    return false;
-  }
-
-  // GB9b
-  if (catBefore === 9) {
-    return false;
-  }
-
-  // GB9c
-  if (catAfter === 0 && incb) {
-    return false;
-  }
-
-  // GB11
-  if (catBefore === 14 && catAfter === 4) {
-    return !emoji;
-  }
-
-  // GB12, GB13
-  if (catBefore === 10 && catAfter === 10) {
-    return risCount % 2 === 0;
-  }
-
-  // GB999
+ // GB999
   return true;
 }
