@@ -319,4 +319,4 @@ Instead of trusting these claims, you can try `yarn perf:grapheme` directly in y
 [emoji-regex]: https://github.com/mathiasbynens/emoji-regex
 [emojibase-regex]: https://emojibase.dev/docs/regex
 [XRegExp]: https://xregexp.com/
-[@formatjs/intl-segmenter]: https://formatjs.io/docs/polyfills/intl-segmenter/
+[@formatjs/intl-segmenter]: https://formatjs.github.io/docs/polyfills/intl-segmenter/
