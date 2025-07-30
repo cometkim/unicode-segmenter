@@ -14,7 +14,6 @@
 // @ts-check
 
 import { findUnicodeRangeIndex } from './core.js';
-import { isBMP } from './utils.js';
 import { GraphemeCategory, grapheme_ranges } from './_grapheme_data.js';
 import { consonant_ranges } from './_incb_data.js';
 
@@ -90,8 +89,11 @@ export function* graphemeSegments(input) {
   let index = 0;
 
   while (true) {
-    let chSize = isBMP(cp) ? 1 : 2;
-    cursor += chSize;
+    // @ts-ignore
+    // Note: 
+    //   Using `!` and implicit conversion for brotli compression ratio.
+    //   Even a small change like `+` or `>=` here will increase the size.
+    cursor += !(cp < 0xFFFF) + 1;
 
     // Note: Of course the nullish coalescing is useful here,
     // but avoid it for aggressive compatibility and perf claim
