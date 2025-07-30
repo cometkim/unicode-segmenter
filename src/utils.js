@@ -1,6 +1,8 @@
 // @ts-check
 
 /** 
+ * @deprecated never used
+ *
  * @param {number} c UTF-16 code point
  */
 export function isHighSurrogate(c) {
@@ -8,6 +10,8 @@ export function isHighSurrogate(c) {
 }
 
 /** 
+ * @deprecated never used
+ *
  * @param {number} c UTF-16 code point
  */
 export function isLowSurrogate(c) {
@@ -15,6 +19,8 @@ export function isLowSurrogate(c) {
 }
 
 /** 
+ * @deprecated never used
+ *
  * @param {number} hi high surrogate
  * @param {number} lo low surrogate
  */
@@ -23,6 +29,8 @@ export function surrogatePairToCodePoint(hi, lo) {
 }
 
 /**
+ * @deprecated never used
+ *
  * Check if given code point is within the BMP(Basic Multilingual Plane)
  *
  * @param {number} c Unicode code point
@@ -33,6 +41,8 @@ export function isBMP(c) {
 }
 
 /**
+ * @deprecated never used
+ *
  * Check if given code point is within the SMP(Supplementary Multilingual Plane)
  *
  * @param {number} c Unicode code point
@@ -43,6 +53,8 @@ export function isSMP(c) {
 }
 
 /**
+ * @deprecated never used
+ *
  * Check if given code point is within the SIP(Supplementary Ideographic Plane)
  *
  * @param {number} c Unicode code point
@@ -53,6 +65,8 @@ export function isSIP(c) {
 }
 
 /**
+ * @deprecated never used
+ *
  * Check if given code point is within the TIP(Tertiary Ideographic Plane)
  *
  * @param {number} c Unicode code point
@@ -63,6 +77,8 @@ export function isTIP(c) {
 }
 
 /**
+ * @deprecated never used
+ *
  * Check if given code point is within the SSP(Supplementary Special-purpose Plane)
  *
  * @param {number} c Unicode code point

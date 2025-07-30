@@ -32,17 +32,16 @@ Unicode® Standard Annex \#29 - [Revision 45](https://www.unicode.org/reports/tr
 
 ## APIs
 
-There are several entries for text segmentation.
+Entries for Unicode text segmentation.
 
 - [`unicode-segmenter/grapheme`](#export-unicode-segmentergrapheme): Segments and counts **extended grapheme clusters**
 - [`unicode-segmenter/intl-adapter`](#export-unicode-segmenterintl-adapter): [`Intl.Segmenter`] adapter
 - [`unicode-segmenter/intl-polyfill`](#export-unicode-segmenterintl-polyfill): [`Intl.Segmenter`] polyfill
 
-And extra utilities for combined use cases.
+And matchers for extra use cases.
 
 - [`unicode-segmenter/emoji`](#export-unicode-segmenteremoji): Matches single codepoint emojis
 - [`unicode-segmenter/general`](#export-unicode-segmentergeneral): Matches single codepoint alphanumerics
-- [`unicode-segmenter/utils`](#export-unicode-segmenterutils): Some utilities for handling codepoints 
 
 ### Export `unicode-segmenter/grapheme`
 [![](https://edge.bundlejs.com/badge?q=unicode-segmenter/grapheme&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fgrapheme&treeshake=%5B*%5D)
@@ -185,42 +184,6 @@ import {
   isAlphabetic,   // match \p{Alphabetic}
   isAlphanumeric, // match [\p{N}\p{Alphabetic}]
 } from 'unicode-segmenter/general';
-```
-
-### Export `unicode-segmenter/utils`
-[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/utils&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Futils&treeshake=%5B*%5D)
-
-You can access some internal utilities to deal with JavaScript strings.
-
-#### Example: Handle UTF-16 surrogate pairs
-
-```js
-import {
-  isHighSurrogate,
-  isLowSurrogate,
-  surrogatePairToCodePoint,
-} from 'unicode-segmenter/utils';
-
-const u32 = '😍';
-const hi = u32.charCodeAt(0);
-const lo = u32.charCodeAt(1);
-
-if (isHighSurrogate(hi) && isLowSurrogate(lo)) {
-  const codePoint = surrogatePairToCodePoint(hi, lo);
-  // => equivalent to u32.codePointAt(0)
-}
-```
-
-#### Example: Determine the length of a character
-
-```js
-import { isBMP } from 'unicode-segmenter/utils';
-
-const char = '😍'; // .length = 2
-const cp = char.codePointAt(0);
-
-char.length === isBMP(cp) ? 1 : 2;
-// => true
 ```
 
 ## Runtime Compatibility
