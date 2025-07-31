@@ -1,5 +1,13 @@
 # unicode-segmenter
 
+## 0.14.0
+
+### Minor Changes
+
+- cbd1a07: Deprecated `unicode-segmenter/utils` entry.
+
+  Never used internally anymore. It's too simple, better to inline if needed.
+
 ## 0.13.2
 
 ### Patch Changes
