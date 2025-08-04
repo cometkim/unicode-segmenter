@@ -103,21 +103,7 @@ export function* graphemeSegments(input) {
       catBegin = catBefore;
     }
 
-    if (cp >= 2325) {
-      // Note: Lazily update `consonant` and `linker` state
-      // which is a extra overhead only for Hindi text.
-      if (!consonant && catBefore === 0) {
-        consonant = isIndicConjunctConsonant(cp);
-      } else if (catBefore === 3 /* Extend */) {
-        // Note: \p{InCB=Linker} is a subset of \p{Extend}
-        linker = isIndicConjunctLinker(cp);
-      }
-    }
-
-    if (cursor < len) {
-      cp = /** @type {number} */ (input.codePointAt(cursor));
-      catAfter = cat(cp, cache);
-    } else {
+    if (cursor >= len) {
       yield {
         segment: input.slice(index, cursor),
         index,
@@ -128,6 +114,20 @@ export function* graphemeSegments(input) {
       };
       return;
     }
+
+    // Note: Lazily update `consonant` and `linker` state
+    // which is a extra overhead only for Hindi text.
+    if (cp >= 2325) {
+      if (!consonant && catBefore === 0) {
+        consonant = isIndicConjunctConsonant(cp);
+      } else if (catBefore === 3 /* Extend */) {
+        // Note: \p{InCB=Linker} is a subset of \p{Extend}
+        linker = isIndicConjunctLinker(cp);
+      }
+    }
+
+    cp = /** @type {number} */ (input.codePointAt(cursor));
+    catAfter = cat(cp, cache);
 
     if (catBefore === 10 /* Regional_Indicator */) {
       risCount += 1;
