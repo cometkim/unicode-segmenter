@@ -89,11 +89,7 @@ export function* graphemeSegments(input) {
   let index = 0;
 
   while (true) {
-    // @ts-ignore
-    // Note: 
-    //   Using `!` and implicit conversion for brotli compression ratio.
-    //   Even a small change like `+` or `>=` here will increase the size.
-    cursor += !(cp < 0xFFFF) + 1;
+    cursor += cp < 0xFFFF ? 1 : 2;
 
     // Note: Of course the nullish coalescing is useful here,
     // but avoid it for aggressive compatibility and perf claim
