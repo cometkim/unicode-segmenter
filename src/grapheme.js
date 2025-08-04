@@ -52,7 +52,7 @@ export function* graphemeSegments(input) {
   let cursor = 0;
 
   /** @type {number} Total length of the input string. */
-  let len = input.length;
+  const len = input.length;
 
   /** @type {GraphemeCategoryNum | null} Category of codepoint immediately preceding cursor, if known. */
   let catBefore = null;
@@ -64,7 +64,7 @@ export function* graphemeSegments(input) {
   let catBegin = null;
 
   /** @type {import('./_grapheme_data.js').GraphemeCategoryRange} */
-  let cache = [0, 0, 2 /* GC_Control */];
+  const cache = [0, 0, 2 /* GC_Control */];
 
   /** @type {number} The number of RIS codepoints preceding `cursor`. */
   let risCount = 0;
@@ -232,11 +232,11 @@ function cat(cp, cache) {
     // If this char isn't within the cached range, update the cache to the
     // range that includes it.
     if (cp < cache[0] || cp > cache[1]) {
-      let index = findUnicodeRangeIndex(cp, grapheme_ranges);
+      const index = findUnicodeRangeIndex(cp, grapheme_ranges);
       if (index < 0) {
         return 0;
       }
-      let range = grapheme_ranges[index];
+      const range = grapheme_ranges[index];
       cache[0] = range[0];
       cache[1] = range[1];
       cache[2] = range[2];
