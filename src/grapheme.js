@@ -126,7 +126,7 @@ export function* graphemeSegments(input) {
     catAfter = cat(cp, cache);
 
     if (catBefore === 10 /* Regional_Indicator */) {
-      risCount += 1;
+      risCount++;
     } else {
       risCount = 0;
       if (
