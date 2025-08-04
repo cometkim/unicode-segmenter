@@ -48,7 +48,7 @@ const 테스트문자열 = "안녕하세요! Welcome to the unicode-segementer l
 const bench = withCodSpeed(new Bench());
 
 for (const [name, input] of testcases) {
-  bench.add(name, () => {
+  bench.add(`grapheme - ${name}`, () => {
     void [...graphemeSegments(input)];
   });
 }
