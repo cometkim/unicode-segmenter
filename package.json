@@ -118,7 +118,7 @@
     "@babel/core": "^7.27.1",
     "@babel/plugin-transform-modules-commonjs": "^7.27.1",
     "@changesets/cli": "^2.29.4",
-    "@codspeed/tinybench-plugin": "^4.0.1",
+    "@codspeed/tinybench-plugin": "patch:@codspeed/tinybench-plugin@npm%3A4.0.1#~/.yarn/patches/@codspeed-tinybench-plugin-npm-4.0.1-a79378f455.patch",
     "@formatjs/intl-segmenter": "11.7.10",
     "@mitata/counters": "^0.0.8",
     "@react-native/metro-babel-transformer": "^0.79.2",
