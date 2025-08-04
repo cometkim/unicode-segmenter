@@ -1287,7 +1287,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codspeed/tinybench-plugin@npm:4.0.1":
+"@codspeed/tinybench-plugin@npm:^4.0.1":
   version: 4.0.1
   resolution: "@codspeed/tinybench-plugin@npm:4.0.1"
   dependencies:
@@ -1296,18 +1296,6 @@ __metadata:
   peerDependencies:
     tinybench: ^2.3.0
   checksum: 10c0/c431eb9dd06929d88c856d3d8e726fcd6eb7b883fbd0f03914ead859361b3f61edf0dc35e40d9efaa9ea5960cf5af728917e10b5928211cb90d8b182b2315b5c
-  languageName: node
-  linkType: hard
-
-"@codspeed/tinybench-plugin@patch:@codspeed/tinybench-plugin@npm%3A4.0.1#~/.yarn/patches/@codspeed-tinybench-plugin-npm-4.0.1-a79378f455.patch":
-  version: 4.0.1
-  resolution: "@codspeed/tinybench-plugin@patch:@codspeed/tinybench-plugin@npm%3A4.0.1#~/.yarn/patches/@codspeed-tinybench-plugin-npm-4.0.1-a79378f455.patch::version=4.0.1&hash=b0395e"
-  dependencies:
-    "@codspeed/core": "npm:^4.0.1"
-    stack-trace: "npm:1.0.0-pre2"
-  peerDependencies:
-    tinybench: ^2.3.0
-  checksum: 10c0/842a90bf9a0a8576b47d84c80a5dd31eeef955ccf200988f7a92725a70f1e9c7e8f9aa3653254bfa47a5a90a0b10b14cdbd85d1ac6dbe17d551ed45fe82c8084
   languageName: node
   linkType: hard
 
@@ -5465,10 +5453,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tinybench@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "tinybench@npm:4.0.1"
-  checksum: 10c0/42ed8abf2eb914cfbff2cede5fa98cca7dcaf135ab5342a3701d2f90ed3d29fc1a2dcc092a91b1dc483d0de1fa69feac3fea64fad2ddef284bba34391bc96405
+"tinybench@npm:^2.9.0":
+  version: 2.9.0
+  resolution: "tinybench@npm:2.9.0"
+  checksum: 10c0/c3500b0f60d2eb8db65250afe750b66d51623057ee88720b7f064894a6cb7eb93360ca824a60a31ab16dab30c7b1f06efe0795b352e37914a9d4bad86386a20c
   languageName: node
   linkType: hard
 
@@ -5593,7 +5581,7 @@ __metadata:
     "@babel/core": "npm:^7.27.1"
     "@babel/plugin-transform-modules-commonjs": "npm:^7.27.1"
     "@changesets/cli": "npm:^2.29.4"
-    "@codspeed/tinybench-plugin": "patch:@codspeed/tinybench-plugin@npm%3A4.0.1#~/.yarn/patches/@codspeed-tinybench-plugin-npm-4.0.1-a79378f455.patch"
+    "@codspeed/tinybench-plugin": "npm:^4.0.1"
     "@formatjs/intl-segmenter": "npm:11.7.10"
     "@mitata/counters": "npm:^0.0.8"
     "@react-native/metro-babel-transformer": "npm:^0.79.2"
@@ -5611,7 +5599,7 @@ __metadata:
     os-browserify: "npm:^0.3.0"
     pretty-bytes: "npm:^7.0.0"
     rimraf: "npm:^6.0.1"
-    tinybench: "npm:^4.0.1"
+    tinybench: "npm:^2.9.0"
     typescript: "npm:^5.8.3"
     unicode-segmentation-wasm: "github:cometkim/unicode-segmentation-wasm#230eb74d320ea2f31f95b74ddb2567186d496587"
     vite: "npm:^6.3.5"
