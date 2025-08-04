@@ -25,5 +25,5 @@ jobs:
       - name: Run benchmarks
         uses: CodSpeedHQ/action@v3
         with:
-          run: node benchmark/grapheme/codspeed.mjs
+          run: node benchmark/grapheme/codspeed.js
           token: ${{ secrets.CODSPEED_TOKEN }}
