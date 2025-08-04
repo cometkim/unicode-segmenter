@@ -48,51 +48,74 @@ export function* graphemeSegments(input) {
     return;
   }
 
-  /** @type {number} Current cursor position. */
+  const len = input.length;
+  
+  // Fast path for pure ASCII text - most common case
+  let isAscii = true;
+  for (let i = 0; i < len; i++) {
+    if (input.charCodeAt(i) >= 127) {
+      isAscii = false;
+      break;
+    }
+  }
+  
+  if (isAscii) {
+    // Optimized ASCII-only path
+    for (let i = 0; i < len; i++) {
+      const charCode = input.charCodeAt(i);
+      const isControl = charCode < 32;
+      
+      if (isControl) {
+        if (charCode === 10 && i > 0 && input.charCodeAt(i - 1) === 13) {
+          // Skip LF after CR - already handled
+          continue;
+        }
+        if (charCode === 13 && i + 1 < len && input.charCodeAt(i + 1) === 10) {
+          // CR+LF sequence
+          yield {
+            segment: input.slice(i, i + 2),
+            index: i,
+            input,
+            _hd: charCode,
+            _catBegin: 1, // CR
+            _catEnd: 6,   // LF
+          };
+          i++; // Skip the LF
+          continue;
+        }
+      }
+      
+      // Regular ASCII character
+      yield {
+        segment: input[i],
+        index: i,
+        input,
+        _hd: charCode,
+        _catBegin: isControl ? (charCode === 10 ? 6 : charCode === 13 ? 1 : 2) : 0,
+        _catEnd: isControl ? (charCode === 10 ? 6 : charCode === 13 ? 1 : 2) : 0,
+      };
+    }
+    return;
+  }
+
+  // Original Unicode path for non-ASCII text
   let cursor = 0;
-
-  /** @type {number} Total length of the input string. */
-  let len = input.length;
-
-  /** @type {GraphemeCategoryNum | null} Category of codepoint immediately preceding cursor, if known. */
   let catBefore = null;
-
-  /** @type {GraphemeCategoryNum | null} Category of codepoint immediately preceding cursor, if known. */
   let catAfter = null;
-
-  /** @type {GraphemeCategoryNum | null} Beginning category of a segment */
   let catBegin = null;
-
-  /** @type {import('./_grapheme_data.js').GraphemeCategoryRange} */
-  let cache = [0, 0, 2 /* GC_Control */];
-
-  /** @type {number} The number of RIS codepoints preceding `cursor`. */
+  const cache = [0, 0, 2 /* GC_Control */];
   let risCount = 0;
-
-  /** Emoji state */
   let emoji = false;
-
-  /** InCB=Consonant */
   let consonant = false;
-
-  /** InCB=Linker */
   let linker = false;
-
-  /** InCB=Consonant InCB=Linker x InCB=Consonant */
   let incb = false;
-
   let cp = /** @type {number} */ (input.codePointAt(cursor));
-
-  /** Memoize the beginnig code point a the segment. */
   let _hd = cp;
-
   let index = 0;
 
   while (true) {
     cursor += cp < 0xFFFF ? 1 : 2;
 
-    // Note: Of course the nullish coalescing is useful here,
-    // but avoid it for aggressive compatibility and perf claim
     catBefore = catAfter;
     if (catBefore === null) {
       catBefore = cat(cp, cache);
@@ -111,13 +134,11 @@ export function* graphemeSegments(input) {
       return;
     }
 
-    // Note: Lazily update `consonant` and `linker` state
-    // which is a extra overhead only for Hindi text.
+    // Lazily update consonant and linker state for Hindi text only
     if (cp >= 2325) {
       if (!consonant && catBefore === 0) {
         consonant = isIndicConjunctConsonant(cp);
       } else if (catBefore === 3 /* Extend */) {
-        // Note: \p{InCB=Linker} is a subset of \p{Extend}
         linker = isIndicConjunctLinker(cp);
       }
     }
@@ -126,7 +147,7 @@ export function* graphemeSegments(input) {
     catAfter = cat(cp, cache);
 
     if (catBefore === 10 /* Regional_Indicator */) {
-      risCount += 1;
+      risCount++;
     } else {
       risCount = 0;
       if (
@@ -134,11 +155,8 @@ export function* graphemeSegments(input) {
         && (catBefore === 3 /* Extend */ || catBefore === 4 /* Extended_Pictographic */)
       ) {
         emoji = true;
-
       } else if (catAfter === 0 /* Any */ && cp >= 2325) {
-        // Note: Put GB9c rule checking here to reduce.
         incb = consonant && linker && (consonant = isIndicConjunctConsonant(cp));
-        // It cannot be both a linker and a consonant.
         linker = linker && !consonant;
       }
     }
@@ -153,7 +171,6 @@ export function* graphemeSegments(input) {
         _catEnd: catBefore,
       };
 
-      // flush
       index = cursor;
       emoji = false;
       incb = false;
@@ -232,11 +249,11 @@ function cat(cp, cache) {
     // If this char isn't within the cached range, update the cache to the
     // range that includes it.
     if (cp < cache[0] || cp > cache[1]) {
-      let index = findUnicodeRangeIndex(cp, grapheme_ranges);
+      const index = findUnicodeRangeIndex(cp, grapheme_ranges);
       if (index < 0) {
         return 0;
       }
-      let range = grapheme_ranges[index];
+      const range = grapheme_ranges[index];
       cache[0] = range[0];
       cache[1] = range[1];
       cache[2] = range[2];
