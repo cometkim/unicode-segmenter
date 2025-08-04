@@ -113,13 +113,11 @@ export function* graphemeSegments(input) {
 
     // Note: Lazily update `consonant` and `linker` state
     // which is a extra overhead only for Hindi text.
-    if (cp >= 2325) {
-      if (!consonant && catBefore === 0) {
-        consonant = isIndicConjunctConsonant(cp);
-      } else if (catBefore === 3 /* Extend */) {
-        // Note: \p{InCB=Linker} is a subset of \p{Extend}
-        linker = isIndicConjunctLinker(cp);
-      }
+    if (!consonant && catBefore === 0) {
+      consonant = isIndicConjunctConsonant(cp);
+    } else if (catBefore === 3 /* Extend */) {
+      // Note: \p{InCB=Linker} is a subset of \p{Extend}
+      linker = isIndicConjunctLinker(cp);
     }
 
     cp = /** @type {number} */ (input.codePointAt(cursor));
@@ -135,7 +133,7 @@ export function* graphemeSegments(input) {
       ) {
         emoji = true;
 
-      } else if (catAfter === 0 /* Any */ && cp >= 2325) {
+      } else if (catAfter === 0 /* Any */) {
         // Note: Put GB9c rule checking here to reduce.
         incb = consonant && linker && (consonant = isIndicConjunctConsonant(cp));
         // It cannot be both a linker and a consonant.
