@@ -68,9 +68,11 @@ export function findUnicodeRangeIndex(cp, ranges) {
     , hi = ranges.length - 1;
   while (lo <= hi) {
     let mid = lo + hi >>> 1
-      , range = ranges[mid];
-    if (cp < range[0]) hi = mid - 1;
-    else if (cp > range[1]) lo = mid + 1;
+        , range = ranges[mid]
+        , from = range[0]
+        , to = range[1];
+    if (cp < from) hi = mid - 1;
+    else if (cp > to) lo = mid + 1;
     else return mid;
   }
   return -1;
