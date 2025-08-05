@@ -54,14 +54,14 @@ export function* graphemeSegments(input) {
   /** @type {number} Total length of the input string. */
   let len = input.length;
 
-  /** @type {GraphemeCategoryNum | null} Category of codepoint immediately preceding cursor, if known. */
-  let catBefore = null;
+  /** @type {GraphemeCategoryNum | -1} Category of codepoint immediately preceding cursor, if known. */
+  let catBefore = -1;
 
-  /** @type {GraphemeCategoryNum | null} Category of codepoint immediately preceding cursor, if known. */
-  let catAfter = null;
+  /** @type {GraphemeCategoryNum | -1} Category of codepoint immediately preceding cursor, if known. */
+  let catAfter = -1;
 
-  /** @type {GraphemeCategoryNum | null} Beginning category of a segment */
-  let catBegin = null;
+  /** @type {GraphemeCategoryNum | -1} Beginning category of a segment */
+  let catBegin = -1;
 
   /** @type {import('./_grapheme_data.js').GraphemeCategoryRange} */
   let cache = [0, 0, 2 /* GC_Control */];
@@ -94,7 +94,7 @@ export function* graphemeSegments(input) {
     // Note: Of course the nullish coalescing is useful here,
     // but avoid it for aggressive compatibility and perf claim
     catBefore = catAfter;
-    if (catBefore === null) {
+    if (catBefore === -1) {
       catBefore = cat(cp, cache);
       catBegin = catBefore;
     }
