@@ -49,7 +49,7 @@ export function* graphemeSegments(input) {
   if (cp == null) return;
 
   /** Current cursor position. */
-  let cursor = 0;
+  let cursor = cp < 0xFFFF ? 1 : 2;
 
   /** Total length of the input string. */
   let len = input.length;
@@ -86,21 +86,7 @@ export function* graphemeSegments(input) {
   /** Memoize the beginnig code point a the segment. */
   let _hd = cp;
 
-  while (true) {
-    cursor += cp < 0xFFFF ? 1 : 2;
-
-    if (cursor >= len) {
-      yield {
-        segment: input.slice(index, cursor),
-        index,
-        input,
-        _hd,
-        _catBegin,
-        _catEnd: catBefore,
-      };
-      return;
-    }
-
+  while (cursor < len) {
     // Note: Lazily update `consonant` and `linker` state
     // which is a extra overhead only for Hindi text.
     if (cp >= 2325) {
@@ -151,7 +137,19 @@ export function* graphemeSegments(input) {
       _hd = cp;
     }
 
+    cursor += cp < 0xFFFF ? 1 : 2;
     catBefore = catAfter;
+  }
+
+  if (index < len) {
+    yield {
+      segment: input.slice(index),
+      index,
+      input,
+      _hd,
+      _catBegin,
+      _catEnd: catBefore,
+    };
   }
 }
 
