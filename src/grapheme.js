@@ -49,7 +49,7 @@ export function* graphemeSegments(input) {
   if (cp == null) return;
 
   /** Current cursor position. */
-  let cursor = cp < 0xFFFF ? 1 : 2;
+  let cursor = cp <= 0xFFFF ? 1 : 2;
 
   /** Total length of the input string. */
   let len = input.length;
@@ -137,7 +137,7 @@ export function* graphemeSegments(input) {
       _hd = cp;
     }
 
-    cursor += cp < 0xFFFF ? 1 : 2;
+    cursor += cp <= 0xFFFF ? 1 : 2;
     catBefore = catAfter;
   }
 
