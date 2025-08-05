@@ -43,30 +43,30 @@ export { GraphemeCategory };
  * @return {GraphemeSegmenter} iterator for grapheme cluster segments
  */
 export function* graphemeSegments(input) {
-  // do nothing on empty string
-  if (input === '') {
-    return;
-  }
+  let cp = input.codePointAt(0);
 
-  /** @type {number} Current cursor position. */
+  // do nothing on empty string
+  if (cp == null) return;
+
+  /** Current cursor position. */
   let cursor = 0;
 
-  /** @type {number} Total length of the input string. */
+  /** Total length of the input string. */
   let len = input.length;
-
-  /** @type {GraphemeCategoryNum | null} Category of codepoint immediately preceding cursor, if known. */
-  let catBefore = null;
-
-  /** @type {GraphemeCategoryNum | null} Category of codepoint immediately preceding cursor, if known. */
-  let catAfter = null;
-
-  /** @type {GraphemeCategoryNum | null} Beginning category of a segment */
-  let catBegin = null;
 
   /** @type {import('./_grapheme_data.js').GraphemeCategoryRange} */
   let cache = [0, 0, 2 /* GC_Control */];
 
-  /** @type {number} The number of RIS codepoints preceding `cursor`. */
+  /** Category of codepoint immediately preceding cursor */
+  let catBefore = cat(cp, cache);
+
+  /** Beginning category of a segment */
+  let catBegin = catBefore;
+
+  /** @type {GraphemeCategoryNum | null} Category of codepoint immediately preceding cursor. */
+  let catAfter = null;
+
+  /** The number of RIS codepoints preceding `cursor`. */
   let risCount = 0;
 
   /** Emoji state */
@@ -81,8 +81,6 @@ export function* graphemeSegments(input) {
   /** InCB=Consonant InCB=Linker x InCB=Consonant */
   let incb = false;
 
-  let cp = /** @type {number} */ (input.codePointAt(cursor));
-
   /** Memoize the beginnig code point a the segment. */
   let _hd = cp;
 
@@ -91,21 +89,13 @@ export function* graphemeSegments(input) {
   while (true) {
     cursor += cp < 0xFFFF ? 1 : 2;
 
-    // Note: Of course the nullish coalescing is useful here,
-    // but avoid it for aggressive compatibility and perf claim
-    catBefore = catAfter;
-    if (catBefore === null) {
-      catBefore = cat(cp, cache);
-      catBegin = catBefore;
-    }
-
     if (cursor >= len) {
       yield {
         segment: input.slice(index, cursor),
         index,
         input,
         _hd,
-        _catBegin: /** @type {typeof catBefore} */ (catBegin),
+        _catBegin: catBegin,
         _catEnd: catBefore,
       };
       return;
@@ -149,7 +139,7 @@ export function* graphemeSegments(input) {
         index,
         input,
         _hd,
-        _catBegin: /** @type {typeof catBefore} */ (catBegin),
+        _catBegin: catBegin,
         _catEnd: catBefore,
       };
 
@@ -160,6 +150,8 @@ export function* graphemeSegments(input) {
       catBegin = catAfter;
       _hd = cp;
     }
+
+    catBefore = catAfter;
   }
 }
 
