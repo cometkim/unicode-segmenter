@@ -63,9 +63,7 @@ export function decodeUnicodeData(data, cats = '') {
  * @param {CategorizedUnicodeRange<T>[]} ranges
  * @return {number} index of matched unicode range, or -1 if no match
  */
-export function findUnicodeRangeIndex(cp, ranges) {
-  let lo = 0
-    , hi = ranges.length - 1;
+export function findUnicodeRangeIndex(cp, ranges, lo = 0, hi = ranges.length - 1) {
   while (lo <= hi) {
     let mid = lo + hi >>> 1
       , range = ranges[mid];

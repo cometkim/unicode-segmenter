@@ -195,6 +195,29 @@ export function* splitGraphemes(text) {
 }
 
 /**
+ * Precompute a fast lookup table for BMP code points (0..0xFFFF)
+ * This table maps each code point to its Grapheme_Cluster_Break category.
+ * It is generated once at module load time using the grapheme_ranges data.
+ * The table is a Uint8Array of length 0x10000 (64KB), which is acceptable in memory.
+ * For code points >= 0x10000 we fall back to binary search.
+ */
+let [bmpLookup, bmpCursor] = (() => {
+  let max = 0xFFFF;
+  let bmpLookup = new Uint8Array(max + 1);
+  let bmpCursor = 0;
+  let cp = 0;
+  while (true) {
+    let range = grapheme_ranges[bmpCursor++];
+    for (cp = range[0]; cp <= range[1];) {
+      bmpLookup[cp++] = range[2];
+      if (cp >= max) {
+        return [bmpLookup, bmpCursor];
+      }
+    }
+  }
+})();
+
+/**
  * `Grapheme_Cluster_Break` property value of a given codepoint
  *
  * @see https://www.unicode.org/reports/tr29/tr29-43.html#Default_Grapheme_Cluster_Table
@@ -204,35 +227,34 @@ export function* splitGraphemes(text) {
  * @return {GraphemeCategoryNum}
  */
 function cat(cp, cache) {
+  // Fast path for ASCII
   if (cp < 127) {
-    // Special-case optimization for ascii, except U+007F.  This
-    // improves performance even for many primarily non-ascii texts,
-    // due to use of punctuation and white space characters from the
-    // ascii range.
-    if (cp >= 32) {
-      return 0 /* GC_Any */;
-    } else if (cp === 10) {
-      return 6 /* GC_LF */;
-    } else if (cp === 13) {
-      return 1 /* GC_CR */;
-    } else {
-      return 2 /* GC_Control */;
-    }
-  } else {
-    // If this char isn't within the cached range, update the cache to the
-    // range that includes it.
-    if (cp < cache[0] || cp > cache[1]) {
-      let index = findUnicodeRangeIndex(cp, grapheme_ranges);
-      if (index < 0) {
-        return 0;
-      }
-      let range = grapheme_ranges[index];
-      cache[0] = range[0];
-      cache[1] = range[1];
-      cache[2] = range[2];
-    }
+    if (cp >= 32) return 0 /* GC_Any */;
+    if (cp === 10) return 6 /* GC_LF */;
+    if (cp === 13) return 1 /* GC_CR */;
+    return 2 /* GC_Control */;
+  }
+
+  // Fast lookup for BMP (0x0000..0xFFFF) using precomputed table
+  if (cp < bmpLookup.length) {
+    return /** @type {GraphemeCategoryNum} */ (bmpLookup[cp]);
+  }
+
+  // Use cached result
+  if (cp >= cache[0] && cp <= cache[1]) {
     return cache[2];
   }
+
+  // Binary search, starting from bmpCursor
+  let index = findUnicodeRangeIndex(cp, grapheme_ranges, bmpCursor);
+  if (index < 0) {
+    return 0;
+  }
+
+  const range = grapheme_ranges[index];
+  cache[0] = range[0];
+  cache[1] = range[1];
+  return (cache[2] = range[2]);
 };
 
 /**
