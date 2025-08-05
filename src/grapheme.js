@@ -60,9 +60,6 @@ export function* graphemeSegments(input) {
   /** Category of codepoint immediately preceding cursor */
   let catBefore = cat(cp, cache);
 
-  /** Beginning category of a segment */
-  let catBegin = catBefore;
-
   /** @type {GraphemeCategoryNum | null} Category of codepoint immediately preceding cursor. */
   let catAfter = null;
 
@@ -81,10 +78,13 @@ export function* graphemeSegments(input) {
   /** InCB=Consonant InCB=Linker x InCB=Consonant */
   let incb = false;
 
+  let index = 0;
+
+  /** Beginning category of a segment */
+  let _catBegin = catBefore;
+
   /** Memoize the beginnig code point a the segment. */
   let _hd = cp;
-
-  let index = 0;
 
   while (true) {
     cursor += cp < 0xFFFF ? 1 : 2;
@@ -95,7 +95,7 @@ export function* graphemeSegments(input) {
         index,
         input,
         _hd,
-        _catBegin: catBegin,
+        _catBegin,
         _catEnd: catBefore,
       };
       return;
@@ -139,15 +139,15 @@ export function* graphemeSegments(input) {
         index,
         input,
         _hd,
-        _catBegin: catBegin,
+        _catBegin,
         _catEnd: catBefore,
       };
 
       // flush
-      index = cursor;
       emoji = false;
       incb = false;
-      catBegin = catAfter;
+      index = cursor;
+      _catBegin = catAfter;
       _hd = cp;
     }
 
