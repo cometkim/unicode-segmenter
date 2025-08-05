@@ -14,6 +14,28 @@
 // @ts-check
 
 import { findUnicodeRangeIndex } from './core.js';
+
+// Precompute a fast lookup table for BMP code points (0..0xFFFF)
+// This table maps each code point to its Grapheme_Cluster_Break category.
+// It is generated once at module load time using the grapheme_ranges data.
+// The table is a Uint8Array of length 0x10000 (64KB), which is acceptable in memory.
+// For code points >= 0x10000 we fall back to binary search as before.
+
+const _bmpCategoryTable = (() => {
+  const table = new Uint8Array(0x10000);
+  // default to GC_Any (0)
+  // Fill using grapheme_ranges
+  for (const [from, to, cat] of grapheme_ranges) {
+    // Ensure range within BMP
+    const start = Math.max(0, from);
+    const end = Math.min(0xFFFF, to);
+    if (start > 0xFFFF) continue;
+    for (let cp = start; cp <= end; cp++) {
+      table[cp] = cat;
+    }
+  }
+  return table;
+})();
 import { GraphemeCategory, grapheme_ranges } from './_grapheme_data.js';
 import { consonant_ranges } from './_incb_data.js';
 
@@ -203,12 +225,10 @@ export function* splitGraphemes(text) {
  * @param {import('./_grapheme_data.js').GraphemeCategoryRange} cache
  * @return {GraphemeCategoryNum}
  */
+// Inlined category lookup for performance
 function cat(cp, cache) {
+  // Fast path for ASCII characters (same as original for compatibility)
   if (cp < 127) {
-    // Special-case optimization for ascii, except U+007F.  This
-    // improves performance even for many primarily non-ascii texts,
-    // due to use of punctuation and white space characters from the
-    // ascii range.
     if (cp >= 32) {
       return 0 /* GC_Any */;
     } else if (cp === 10) {
@@ -218,21 +238,23 @@ function cat(cp, cache) {
     } else {
       return 2 /* GC_Control */;
     }
-  } else {
-    // If this char isn't within the cached range, update the cache to the
-    // range that includes it.
-    if (cp < cache[0] || cp > cache[1]) {
-      let index = findUnicodeRangeIndex(cp, grapheme_ranges);
-      if (index < 0) {
-        return 0;
-      }
-      let range = grapheme_ranges[index];
-      cache[0] = range[0];
-      cache[1] = range[1];
-      cache[2] = range[2];
-    }
-    return cache[2];
   }
+  // Fast lookup for BMP (0x0000..0xFFFF) using precomputed table
+  if (cp <= 0xFFFF) {
+    return /** @type {GraphemeCategoryNum} */(_bmpCategoryTable[cp]);
+  }
+  // Fallback for code points beyond BMP: use binary search with cache
+  if (cp < cache[0] || cp > cache[1]) {
+    let index = findUnicodeRangeIndex(cp, grapheme_ranges);
+    if (index < 0) {
+      return 0;
+    }
+    const range = grapheme_ranges[index];
+    cache[0] = range[0];
+    cache[1] = range[1];
+    cache[2] = range[2];
+  }
+  return cache[2];
 };
 
 /**
