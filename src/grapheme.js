@@ -94,7 +94,7 @@ export function* graphemeSegments(input) {
     // Note: Of course the nullish coalescing is useful here,
     // but avoid it for aggressive compatibility and perf claim
     catBefore = catAfter;
-    if (catBefore === -1) {
+    if (catBefore < 0) {
       catBefore = cat(cp, cache);
       catBegin = catBefore;
     }
