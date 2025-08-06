@@ -33,6 +33,8 @@ import { consonant_ranges } from './_incb_data.js';
 
 export { GraphemeCategory };
 
+const BMP_MAX = 0xFFFF;
+
 /**
  * Unicode segmentation by extended grapheme rules.
  *
@@ -49,7 +51,7 @@ export function* graphemeSegments(input) {
   if (cp == null) return;
 
   /** Current cursor position. */
-  let cursor = cp <= 0xFFFF ? 1 : 2;
+  let cursor = cp <= BMP_MAX ? 1 : 2;
 
   /** Total length of the input string. */
   let len = input.length;
@@ -137,7 +139,7 @@ export function* graphemeSegments(input) {
       _hd = cp;
     }
 
-    cursor += cp <= 0xFFFF ? 1 : 2;
+    cursor += cp <= BMP_MAX ? 1 : 2;
     catBefore = catAfter;
   }
 
@@ -202,15 +204,14 @@ export function* splitGraphemes(text) {
  * For code points >= 0x10000 we fall back to binary search.
  */
 let [bmpLookup, bmpCursor] = (() => {
-  let max = 0xFFFF;
-  let bmpLookup = new Uint8Array(max + 1);
+  let bmpLookup = new Uint8Array(BMP_MAX + 1);
   let bmpCursor = 0;
   let cp = 0;
   while (true) {
     let range = grapheme_ranges[bmpCursor++];
     for (cp = range[0]; cp <= range[1];) {
       bmpLookup[cp++] = range[2];
-      if (cp >= max) {
+      if (cp > BMP_MAX) {
         return [bmpLookup, bmpCursor];
       }
     }
@@ -227,16 +228,8 @@ let [bmpLookup, bmpCursor] = (() => {
  * @return {GraphemeCategoryNum}
  */
 function cat(cp, cache) {
-  // Fast path for ASCII
-  if (cp < 127) {
-    if (cp >= 32) return 0 /* GC_Any */;
-    if (cp === 10) return 6 /* GC_LF */;
-    if (cp === 13) return 1 /* GC_CR */;
-    return 2 /* GC_Control */;
-  }
-
   // Fast lookup for BMP (0x0000..0xFFFF) using precomputed table
-  if (cp < bmpLookup.length) {
+  if (cp <= BMP_MAX) {
     return /** @type {GraphemeCategoryNum} */ (bmpLookup[cp]);
   }
 
