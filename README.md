@@ -246,16 +246,16 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 Here is a brief explanation, and you can see [archived benchmark results](benchmark/grapheme/_records).
 
-**Performance in Node.js**: `unicode-segmenter/grapheme` is significantly faster than alternatives.
-- 6\~15x faster than other JavaScript libraries
-- 1.5\~3x faster than WASM binding of the Rust's [unicode-segmentation]
-- 1.5\~3x faster than built-in [`Intl.Segmenter`]
+**Performance in Node.js/Bun/Deno**: `unicode-segmenter/grapheme` has best-in-class performance.
+- 8\~35x faster than other JavaScript libraries.
+- 3\~5x faster than WASM binding of the Rust's [unicode-segmentation].
+- 2\~3x faster than built-in [`Intl.Segmenter`].
 
-**Performance in Bun**: `unicode-segmenter/grapheme` has almost the same performance as the built-in [`Intl.Segmenter`], with no performance degradation compared to other JavaScript libraries.
+**Performance in Browsers**: The performance in browser environments varies greatly due to differences in browser engines, which makes benchmarking inconsistent, but:
+- Still significantly faster than other JavaScript libraries.
+- Generally outperforms the built-in in the most browser environments, except the Firefox.
 
-**Performance in Browsers**: The performance in browser environments varies greatly due to differences in browser engines and versions, which makes benchmarking less consistent. Despite these variations, `unicode-segmenter/grapheme` generally outperforms other JavaScript libraries in most environments.
-
-**Performance in React Native**: `unicode-segmenter/grapheme` is significantly faster than alternatives when compiled to Hermes bytecode. It's 3\~8x faster than `graphemer` and 20\~26x faster than `grapheme-splitter`, with the performance gap increasing with input size.
+**Performance in React Native**: `unicode-segmenter/grapheme` is still faster than alternatives when compiled to Hermes bytecode. It's 3\~8x faster than `graphemer` and 20\~26x faster than `grapheme-splitter`, with the performance gap increasing with input size.
 
 **Performance in QuickJS**: `unicode-segmenter/grapheme` is the only usable library in terms of performance.
 
