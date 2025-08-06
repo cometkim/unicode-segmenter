@@ -1,5 +1,28 @@
 # unicode-segmenter
 
+## 0.14.0
+
+### Minor Changes
+
+- cbd1a07: Deprecated `unicode-segmenter/utils` entry.
+
+  Never used internally anymore. It's too simple, better to inline if needed.
+
+### Patch Changes
+
+- dbca35f: Improve runtime perf on the Unicode text processing.
+
+  By using a precomputed lookup table for the grapheme categries of BMP characters, it improves perf by more than 10% for common cases, even ~30% for some extream cases.
+
+  The lookup table consumes an additional 64 KB of memory, which is acceptable for most JavaScript runtime environments.
+
+  This optimization is introduced by OpenCode w/ OpenAI's GPT-OSS-120B. It is the second successful attempt at meaningful optimization in this library.
+  (The first one was the Claude Code w/ Claude Opus 4.0)
+
+- 782290b: Several minor perf improvements and internal cleanup.
+
+  Even with the new optimization paths, the bundle size has barely increased.
+
 ## 0.13.2
 
 ### Patch Changes
