@@ -220,7 +220,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) | Size (min+zstd) |
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|----------------:|
-| `unicode-segmenter/grapheme` |   16.0.0 |   ✔️ |    15,588 |     12,168 |           5,038 |         3,715 |           4,727 |
+| `unicode-segmenter/grapheme` |   16.0.0 |   ✔️ |    15,730 |     12,199 |           5,113 |         3,787 |           4,807 |
 | `graphemer`                  |   15.0.0 |   ✖️ ️|   410,435 |     95,104 |          15,752 |        10,660 |          15,911 |
 | `grapheme-splitter`          |   10.0.0 |   ✖️ |   122,252 |     23,680 |           7,852 |         4,841 |           6,750 |
 | `@formatjs/intl-segmenter`*  |   15.0.0 |   ✖️ |   603,285 |    369,560 |          72,218 |        49,416 |          67,975 |
@@ -236,7 +236,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Bytecode size | Bytecode size (gzip)* |
 |------------------------------|--------------:|----------------------:|
-| `unicode-segmenter/grapheme` |        21,001 |                11,065 |
+| `unicode-segmenter/grapheme` |        21,435 |                11,351 |
 | `graphemer`                  |       133,978 |                31,713 |
 | `grapheme-splitter`          |        63,835 |                19,137 |
 
@@ -246,16 +246,16 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 Here is a brief explanation, and you can see [archived benchmark results](benchmark/grapheme/_records).
 
-**Performance in Node.js**: `unicode-segmenter/grapheme` is significantly faster than alternatives.
-- 6\~15x faster than other JavaScript libraries
-- 1.5\~3x faster than WASM binding of the Rust's [unicode-segmentation]
-- 1.5\~3x faster than built-in [`Intl.Segmenter`]
+**Performance in Node.js/Bun/Deno**: `unicode-segmenter/grapheme` has best-in-class performance.
+- 8\~35x faster than other JavaScript libraries.
+- 3\~5x faster than WASM binding of the Rust's [unicode-segmentation].
+- 2\~3x faster than built-in [`Intl.Segmenter`].
 
-**Performance in Bun**: `unicode-segmenter/grapheme` has almost the same performance as the built-in [`Intl.Segmenter`], with no performance degradation compared to other JavaScript libraries.
+**Performance in Browsers**: The performance in browser environments varies greatly due to differences in browser engines, which makes benchmarking inconsistent, but:
+- Still significantly faster than other JavaScript libraries.
+- Generally outperforms the built-in in the most browser environments, except the Firefox.
 
-**Performance in Browsers**: The performance in browser environments varies greatly due to differences in browser engines and versions, which makes benchmarking less consistent. Despite these variations, `unicode-segmenter/grapheme` generally outperforms other JavaScript libraries in most environments.
-
-**Performance in React Native**: `unicode-segmenter/grapheme` is significantly faster than alternatives when compiled to Hermes bytecode. It's 3\~8x faster than `graphemer` and 20\~26x faster than `grapheme-splitter`, with the performance gap increasing with input size.
+**Performance in React Native**: `unicode-segmenter/grapheme` is still faster than alternatives when compiled to Hermes bytecode. It's 3\~8x faster than `graphemer` and 20\~26x faster than `grapheme-splitter`, with the performance gap increasing with input size.
 
 **Performance in QuickJS**: `unicode-segmenter/grapheme` is the only usable library in terms of performance.
 

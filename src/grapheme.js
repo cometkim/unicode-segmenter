@@ -33,6 +33,8 @@ import { consonant_ranges } from './_incb_data.js';
 
 export { GraphemeCategory };
 
+const BMP_MAX = 0xFFFF;
+
 /**
  * Unicode segmentation by extended grapheme rules.
  *
@@ -49,7 +51,7 @@ export function* graphemeSegments(input) {
   if (cp == null) return;
 
   /** Current cursor position. */
-  let cursor = cp <= 0xFFFF ? 1 : 2;
+  let cursor = cp <= BMP_MAX ? 1 : 2;
 
   /** Total length of the input string. */
   let len = input.length;
@@ -137,7 +139,7 @@ export function* graphemeSegments(input) {
       _hd = cp;
     }
 
-    cursor += cp <= 0xFFFF ? 1 : 2;
+    cursor += cp <= BMP_MAX ? 1 : 2;
     catBefore = catAfter;
   }
 
@@ -195,6 +197,26 @@ export function* splitGraphemes(text) {
 }
 
 /**
+ * Precompute a fast lookup table for BMP code points (0..0xFFFF)
+ * This table maps each code point to its Grapheme_Cluster_Break category.
+ * It is generated once at module load time using the grapheme_ranges data.
+ * The table is a Uint8Array of length 0x10000 (64KB), which is acceptable in memory.
+ * For code points >= 0x10000 we fall back to binary search.
+ */
+let bmpLookup = new Uint8Array(BMP_MAX + 1);
+let bmpCursor = (() => {
+  let cursor = 0;
+  let cp = 0;
+  while (cp <= BMP_MAX) {
+    let range = grapheme_ranges[cursor++];
+    for (cp = range[0]; cp <= range[1]; cp++) {
+      bmpLookup[cp] = range[2];
+    }
+  }
+  return cursor;
+})();
+
+/**
  * `Grapheme_Cluster_Break` property value of a given codepoint
  *
  * @see https://www.unicode.org/reports/tr29/tr29-43.html#Default_Grapheme_Cluster_Table
@@ -204,35 +226,26 @@ export function* splitGraphemes(text) {
  * @return {GraphemeCategoryNum}
  */
 function cat(cp, cache) {
-  if (cp < 127) {
-    // Special-case optimization for ascii, except U+007F.  This
-    // improves performance even for many primarily non-ascii texts,
-    // due to use of punctuation and white space characters from the
-    // ascii range.
-    if (cp >= 32) {
-      return 0 /* GC_Any */;
-    } else if (cp === 10) {
-      return 6 /* GC_LF */;
-    } else if (cp === 13) {
-      return 1 /* GC_CR */;
-    } else {
-      return 2 /* GC_Control */;
-    }
-  } else {
-    // If this char isn't within the cached range, update the cache to the
-    // range that includes it.
-    if (cp < cache[0] || cp > cache[1]) {
-      let index = findUnicodeRangeIndex(cp, grapheme_ranges);
-      if (index < 0) {
-        return 0;
-      }
-      let range = grapheme_ranges[index];
-      cache[0] = range[0];
-      cache[1] = range[1];
-      cache[2] = range[2];
-    }
+  // Fast lookup for BMP (0x0000..0xFFFF) using precomputed table
+  if (cp <= BMP_MAX) {
+    return /** @type {GraphemeCategoryNum} */ (bmpLookup[cp]);
+  }
+
+  // Use cached result
+  if (cp >= cache[0] && cp <= cache[1]) {
     return cache[2];
   }
+
+  // Binary search, starting from bmpCursor
+  let index = findUnicodeRangeIndex(cp, grapheme_ranges, bmpCursor);
+  if (index < 0) {
+    return 0;
+  }
+
+  const range = grapheme_ranges[index];
+  cache[0] = range[0];
+  cache[1] = range[1];
+  return (cache[2] = range[2]);
 };
 
 /**
@@ -291,46 +304,43 @@ function isBoundary(catBefore, catAfter, risCount, emoji, incb) {
 
   // GB6 - L x (L | V | LV | LVT)
   if (catBefore === 5) {
-    if (catAfter === 5 || catAfter === 7 || catAfter === 8 || catAfter === 13) {
-      return false;
-    }
+    return !(catAfter === 5 || catAfter === 7 || catAfter === 8 || catAfter === 13);
+  }
 
-  } else {
-    // GB7 - (LV | V) x (V | T)
-    if (
-      (catBefore === 7 || catBefore === 13) &&
-      (catAfter === 13 || catAfter === 12)
-    ) {
-      return false;
-    }
+  // GB7 - (LV | V) x (V | T)
+  if (
+    (catBefore === 7 || catBefore === 13) &&
+    (catAfter === 13 || catAfter === 12)
+  ) {
+    return false;
+  }
 
-    // GB8 - (LVT | T) x T
-    if (
-      (catBefore === 8 || catBefore === 12) &&
-      catAfter === 12
-    ) {
-      return false;
-    }
+  // GB8 - (LVT | T) x T
+  if (
+    (catBefore === 8 || catBefore === 12) &&
+    catAfter === 12
+  ) {
+    return false;
+  }
 
-    // GB9b
-    if (catBefore === 9) {
-      return false;
-    }
+  // GB9b
+  if (catBefore === 9) {
+    return false;
+  }
 
-    // GB9c
-    if (catAfter === 0 && incb) {
-      return false;
-    }
+  // GB9c
+  if (catAfter === 0 && incb) {
+    return false;
+  }
 
-    // GB11
-    if (catBefore === 14 && catAfter === 4) {
-      return !emoji;
-    }
+  // GB11
+  if (catBefore === 14 && catAfter === 4) {
+    return !emoji;
+  }
 
-    // GB12, GB13
-    if (catBefore === 10 && catAfter === 10) {
-      return risCount % 2 === 0;
-    }
+  // GB12, GB13
+  if (catBefore === 10 && catAfter === 10) {
+    return risCount % 2 === 0;
   }
 
   // GB999
