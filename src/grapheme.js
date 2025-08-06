@@ -203,17 +203,17 @@ export function* splitGraphemes(text) {
  * The table is a Uint8Array of length 0x10000 (64KB), which is acceptable in memory.
  * For code points >= 0x10000 we fall back to binary search.
  */
-let [bmpLookup, bmpCursor] = (() => {
-  let bmpLookup = new Uint8Array(BMP_MAX + 1);
-  let bmpCursor = 0;
+let bmpLookup = new Uint8Array(BMP_MAX + 1);
+let bmpCursor = (() => {
+  let cursor = 0;
   let cp = 0;
   while (cp <= BMP_MAX) {
-    let [from, to, cat] = grapheme_ranges[bmpCursor++];
-    for (cp = from; cp <= to; cp++) {
-      bmpLookup[cp] = cat;
+    let range = grapheme_ranges[cursor++];
+    for (cp = range[0]; cp <= range[1]; cp++) {
+      bmpLookup[cp] = range[2];
     }
   }
-  return [bmpLookup, bmpCursor];
+  return cursor;
 })();
 
 /**
