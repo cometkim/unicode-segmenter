@@ -207,15 +207,13 @@ let [bmpLookup, bmpCursor] = (() => {
   let bmpLookup = new Uint8Array(BMP_MAX + 1);
   let bmpCursor = 0;
   let cp = 0;
-  while (true) {
-    let range = grapheme_ranges[bmpCursor++];
-    for (cp = range[0]; cp <= range[1];) {
-      bmpLookup[cp++] = range[2];
-      if (cp > BMP_MAX) {
-        return [bmpLookup, bmpCursor];
-      }
+  while (cp <= BMP_MAX) {
+    let [from, to, cat] = grapheme_ranges[bmpCursor++];
+    for (cp = from; cp <= to; cp++) {
+      bmpLookup[cp] = cat;
     }
   }
+  return [bmpLookup, bmpCursor];
 })();
 
 /**
@@ -306,46 +304,43 @@ function isBoundary(catBefore, catAfter, risCount, emoji, incb) {
 
   // GB6 - L x (L | V | LV | LVT)
   if (catBefore === 5) {
-    if (catAfter === 5 || catAfter === 7 || catAfter === 8 || catAfter === 13) {
-      return false;
-    }
+    return !(catAfter === 5 || catAfter === 7 || catAfter === 8 || catAfter === 13);
+  }
 
-  } else {
-    // GB7 - (LV | V) x (V | T)
-    if (
-      (catBefore === 7 || catBefore === 13) &&
-      (catAfter === 13 || catAfter === 12)
-    ) {
-      return false;
-    }
+  // GB7 - (LV | V) x (V | T)
+  if (
+    (catBefore === 7 || catBefore === 13) &&
+    (catAfter === 13 || catAfter === 12)
+  ) {
+    return false;
+  }
 
-    // GB8 - (LVT | T) x T
-    if (
-      (catBefore === 8 || catBefore === 12) &&
-      catAfter === 12
-    ) {
-      return false;
-    }
+  // GB8 - (LVT | T) x T
+  if (
+    (catBefore === 8 || catBefore === 12) &&
+    catAfter === 12
+  ) {
+    return false;
+  }
 
-    // GB9b
-    if (catBefore === 9) {
-      return false;
-    }
+  // GB9b
+  if (catBefore === 9) {
+    return false;
+  }
 
-    // GB9c
-    if (catAfter === 0 && incb) {
-      return false;
-    }
+  // GB9c
+  if (catAfter === 0 && incb) {
+    return false;
+  }
 
-    // GB11
-    if (catBefore === 14 && catAfter === 4) {
-      return !emoji;
-    }
+  // GB11
+  if (catBefore === 14 && catAfter === 4) {
+    return !emoji;
+  }
 
-    // GB12, GB13
-    if (catBefore === 10 && catAfter === 10) {
-      return risCount % 2 === 0;
-    }
+  // GB12, GB13
+  if (catBefore === 10 && catAfter === 10) {
+    return risCount % 2 === 0;
   }
 
   // GB999
