@@ -4,7 +4,7 @@
 
 Improve runtime perf on the Unicode text processing.
 
-By using a precomputed lookup table for the grapheme categries of BMP characters, it improves perf by 12~15% for common cases, ~30% for some extream cases.
+By using a precomputed lookup table for the grapheme categries of BMP characters, it improves perf by more than 10% for common cases, even ~30% for some extream cases.
 
 The lookup table consumes an additional 64 KB of memory, which is acceptable for most JavaScript runtime environments.
 
