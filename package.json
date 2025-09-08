@@ -45,6 +45,8 @@
     "./intl-polyfill.cjs"
   ],
   "publishConfig": {
+    "access": "public",
+    "provenance": true,
     "main": "./index.js",
     "types": "./index.d.ts",
     "exports": {
