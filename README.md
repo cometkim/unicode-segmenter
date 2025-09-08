@@ -222,9 +222,9 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|----------------:|
 | `unicode-segmenter/grapheme` |   16.0.0 |   ✔️ |    15,730 |     12,199 |           5,113 |         3,787 |           4,807 |
 | `graphemer`                  |   15.0.0 |   ✖️ ️|   410,435 |     95,104 |          15,752 |        10,660 |          15,911 |
-| `grapheme-splitter`          |   10.0.0 |   ✖️ |   122,252 |     23,680 |           7,852 |         4,841 |           6,750 |
-| `@formatjs/intl-segmenter`*  |   15.0.0 |   ✖️ |   603,285 |    369,560 |          72,218 |        49,416 |          67,975 |
-| `unicode-segmentation`*      |   16.0.0 |   ✔️ |    56,529 |     52,443 |          24,110 |        17,343 |          24,377 |
+| `grapheme-splitter`          |   10.0.0 |   ✖️ |   122,254 |     23,682 |           7,852 |         4,802 |           6,753 |
+| `@formatjs/intl-segmenter`*  |   15.0.0 |   ✖️ |   603,301 |    369,576 |          72,225 |        49,483 |          67,964 |
+| `unicode-segmentation`*      |   16.0.0 |   ✔️ |    56,529 |     52,439 |          24,108 |        17,343 |          24,375 |
 | `Intl.Segmenter`*            |        - |    - |         0 |          0 |               0 |             0 |               0 |
 
 * `@formatjs/intl-segmenter` handles grapheme, word, and sentence, but it's not tree-shakable.
@@ -236,9 +236,9 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Bytecode size | Bytecode size (gzip)* |
 |------------------------------|--------------:|----------------------:|
-| `unicode-segmenter/grapheme` |        21,435 |                11,351 |
-| `graphemer`                  |       133,978 |                31,713 |
-| `grapheme-splitter`          |        63,835 |                19,137 |
+| `unicode-segmenter/grapheme` |        21,542 |                11,392 |
+| `graphemer`                  |       134,089 |                31,766 |
+| `grapheme-splitter`          |        63,946 |                19,162 |
 
 * It would be compressed when included as an app asset.
 
