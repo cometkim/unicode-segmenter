@@ -5521,10 +5521,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tinybench@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "tinybench@npm:6.0.0"
-  checksum: 10c0/d0a0c3cf53881d227e8bdeae03e456e6ad0abc362440d296efc8fa14f8acdb97304c547bae90db2c56d18697432f359785f5866ff35ed2ae539380f8f5d4eb19
+"tinybench@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "tinybench@npm:5.1.0"
+  checksum: 10c0/a9d53204888711c6e67d374b96b9a8a096aac80dda755562de3ed7afa2a39f04abd3cd2a64e401a3f0ece4d49ae20230be0986c733030756bde2f0d56e78cd0f
   languageName: node
   linkType: hard
 
@@ -5657,7 +5657,7 @@ __metadata:
     os-browserify: "npm:^0.3.0"
     pretty-bytes: "npm:^7.1.0"
     rimraf: "npm:^6.1.2"
-    tinybench: "npm:^6.0.0"
+    tinybench: "npm:^5.1.0"
     typescript: "npm:^5.9.3"
     unicode-segmentation-wasm: "github:cometkim/unicode-segmentation-wasm#230eb74d320ea2f31f95b74ddb2567186d496587"
     vite: "npm:^7.2.6"

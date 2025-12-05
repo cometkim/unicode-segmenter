@@ -137,7 +137,7 @@
     "os-browserify": "^0.3.0",
     "pretty-bytes": "^7.1.0",
     "rimraf": "^6.1.2",
-    "tinybench": "^6.0.0",
+    "tinybench": "^5.1.0",
     "typescript": "^5.9.3",
     "unicode-segmentation-wasm": "github:cometkim/unicode-segmentation-wasm#230eb74d320ea2f31f95b74ddb2567186d496587",
     "vite": "^7.2.6",
