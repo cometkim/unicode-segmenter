@@ -53,6 +53,5 @@ for (const [name, input] of testcases) {
   });
 }
 
-await bench.warmup();
 await bench.run();
 console.table(bench.table());
