@@ -212,7 +212,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 - [graphemer]@1.4.0 (34.4M+ weekly downloads on NPM)
 - [grapheme-splitter]@1.0.4 (6.3M+ weekly downloads on NPM)
-- [@formatjs/intl-segmenter]@11.7.10 (10K+ weekly downloads on NPM)
+- [@formatjs/intl-segmenter]@11.7.12 (10K+ weekly downloads on NPM)
 - WebAssembly build of [unicode-segmentation]@1.12.0 with minimum bindings
 - Built-in [`Intl.Segmenter`] API
 
@@ -223,7 +223,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 | `unicode-segmenter/grapheme` |   16.0.0 |   ✔️ |    15,449 |     12,108 |           5,060 |         3,738 |           4,744 |
 | `graphemer`                  |   15.0.0 |   ✖️ ️|   410,435 |     95,104 |          15,752 |        10,660 |          15,911 |
 | `grapheme-splitter`          |   10.0.0 |   ✖️ |   122,254 |     23,682 |           7,852 |         4,802 |           6,753 |
-| `@formatjs/intl-segmenter`*  |   15.0.0 |   ✖️ |   603,301 |    369,576 |          72,225 |        49,483 |          67,964 |
+| `@formatjs/intl-segmenter`*  |   15.0.0 |   ✖️ |   603,510 |    369,673 |          72,273 |        49,530 |          68,027 |
 | `unicode-segmentation`*      |   16.0.0 |   ✔️ |    56,529 |     52,439 |          24,108 |        17,343 |          24,375 |
 | `Intl.Segmenter`*            |        - |    - |         0 |          0 |               0 |             0 |               0 |
 
