@@ -45,7 +45,6 @@ And matchers for extra use cases.
 - [`unicode-segmenter/general`](#export-unicode-segmentergeneral): Matches single codepoint alphanumerics
 
 ### Export `unicode-segmenter/grapheme`
-[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/grapheme&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fgrapheme&treeshake=%5B*%5D)
 
 Utilities for text segmentation by extended grapheme cluster rules.
 
@@ -124,7 +123,6 @@ function* matchEmoji(str) {
 Or build even more advanced one like an Unicode-aware [TTY string width](https://github.com/cometkim/unicode-string-width) utility.
 
 ### Export `unicode-segmenter/intl-adapter`
-[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/intl-adapter&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fintl-adapter&treeshake=%5B*%5D)
 
 [`Intl.Segmenter`] API adapter (only `granularity: "grapheme"` available yet)
 
@@ -136,7 +134,6 @@ const segmenter = new Segmenter();
 ```
 
 ### Export `unicode-segmenter/intl-polyfill`
-[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/intl-polyfill&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fintl-polyfill&treeshake=%5B*%5D)
 
 [`Intl.Segmenter`] API polyfill (only `granularity: "grapheme"` available yet)
 
@@ -148,7 +145,6 @@ const segmenter = new Intl.Segmenter();
 ```
 
 ### Export `unicode-segmenter/emoji`
-[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/emoji&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Femoji&treeshake=%5B*%5D)
 
 Utilities for matching emoji-like characters.
 
@@ -172,7 +168,6 @@ isExtendedPictographic('♡'.codePointAt(0));
 ```
 
 ### Export `unicode-segmenter/general`
-[![](https://edge.bundlejs.com/badge?q=unicode-segmenter/general&treeshake=[*])](https://bundlejs.com/?q=unicode-segmenter%2Fgeneral&treeshake=%5B*%5D)
 
 Utilities for matching alphanumeric characters.
 
