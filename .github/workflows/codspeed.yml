@@ -11,6 +11,9 @@ jobs:
   benchmarks:
     name: Run benchmarks
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # required for actions/checkout
+      id-token: write # required for OIDC authentication with CodSpeed
     steps:
       - uses: actions/checkout@v4
 
@@ -23,7 +26,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@v3
+        uses: CodSpeedHQ/action@v4
         with:
+          mode: simulation
           run: node benchmark/grapheme/codspeed.js
-          token: ${{ secrets.CODSPEED_TOKEN }}
