@@ -229,11 +229,7 @@ function cat(cp) {
 
   // Binary search, starting from bmpCursor
   let index = findUnicodeRangeIndex(cp, grapheme_ranges, bmpCursor);
-  if (index < 0) {
-    return 0;
-  }
-
-  return grapheme_ranges[index][2];
+  return index < 0 ? 0 : grapheme_ranges[index][2];
 };
 
 /**
