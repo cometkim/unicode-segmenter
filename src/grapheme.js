@@ -56,11 +56,8 @@ export function* graphemeSegments(input) {
   /** Total length of the input string. */
   let len = input.length;
 
-  /** @type {import('./_grapheme_data.js').GraphemeCategoryRange} */
-  let cache = [0, 0, 2 /* GC_Control */];
-
   /** Category of codepoint immediately preceding cursor */
-  let catBefore = cat(cp, cache);
+  let catBefore = cat(cp);
 
   /** @type {GraphemeCategoryNum | null} Category of codepoint immediately preceding cursor. */
   let catAfter = null;
@@ -101,7 +98,7 @@ export function* graphemeSegments(input) {
     }
 
     cp = /** @type {number} */ (input.codePointAt(cursor));
-    catAfter = cat(cp, cache);
+    catAfter = cat(cp);
 
     if (catBefore === 10 /* Regional_Indicator */) {
       risCount++;
@@ -222,18 +219,12 @@ let bmpCursor = (() => {
  * @see https://www.unicode.org/reports/tr29/tr29-43.html#Default_Grapheme_Cluster_Table
  *
  * @param {number} cp
- * @param {import('./_grapheme_data.js').GraphemeCategoryRange} cache
  * @return {GraphemeCategoryNum}
  */
-function cat(cp, cache) {
+function cat(cp) {
   // Fast lookup for BMP (0x0000..0xFFFF) using precomputed table
   if (cp <= BMP_MAX) {
     return /** @type {GraphemeCategoryNum} */ (bmpLookup[cp]);
-  }
-
-  // Use cached result
-  if (cp >= cache[0] && cp <= cache[1]) {
-    return cache[2];
   }
 
   // Binary search, starting from bmpCursor
@@ -242,10 +233,7 @@ function cat(cp, cache) {
     return 0;
   }
 
-  const range = grapheme_ranges[index];
-  cache[0] = range[0];
-  cache[1] = range[1];
-  return (cache[2] = range[2]);
+  return grapheme_ranges[index][2];
 };
 
 /**
