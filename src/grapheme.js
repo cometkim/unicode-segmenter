@@ -193,21 +193,54 @@ export function* splitGraphemes(text) {
   for (let s of graphemeSegments(text)) yield s.segment;
 }
 
+const
+  /** 0x80 */
+  SEG0_MIN = 128,
+  /** 0x2FFF */
+  SEG0_MAX = 12287,
+  /** 0xA000 */
+  SEG1_MIN = 40960,
+  /** 0xDFFF */
+  SEG1_MAX = 57343;
+
 /**
- * Precompute a fast lookup table for BMP code points (0..0xFFFF)
- * This table maps each code point to its Grapheme_Cluster_Break category.
- * It is generated once at module load time using the grapheme_ranges data.
- * The table is a Uint8Array of length 0x10000 (64KB), which is acceptable in memory.
- * For code points >= 0x10000 we fall back to binary search.
+ * Segmented 4-bit packed lookup tables for BMP code points.
+ *
+ * Memory optimization: Skip regions that are almost 100% category {@link GC_Any}:
+ * - 0x3000-0x9FFF (CJK): 28,672 codepoints, only 12 non-Any ranges -> need to be inlined
+ * - 0xE000-0xFDFF (Private Use): 7,680 codepoints, only 1 non-Any range -> very rare, but quite simple to be inlined
+ * - 0xFE00-0xFFFF (Specials): 512 codepoints, only 5 ranges -> very rare, fall back to binary search
+ *
+ * Cache segments (4-bit packed, 2 categories per byte):
+ * - SEG0: 0x0080-0x2FFF (12,160 codepoints -> 6,080 bytes)
+ * - SEG1: 0xA000-0xDFFF (16,384 codepoints -> 8,192 bytes)
+ *
+ * Total: 14,272 bytes (~14KB)
  */
-let bmpLookup = new Uint8Array(BMP_MAX + 1);
-let bmpCursor = (() => {
+const SEG0 = new Uint8Array((SEG0_MAX - SEG0_MIN + 1) >> 1);
+const SEG1 = new Uint8Array((SEG1_MAX - SEG1_MIN + 1) >> 1);
+const SEG_CURSOR = (() => {
   let cursor = 0;
-  let cp = 0;
-  while (cp <= BMP_MAX) {
-    let range = grapheme_ranges[cursor++];
-    for (cp = range[0]; cp <= range[1]; cp++) {
-      bmpLookup[cp] = range[2];
+  while (cursor < grapheme_ranges.length) {
+    let [start, end, cat] = grapheme_ranges[cursor];
+    if (start > SEG1_MAX) break;
+    cursor++;
+
+    // Skip ranges outside segments (ASCII/CJK/PrivateUse fast paths)
+    if (end < SEG0_MIN || (start > SEG0_MAX && end < SEG1_MIN)) continue;
+
+    for (let cp = start; cp <= end; cp++) {
+      let /** @type {Uint8Array} */ seg, idx = 0;
+
+      if (cp >= SEG0_MIN && cp <= SEG0_MAX) {
+        seg = SEG0; idx = (cp - SEG0_MIN) >> 1;
+      } else if (cp >= SEG1_MIN) {
+        seg = SEG1; idx = (cp - SEG1_MIN) >> 1;
+      } else continue;
+
+      seg[idx] = cp & 1
+        ? (seg[idx] & 0x0F) | (cat << 4)
+        : (seg[idx] & 0xF0) | cat;
     }
   }
   return cursor;
@@ -222,15 +255,41 @@ let bmpCursor = (() => {
  * @return {GraphemeCategoryNum}
  */
 function cat(cp) {
-  // Fast lookup for BMP (0x0000..0xFFFF) using precomputed table
-  if (cp <= BMP_MAX) {
-    return /** @type {GraphemeCategoryNum} */ (bmpLookup[cp]);
+  // ASCII fast path
+  if (cp < SEG0_MIN) {
+    if (cp >= 32) return 0;
+    if (cp === 10) return 6;
+    if (cp === 13) return 1;
+    return 2;
   }
-
-  // Binary search, starting from bmpCursor
-  let index = findUnicodeRangeIndex(cp, grapheme_ranges, bmpCursor);
-  return index < 0 ? 0 : grapheme_ranges[index][2];
-};
+  // Segment 0
+  if (cp <= SEG0_MAX) {
+    let byte = SEG0[(cp - SEG0_MIN) >> 1];
+    return /** @type {GraphemeCategoryNum} */ (cp & 1 ? byte >> 4 : byte & 0x0F);
+  }
+  // CJK fast path
+  if (cp < SEG1_MIN) {
+    if (cp < 0x3030) return cp >= 0x302A ? 3 : 0;
+    if (cp < 0x309B) {
+      if (cp === 0x3030 || cp === 0x303D) return 4;
+      return cp >= 0x3099 ? 3 : 0;
+    }
+    if (cp === 0x3297 || cp === 0x3299) return 4;
+    return 0;
+  }
+  // Segment 1
+  if (cp <= SEG1_MAX) {
+    let byte = SEG1[(cp - SEG1_MIN) >> 1];
+    return /** @type {GraphemeCategoryNum} */ (cp & 1 ? byte >> 4 : byte & 0x0F);
+  }
+  // Private Use fast path
+  if (cp < 0xFE00) {
+    return cp === 0xFB1E ? 3 : 0;
+  }
+  // Specials (0xFE00-0xFFFF) and Non-BMP: binary search
+  let idx = findUnicodeRangeIndex(cp, grapheme_ranges, SEG_CURSOR);
+  return idx < 0 ? 0 : grapheme_ranges[idx][2];
+}
 
 /**
  * @param {number} cp
