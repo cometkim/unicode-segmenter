@@ -235,15 +235,13 @@ let bmpCursor = (() => {
     if (end < SEG0_MIN || (start > SEG0_MAX && end < SEG1_MIN) || (start > SEG1_MAX && end < SEG2_MIN)) continue;
 
     for (let cp = start; cp <= end && cp <= BMP_MAX; cp++) {
-      let idx = -1;
+      let idx = 0;
       if (cp >= SEG0_MIN && cp <= SEG0_MAX) idx = (cp - SEG0_MIN) >> 1;
       if (cp >= SEG1_MIN && cp <= SEG1_MAX) idx = SEG1_OFF + ((cp - SEG1_MIN) >> 1);
       if (cp >= SEG2_MIN && cp <= BMP_MAX) idx = SEG2_OFF + ((cp - SEG2_MIN) >> 1);
-      if (idx >= 0) {
-        bmpLookup[idx] = cp & 1
-          ? (bmpLookup[idx] & 0x0F) | (cat << 4)
-          : (bmpLookup[idx] & 0xF0) | cat;
-      }
+      bmpLookup[idx] = cp & 1
+        ? (bmpLookup[idx] & 0x0F) | (cat << 4)
+        : (bmpLookup[idx] & 0xF0) | cat;
     }
   }
   return cursor;
@@ -275,11 +273,9 @@ function cat(cp) {
     return 2;
   }
 
-  let byte = 0, idx = -1;
   // Segment 0
   if (cp <= SEG0_MAX) {
-    idx = (cp - SEG0_MIN) >> 1;
-    byte = bmpLookup[idx];
+    let byte = bmpLookup[(cp - SEG0_MIN) >> 1];
     return /** @type {GraphemeCategoryNum} */ (cp & 1 ? byte >> 4 : byte & 0x0F);
   }
   // CJK fast path
@@ -294,8 +290,7 @@ function cat(cp) {
   }
   // Segment 1
   if (cp <= SEG1_MAX) {
-    idx = SEG1_OFF + ((cp - SEG1_MIN) >> 1);
-    byte = bmpLookup[idx];
+    let byte = bmpLookup[SEG1_OFF + ((cp - SEG1_MIN) >> 1)];
     return /** @type {GraphemeCategoryNum} */ (cp & 1 ? byte >> 4 : byte & 0x0F);
   }
   // Private Use fast path
@@ -304,12 +299,11 @@ function cat(cp) {
   }
   // Segment 2
   if (cp <= BMP_MAX) {
-    idx = SEG2_OFF + ((cp - SEG2_MIN) >> 1);
-    byte = bmpLookup[idx];
+    let byte = bmpLookup[SEG2_OFF + ((cp - SEG2_MIN) >> 1)];
     return /** @type {GraphemeCategoryNum} */ (cp & 1 ? byte >> 4 : byte & 0x0F);
   }
   // Non-BMP
-  idx = findUnicodeRangeIndex(cp, grapheme_ranges, bmpCursor);
+  let idx = findUnicodeRangeIndex(cp, grapheme_ranges, bmpCursor);
   return idx < 0 ? 0 : grapheme_ranges[idx][2];
 }
 
