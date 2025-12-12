@@ -198,32 +198,30 @@ const
   SEG0_MIN = 128,
   /** 0x2FFF */
   SEG0_MAX = 12287,
-  /** 0x3000 - 0x80 */
-  SEG1_OFF = 12160,
   /** 0xA000 */
   SEG1_MIN = 40960,
   /** 0xDFFF */
   SEG1_MAX = 57343,
-  /** SEG1_OFF + (0xE000 - 0xA000) */
-  SEG2_OFF = 28544,
   /** 0xFE00 */
   SEG2_MIN = 65024;
 
 /**
- * Segmented lookup table for BMP code points.
+ * Segmented lookup tables for BMP code points.
  *
  * Memory optimization: Skip regions that are almost 100% category 0 (Any):
  * - 0x3000-0x9FFF (CJK): 28,672 codepoints, only 12 non-Any -> inlined fast path
  * - 0xE000-0xFDFF (Private Use): 7,680 codepoints, only 1 non-Any -> inlined fast path
  *
  * Cache segments:
- * - Segment 0: 0x0080-0x2FFF (12,160 bytes)
- * - Segment 1: 0xA000-0xDFFF (16,384 bytes)
- * - Segment 2: 0xFE00-0xFFFF (512 bytes)
+ * - seg0: 0x0080-0x2FFF (12,160 bytes)
+ * - seg1: 0xA000-0xDFFF (16,384 bytes)
+ * - seg2: 0xFE00-0xFFFF (512 bytes)
  *
  * Total: 29,056 bytes (~28KB)
  */
-let bmpLookup = new Uint8Array(29056);
+let seg0 = new Uint8Array(SEG0_MAX - SEG0_MIN + 1);
+let seg1 = new Uint8Array(SEG1_MAX - SEG1_MIN + 1);
+let seg2 = new Uint8Array(BMP_MAX - SEG2_MIN + 1);
 let bmpCursor = (() => {
   let cursor = 0;
   while (cursor < grapheme_ranges.length) {
@@ -235,11 +233,9 @@ let bmpCursor = (() => {
     if (end < SEG0_MIN || (start > SEG0_MAX && end < SEG1_MIN) || (start > SEG1_MAX && end < SEG2_MIN)) continue;
 
     for (let cp = start; cp <= end && cp <= BMP_MAX; cp++) {
-      let idx = -1;
-      if (cp >= SEG0_MIN && cp <= SEG0_MAX) idx = cp - SEG0_MIN;
-      if (cp >= SEG1_MIN && cp <= SEG1_MAX) idx = SEG1_OFF + (cp - SEG1_MIN);
-      if (cp >= SEG2_MIN && cp <= BMP_MAX) idx = SEG2_OFF + (cp - SEG2_MIN);
-      if (idx >= 0) bmpLookup[idx] = cat;
+      if (cp >= SEG0_MIN && cp <= SEG0_MAX) seg0[cp - SEG0_MIN] = cat;
+      else if (cp >= SEG1_MIN && cp <= SEG1_MAX) seg1[cp - SEG1_MIN] = cat;
+      else if (cp >= SEG2_MIN) seg2[cp - SEG2_MIN] = cat;
     }
   }
   return cursor;
@@ -272,7 +268,7 @@ function cat(cp) {
   }
   // Segment 0
   if (cp <= SEG0_MAX) {
-    return /** @type {GraphemeCategoryNum} */ (bmpLookup[cp - SEG0_MIN]);
+    return /** @type {GraphemeCategoryNum} */ (seg0[cp - SEG0_MIN]);
   }
   // CJK fast path
   if (cp < SEG1_MIN) {
@@ -286,7 +282,7 @@ function cat(cp) {
   }
   // Segment 1
   if (cp <= SEG1_MAX) {
-    return /** @type {GraphemeCategoryNum} */ (bmpLookup[SEG1_OFF + (cp - SEG1_MIN)]);
+    return /** @type {GraphemeCategoryNum} */ (seg1[cp - SEG1_MIN]);
   }
   // Private Use fast path
   if (cp < SEG2_MIN) {
@@ -294,7 +290,7 @@ function cat(cp) {
   }
   // Segment 2
   if (cp <= BMP_MAX) {
-    return /** @type {GraphemeCategoryNum} */ (bmpLookup[SEG2_OFF + (cp - SEG2_MIN)]);
+    return /** @type {GraphemeCategoryNum} */ (seg2[cp - SEG2_MIN]);
   }
   // Non-BMP
   let idx = findUnicodeRangeIndex(cp, grapheme_ranges, bmpCursor);
