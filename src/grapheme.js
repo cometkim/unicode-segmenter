@@ -198,50 +198,49 @@ const
   SEG0_MIN = 128,
   /** 0x2FFF */
   SEG0_MAX = 12287,
-  /** (0x3000 - 0x80) >> 1 */
-  SEG1_OFF = 6080,
   /** 0xA000 */
   SEG1_MIN = 40960,
   /** 0xDFFF */
-  SEG1_MAX = 57343,
-  /** SEG1_OFF + ((0xE000 - 0xA000) >> 1) */
-  SEG2_OFF = 14272,
-  /** 0xFE00 */
-  SEG2_MIN = 65024;
+  SEG1_MAX = 57343;
 
 /**
- * Segmented 4-bit packed lookup table for BMP code points.
+ * Segmented 4-bit packed lookup tables for BMP code points.
  *
- * Memory optimization: Skip regions that are almost 100% category 0 (Any):
- * - 0x3000-0x9FFF (CJK): 28,672 codepoints, only 12 non-Any -> inlined fast path
- * - 0xE000-0xFDFF (Private Use): 7,680 codepoints, only 1 non-Any -> inlined fast path
+ * Memory optimization: Skip regions that are almost 100% category {@link GC_Any}:
+ * - 0x3000-0x9FFF (CJK): 28,672 codepoints, only 12 non-Any ranges -> need to be inlined
+ * - 0xE000-0xFDFF (Private Use): 7,680 codepoints, only 1 non-Any range -> very rare, but quite simple to be inlined
+ * - 0xFE00-0xFFFF (Specials): 512 codepoints, only 5 ranges -> very rare, fall back to binary search
  *
- * Cache segments:
- * - Segment 0: 0x0080-0x2FFF (12,160 codepoints -> 6,080 bytes)
- * - Segment 1: 0xA000-0xDFFF (16,384 codepoints -> 8,192 bytes)
- * - Segment 2: 0xFE00-0xFFFF (512 codepoints -> 256 bytes)
+ * Cache segments (4-bit packed, 2 categories per byte):
+ * - SEG0: 0x0080-0x2FFF (12,160 codepoints -> 6,080 bytes)
+ * - SEG1: 0xA000-0xDFFF (16,384 codepoints -> 8,192 bytes)
  *
- * Total: 14,528 bytes (~14KB)
+ * Total: 14,272 bytes (~14KB)
  */
-let bmpLookup = new Uint8Array(14528);
-let bmpCursor = (() => {
+const SEG0 = new Uint8Array((SEG0_MAX - SEG0_MIN + 1) >> 1);
+const SEG1 = new Uint8Array((SEG1_MAX - SEG1_MIN + 1) >> 1);
+const SEG_CURSOR = (() => {
   let cursor = 0;
   while (cursor < grapheme_ranges.length) {
     let [start, end, cat] = grapheme_ranges[cursor];
-    if (start > BMP_MAX) break;
+    if (start > SEG1_MAX) break;
     cursor++;
 
     // Skip ranges outside segments (ASCII/CJK/PrivateUse fast paths)
-    if (end < SEG0_MIN || (start > SEG0_MAX && end < SEG1_MIN) || (start > SEG1_MAX && end < SEG2_MIN)) continue;
+    if (end < SEG0_MIN || (start > SEG0_MAX && end < SEG1_MIN)) continue;
 
-    for (let cp = start; cp <= end && cp <= BMP_MAX; cp++) {
-      let idx = 0;
-      if (cp >= SEG0_MIN && cp <= SEG0_MAX) idx = (cp - SEG0_MIN) >> 1;
-      if (cp >= SEG1_MIN && cp <= SEG1_MAX) idx = SEG1_OFF + ((cp - SEG1_MIN) >> 1);
-      if (cp >= SEG2_MIN && cp <= BMP_MAX) idx = SEG2_OFF + ((cp - SEG2_MIN) >> 1);
-      bmpLookup[idx] = cp & 1
-        ? (bmpLookup[idx] & 0x0F) | (cat << 4)
-        : (bmpLookup[idx] & 0xF0) | cat;
+    for (let cp = start; cp <= end; cp++) {
+      let /** @type {Uint8Array} */ seg, idx = 0;
+
+      if (cp >= SEG0_MIN && cp <= SEG0_MAX) {
+        seg = SEG0; idx = (cp - SEG0_MIN) >> 1;
+      } else if (cp >= SEG1_MIN) {
+        seg = SEG1; idx = (cp - SEG1_MIN) >> 1;
+      } else continue;
+
+      seg[idx] = cp & 1
+        ? (seg[idx] & 0x0F) | (cat << 4)
+        : (seg[idx] & 0xF0) | cat;
     }
   }
   return cursor;
@@ -256,15 +255,6 @@ let bmpCursor = (() => {
  * @return {GraphemeCategoryNum}
  */
 function cat(cp) {
-  // Ordered pass by range: 
-  // 1. ASCII fast path
-  // 2. Segment 0 cache
-  // 3. CJK fast path 
-  // 4. Segment 1 cache 
-  // 5. PrivateUse fast path 
-  // 6. Segment 2 cache 
-  // 7. Non-BMP binary search
-
   // ASCII fast path
   if (cp < SEG0_MIN) {
     if (cp >= 32) return 0;
@@ -272,10 +262,9 @@ function cat(cp) {
     if (cp === 13) return 1;
     return 2;
   }
-
   // Segment 0
   if (cp <= SEG0_MAX) {
-    let byte = bmpLookup[(cp - SEG0_MIN) >> 1];
+    let byte = SEG0[(cp - SEG0_MIN) >> 1];
     return /** @type {GraphemeCategoryNum} */ (cp & 1 ? byte >> 4 : byte & 0x0F);
   }
   // CJK fast path
@@ -290,20 +279,15 @@ function cat(cp) {
   }
   // Segment 1
   if (cp <= SEG1_MAX) {
-    let byte = bmpLookup[SEG1_OFF + ((cp - SEG1_MIN) >> 1)];
+    let byte = SEG1[(cp - SEG1_MIN) >> 1];
     return /** @type {GraphemeCategoryNum} */ (cp & 1 ? byte >> 4 : byte & 0x0F);
   }
   // Private Use fast path
-  if (cp < SEG2_MIN) {
+  if (cp < 0xFE00) {
     return cp === 0xFB1E ? 3 : 0;
   }
-  // Segment 2
-  if (cp <= BMP_MAX) {
-    let byte = bmpLookup[SEG2_OFF + ((cp - SEG2_MIN) >> 1)];
-    return /** @type {GraphemeCategoryNum} */ (cp & 1 ? byte >> 4 : byte & 0x0F);
-  }
-  // Non-BMP
-  let idx = findUnicodeRangeIndex(cp, grapheme_ranges, bmpCursor);
+  // Specials (0xFE00-0xFFFF) and Non-BMP: binary search
+  let idx = findUnicodeRangeIndex(cp, grapheme_ranges, SEG_CURSOR);
   return idx < 0 ? 0 : grapheme_ranges[idx][2];
 }
 
