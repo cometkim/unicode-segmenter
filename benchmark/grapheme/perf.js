@@ -89,27 +89,27 @@ for (const [title, input] of testcases) {
       barplot(() => {
         bench('unicode-segmenter/grapheme', () => {
           do_not_optimize([...graphemeSegments(input)]);
-        }).baseline(true);
+        }).gc('inner').baseline(true);
 
         bench('graphemer', () => {
           do_not_optimize([...graphemer.iterateGraphemes(input)]);
-        });
+        }).gc('inner');
 
         bench('grapheme-splitter', () => {
           do_not_optimize([...graphemeSplitter.iterateGraphemes(input)]);
-        });
+        }).gc('inner');
 
         bench('@formatjs/intl-segmenter', () => {
           do_not_optimize([...formatjsSegmenter.segment(input)]);
-        });
+        }).gc('inner');
 
         bench('unicode-rs/unicode-segmentation (wasm-bindgen)', () => {
           do_not_optimize(unicodeSegmentation.collect(input));
-        });
+        }).gc('inner');
 
         bench('Intl.Segmenter', () => {
           do_not_optimize([...intlSegmenter.segment(input)]);
-        });
+        }).gc('inner');
       });
     });
   });
