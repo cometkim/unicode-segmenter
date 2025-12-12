@@ -197,17 +197,21 @@ export function* splitGraphemes(text) {
  * Precompute a fast lookup table for BMP code points (0..0xFFFF)
  * This table maps each code point to its Grapheme_Cluster_Break category.
  * It is generated once at module load time using the grapheme_ranges data.
- * The table is a Uint8Array of length 0x10000 (64KB), which is acceptable in memory.
+ * The table is a Uint8Array of 4-bit packed categories (32KB), which is acceptable in memory.
  * For code points >= 0x10000 we fall back to binary search.
  */
-let bmpLookup = new Uint8Array(BMP_MAX + 1);
+let bmpLookup = new Uint8Array((BMP_MAX + 1) >> 1);
 let bmpCursor = (() => {
   let cursor = 0;
   let cp = 0;
   while (cp <= BMP_MAX) {
     let range = grapheme_ranges[cursor++];
+    let cat = range[2];
     for (cp = range[0]; cp <= range[1]; cp++) {
-      bmpLookup[cp] = range[2];
+      let idx = cp >> 1;
+      bmpLookup[idx] = cp & 1
+        ? (bmpLookup[idx] & 0x0F) | (cat << 4)
+        : (bmpLookup[idx] & 0xF0) | cat;
     }
   }
   return cursor;
@@ -224,13 +228,14 @@ let bmpCursor = (() => {
 function cat(cp) {
   // Fast lookup for BMP (0x0000..0xFFFF) using precomputed table
   if (cp <= BMP_MAX) {
-    return /** @type {GraphemeCategoryNum} */ (bmpLookup[cp]);
+    let byte = bmpLookup[cp >> 1];
+    return /** @type {GraphemeCategoryNum} */ (cp & 1 ? byte >> 4 : byte & 0x0F);
   }
 
   // Binary search, starting from bmpCursor
   let index = findUnicodeRangeIndex(cp, grapheme_ranges, bmpCursor);
   return index < 0 ? 0 : grapheme_ranges[index][2];
-};
+}
 
 /**
  * @param {number} cp
