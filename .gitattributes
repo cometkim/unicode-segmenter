@@ -3,6 +3,8 @@
 /.yarn/plugins/**/*  binary
 /.pnp.*              binary linguist-generated
 
+*.generated.html linguist-generated
+
 /src/_emoji_table.js                 linguist-generated
 /src/_general_table.js               linguist-generated
 /src/_grapheme_table.js              linguist-generated
