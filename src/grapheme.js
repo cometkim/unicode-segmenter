@@ -217,8 +217,8 @@ const
  *
  * Total: 14,272 bytes (~14KB)
  */
-const SEG0 = new Uint8Array((SEG0_MAX - SEG0_MIN + 1) >> 1);
-const SEG1 = new Uint8Array((SEG1_MAX - SEG1_MIN + 1) >> 1);
+const SEG0 = new Uint8Array(6080);
+const SEG1 = new Uint8Array(8192);
 const SEG_CURSOR = (() => {
   let cursor = 0;
   while (cursor < grapheme_ranges.length) {
