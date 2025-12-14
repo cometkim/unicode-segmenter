@@ -74,6 +74,9 @@ export function* graphemeSegments(input) {
   /** InCB=Linker */
   let linker = false;
 
+  /** InCB=Consonant InCB=Linker x InCB=Consonant */
+  let incb = false;
+
   let index = 0;
 
   /** Beginning category of a segment */
@@ -83,9 +86,6 @@ export function* graphemeSegments(input) {
   let _hd = cp;
 
   while (cursor < len) {
-    /** InCB=Consonant InCB=Linker x InCB=Consonant */
-    let incb = false;
-
     cp = /** @type {number} */ (input.codePointAt(cursor));
     catAfter = cat(cp);
 
@@ -116,12 +116,12 @@ export function* graphemeSegments(input) {
 
       // flush
       emoji = false;
-      consonant = false;
+      incb = false;
       index = cursor;
       _catBegin = catAfter;
       _hd = cp;
 
-    } else if (cp >= 2325) {
+    } else {
       // Note: Avoid InCB state checking much as possible
       // Update InCB state only when continuing within a segment
       if (!consonant && catBefore === 0)
