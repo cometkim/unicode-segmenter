@@ -99,9 +99,8 @@ export function* graphemeSegments(input) {
       ) {
         emoji = true;
 
-      } else if (catAfter === 0 /* Any */) {
+      } else {
         incb = consonant && linker && isIndicConjunctConsonant(cp);
-        linker = false;
       }
     }
 
@@ -118,7 +117,6 @@ export function* graphemeSegments(input) {
       // flush
       emoji = false;
       consonant = false;
-      linker = false;
       index = cursor;
       _catBegin = catAfter;
       _hd = cp;
@@ -126,11 +124,13 @@ export function* graphemeSegments(input) {
     } else if (cp >= 2325) {
       // Note: Avoid InCB state checking much as possible
       // Update InCB state only when continuing within a segment
-      if (!consonant)
+      if (!consonant && catBefore === 0)
         consonant = isIndicConjunctConsonant(_hd);
 
-      if (catAfter === 3)
+      if (consonant && catAfter === 3)
         linker = isIndicConjunctLinker(cp);
+      else if (catAfter === 0)
+        linker = false;
     }
 
     cursor += cp <= BMP_MAX ? 1 : 2;
