@@ -101,6 +101,7 @@ export function* graphemeSegments(input) {
 
       } else if (catAfter === 0) {
         incb = consonant && linker && isIndicConjunctConsonant(cp);
+        linker = false;
       }
     }
 
@@ -121,7 +122,7 @@ export function* graphemeSegments(input) {
       _catBegin = catAfter;
       _hd = cp;
 
-    } else if (cp >= 2325) {
+    } else if (cp >= 2325 && cp <= 3386) {
       // Note: Avoid InCB state checking much as possible
       // Update InCB state only when continuing within a segment
       if (!consonant && catBefore === 0)
@@ -129,8 +130,6 @@ export function* graphemeSegments(input) {
 
       if (consonant && catAfter === 3)
         linker = isIndicConjunctLinker(cp);
-      else if (catAfter === 0)
-        linker = false;
     }
 
     cursor += cp <= BMP_MAX ? 1 : 2;
