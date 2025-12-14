@@ -121,10 +121,10 @@ export function* graphemeSegments(input) {
       _catBegin = catAfter;
       _hd = cp;
 
-    } else if (cp >= 2325 && cp <= 3386) {
+    } else if (_hd >= 2325) {
       // Note: Avoid InCB state checking much as possible
       // Update InCB state only when continuing within a segment
-      if (catBefore === 0)
+      if (!consonant && catBefore === 0)
         consonant = isIndicConjunctConsonant(_hd);
 
       if (consonant && catAfter === 3)
