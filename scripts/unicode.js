@@ -491,8 +491,9 @@ import { decodeUnicodeData } from './core.js';
 /**
  * Grapheme category enum
  *
- * Note: The enum object is not actually \`Object.freeze\`
- * because it increases 800 bytes of Brotli compression... Not sure why :P
+ * Note:
+ *   The object isn't actually frozen
+ *   because using \`Object.freeze\` increases 800 bytes on Brotli compression.
  *
  * @type {Readonly<Record<${keyTypeName}, ${numTypeName}>>}
  */
@@ -843,11 +844,28 @@ for (let chars of graphemeTable) {
 // }
 // sentenceTable.sort((a, b) => a[0] - b[0]);
 
+// Filter out ranges handled by inlined fast paths in cat()
+let graphemeTableOptimized = graphemeTable.filter(([from, to, cat]) => {
+  // CJK fast path: 0x3000-0x9FFF (inlined in cat())
+  if (from >= 0x3000 && to <= 0x9FFF) {
+    return false;
+  }
+  // Hangul syllables (LV/LVT): computed at runtime
+  if (from >= 0xAC00 && to <= 0xD7A3 && (cat === 'LV' || cat === 'LVT')) {
+    return false;
+  }
+  // Private Use fast path: 0xE000-0xFDFF (inlined in cat())
+  if (from >= 0xE000 && to < 0xFE00) {
+    return false;
+  }
+  return true;
+});
+
 await emitSrc(
   '_grapheme_data.js',
   async f => printBreakModule(
     f,
-    graphemeTable,
+    graphemeTableOptimized,
     Object.keys(graphemeCats).concat(['Extended_Pictographic']),
     'grapheme',
   ),
