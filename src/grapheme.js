@@ -74,9 +74,6 @@ export function* graphemeSegments(input) {
   /** InCB=Linker */
   let linker = false;
 
-  /** InCB=Consonant InCB=Linker x InCB=Consonant */
-  let incb = false;
-
   let index = 0;
 
   /** Beginning category of a segment */
@@ -86,6 +83,9 @@ export function* graphemeSegments(input) {
   let _hd = cp;
 
   while (cursor < len) {
+    /** InCB=Consonant InCB=Linker x InCB=Consonant */
+    let incb = false;
+
     cp = /** @type {number} */ (input.codePointAt(cursor));
     catAfter = cat(cp);
 
@@ -100,10 +100,8 @@ export function* graphemeSegments(input) {
         emoji = true;
 
       } else if (catAfter === 0 /* Any */) {
-        // Note: Put GB9c rule checking here to reduce.
-        incb = consonant && linker && (consonant = isIndicConjunctConsonant(cp));
-        // It cannot be both a linker and a consonant.
-        linker = linker && !consonant;
+        incb = consonant && linker && isIndicConjunctConsonant(cp);
+        linker = false;
       }
     }
 
@@ -119,16 +117,19 @@ export function* graphemeSegments(input) {
 
       // flush
       emoji = false;
-      incb = false;
+      consonant = false;
+      linker = false;
       index = cursor;
       _catBegin = catAfter;
       _hd = cp;
-    } else if (cp >= 2325 && cp <= 3386) {
+
+    // Note: Avoid InCB state checking much as possible
+    } else if (_hd >= 2325 && _hd <= 3386) {
       // Update InCB state only when continuing within a segment
-      if (!consonant && catBefore === 0)
+      if (!consonant)
         consonant = isIndicConjunctConsonant(_hd);
       if (catAfter === 3 /* Extend */)
-        linker = linker || isIndicConjunctLinker(cp);
+        linker = isIndicConjunctLinker(cp);
     }
 
     cursor += cp <= BMP_MAX ? 1 : 2;
