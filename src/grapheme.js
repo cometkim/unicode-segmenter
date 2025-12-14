@@ -99,7 +99,7 @@ export function* graphemeSegments(input) {
       ) {
         emoji = true;
 
-      } else {
+      } else if (catAfter === 0) {
         incb = consonant && linker && isIndicConjunctConsonant(cp);
       }
     }
