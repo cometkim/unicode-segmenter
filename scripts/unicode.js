@@ -854,6 +854,10 @@ let graphemeTableOptimized = graphemeTable.filter(([from, to, cat]) => {
   if (from >= 0xAC00 && to <= 0xD7A3 && (cat === 'LV' || cat === 'LVT')) {
     return false;
   }
+  // Hangul Jamo Extended-B: 0xD7B0-0xD7FF (inlined in cat())
+  if (from >= 0xD7B0 && to <= 0xD7FF) {
+    return false;
+  }
   // Private Use fast path: 0xE000-0xFDFF (inlined in cat())
   if (from >= 0xE000 && to < 0xFE00) {
     return false;
