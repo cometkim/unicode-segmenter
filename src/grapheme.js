@@ -123,12 +123,13 @@ export function* graphemeSegments(input) {
       _catBegin = catAfter;
       _hd = cp;
 
-    // Note: Avoid InCB state checking much as possible
-    } else if (_hd >= 2325 && _hd <= 3386) {
+    } else if (cp >= 2325) {
+      // Note: Avoid InCB state checking much as possible
       // Update InCB state only when continuing within a segment
       if (!consonant)
         consonant = isIndicConjunctConsonant(_hd);
-      if (catAfter === 3 /* Extend */)
+
+      if (catAfter === 3)
         linker = isIndicConjunctLinker(cp);
     }
 
