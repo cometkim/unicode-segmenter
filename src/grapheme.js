@@ -82,21 +82,10 @@ export function* graphemeSegments(input) {
   /** Beginning category of a segment */
   let _catBegin = catBefore;
 
-  /** Memoize the beginnig code point a the segment. */
+  /** Memoize the beginnig code point of the segment. */
   let _hd = cp;
 
   while (cursor < len) {
-    // Note: Lazily update `consonant` and `linker` state
-    // which is a extra overhead only for Hindi text.
-    if (cp >= 2325) {
-      if (!consonant && catBefore === 0) {
-        consonant = isIndicConjunctConsonant(cp);
-      } else if (catBefore === 3 /* Extend */) {
-        // Note: \p{InCB=Linker} is a subset of \p{Extend}
-        linker = isIndicConjunctLinker(cp);
-      }
-    }
-
     cp = /** @type {number} */ (input.codePointAt(cursor));
     catAfter = cat(cp);
 
@@ -110,11 +99,8 @@ export function* graphemeSegments(input) {
       ) {
         emoji = true;
 
-      } else if (catAfter === 0 /* Any */ && cp >= 2325) {
-        // Note: Put GB9c rule checking here to reduce.
-        incb = consonant && linker && (consonant = isIndicConjunctConsonant(cp));
-        // It cannot be both a linker and a consonant.
-        linker = linker && !consonant;
+      } else if (catAfter === 0) {
+        incb = consonant && linker && isIndicConjunctConsonant(cp);
       }
     }
 
@@ -134,6 +120,17 @@ export function* graphemeSegments(input) {
       index = cursor;
       _catBegin = catAfter;
       _hd = cp;
+
+    } else if (cp >= 2325) {
+      // Note: Avoid InCB state checking much as possible
+      // Update InCB state only when continuing within a segment
+      if (!consonant && catBefore === 0)
+        consonant = isIndicConjunctConsonant(_hd);
+
+      if (consonant && catAfter === 3)
+        linker = isIndicConjunctLinker(cp);
+      else if (catAfter === 0)
+        linker = false;
     }
 
     cursor += cp <= BMP_MAX ? 1 : 2;
