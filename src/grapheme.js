@@ -195,6 +195,7 @@ export function* splitGraphemes(text) {
 // Memory and code size optimization: Skip regions that can be easily inlined
 // - 0x3000-0x9FFF (CJK): 28,672 codepoints, only 12 non-Any ranges
 // - 0xAC00-0xD7A3 (Hangul syllables): 11,172 codepoints, LV or LVT computed at runtime
+// - 0xD7A4-0xD7FF (Hangul Jamo Extended-B): 92 codepoints, only 2 non-Any ranges
 // - 0xE000-0xFDFF (Private Use): 7,680 codepoints, only 1 non-Any range
 // - 0xFE00-0xFFFF (Specials): 512 codepoints -> very rare and small, binary search fallback
 // 
@@ -205,32 +206,28 @@ export function* splitGraphemes(text) {
 // Indexed category segments (4-bit packed, 2 categories per byte):
 // - SEG0: 0x0080-0x2FFF (12,160 codepoints -> 6,080 bytes)
 // - SEG1: 0xA000-0xABFF (3,072 codepoints -> 1,536 bytes)
-// - SEG2: 0xD7A4-0xDFFF (2,140 codepoints -> 1,070 bytes)
-// 
-// Total index size: 8,686 bytes (~8.5KB)
+//
+// Total index size: 7,616 bytes (~7.4KB)
 const SEG0 = new Uint8Array(6080), SEG0_MIN = 0x0080, SEG0_MAX = 0x2FFF;
 const SEG1 = new Uint8Array(1536), SEG1_MIN = 0xA000, SEG1_MAX = 0xABFF;
-const SEG2 = new Uint8Array(1070), SEG2_MIN = 0xD7A4, SEG2_MAX = 0xDFFF;
 const SEG_CURSOR = (() => {
   let cursor = 0;
   while (true) {
     let [start, end, cat] = grapheme_ranges[cursor];
-    if (start > SEG2_MAX) break;
+    if (start > SEG1_MAX) break;
     cursor++;
 
     // Skip inlined ranges
-    if (end < SEG0_MIN || (start > SEG0_MAX && end < SEG1_MIN) || (start > SEG1_MAX && end < SEG2_MIN)) continue;
+    if (end < SEG0_MIN || (start > SEG0_MAX && end < SEG1_MIN)) continue;
 
     for (let cp = start; cp <= end; cp++) {
       let /** @type {Uint8Array} */ seg, idx = 0;
 
       if (cp <= SEG0_MAX) {
         seg = SEG0; idx = (cp - SEG0_MIN) >> 1;
-      } else if (cp <= SEG1_MAX) {
+      } else {
         seg = SEG1; idx = (cp - SEG1_MIN) >> 1;
-      } else if (cp >= SEG2_MIN) {
-        seg = SEG2; idx = (cp - SEG2_MIN) >> 1;
-      } else continue;
+      }
 
       seg[idx] = cp & 1
         ? (seg[idx] & 0x0F) | (cat << 4)
@@ -277,13 +274,13 @@ function cat(cp) {
     return /** @type {GraphemeCategoryNum} */ (cp & 1 ? byte >> 4 : byte & 0x0F);
   }
   // Hangul syllables path: 0xAC00-0xD7A3
-  if (cp < SEG2_MIN) {
+  if (cp <= 0xD7A3) {
     return (cp - 0xAC00) % 28 === 0 ? 7 : 8; // LV : LVT
   }
-  // Index Segment 2: 0xD7A4-0xDFFF
-  if (cp <= SEG2_MAX) {
-    let byte = SEG2[(cp - SEG2_MIN) >> 1];
-    return /** @type {GraphemeCategoryNum} */ (cp & 1 ? byte >> 4 : byte & 0x0F);
+  // Hangul Jamo Extended-B path: 0xD7A4-0xD7FF
+  if (cp <= 0xD7FF) {
+    if (cp <= 0xD7C6) return cp >= 0xD7B0 ? 13 : 0; // V
+    return cp >= 0xD7CB ? 12 : 0; // T
   }
   // Private Use fast path: 0xE000-0xFDFF
   if (cp < 0xFE00) {
