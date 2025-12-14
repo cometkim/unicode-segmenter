@@ -1,5 +1,30 @@
 # unicode-segmenter
 
+## 0.14.3
+
+### Patch Changes
+
+- 65c38ce: Move GB9c rule checking to be _after_ the main boundary checking.
+  To try to avoid unnecessary work as much as possible.
+
+  No noticeable changes, but perf seems to be improved by ~2% for most cases.
+
+- 8b23df9: Two further optimizations:
+
+  1. Remove inlined ranges from the data file.
+  2. Add inlined range: 0xAC00-0xD7A3 (Hangul syllables) can easily be inlined.
+
+  The 1 is something I forgot in #104 task, but it was a slight chance.
+
+  Btw, the number 2 is a huge finding. It is a pretty extensive range to be newly inlined.
+  Applying both optimizations significantly reduced the bundle size and memory footprint.
+
+  - Size(min): 12,549 bytes -> 6,846 bytes (-45.5%)
+  - Size(min+gz): 5,314 bytes -> 3,449 bytes (-35.1%)
+  - Index memory usage: 14,272 bytes -> 8,686 bytes (-39.2%)
+
+  Of course, without perf regression.
+
 ## 0.14.2
 
 ### Patch Changes
