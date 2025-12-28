@@ -135,7 +135,6 @@ export function* graphemeSegments(input) {
     // GB9c: InCB=Consonant InCB=Extend* InCB=Linker InCB=Extend* × InCB=Consonant
     else if (catAfter === 0 && consonant && linker && isIndicConjunctConsonant(cp)) {
       boundary = false;
-      linker = false;
     }
     // else GB999: ÷ Any
 
@@ -169,6 +168,8 @@ export function* graphemeSegments(input) {
         }
         if (consonant && catAfter === 3) {
           linker = linker || isIndicConjunctLinker(cp);
+        } else {
+          linker = false;
         }
       }
     }
