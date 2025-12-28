@@ -59,52 +59,93 @@ export function* graphemeSegments(input) {
   /** Category of codepoint immediately preceding cursor */
   let catBefore = cat(cp);
 
-  /** @type {GraphemeCategoryNum | null} Category of codepoint immediately preceding cursor. */
-  let catAfter = null;
+  /** @type {GraphemeCategoryNum} Category of codepoint immediately preceding cursor. */
+  let catAfter = 0;
 
   /** The number of RIS codepoints preceding `cursor`. */
   let risCount = 0;
 
-  /** Emoji state */
+  /**
+   * Emoji state for GB11: tracks if we've seen Extended_Pictographic followed by Extend* ZWJ
+   * Only relevant when catBefore === ZWJ && catAfter === Extended_Pictographic
+   */
   let emoji = false;
 
-  /** InCB=Consonant */
+  /** InCB=Consonant - segment started with Indic consonant */
   let consonant = false;
 
-  /** InCB=Linker */
+  /** InCB=Linker - seen a linker after consonant */
   let linker = false;
-
-  /** InCB=Consonant InCB=Linker x InCB=Consonant */
-  let incb = false;
 
   let index = 0;
 
   /** Beginning category of a segment */
   let _catBegin = catBefore;
 
-  /** Memoize the beginnig code point of the segment. */
+  /** Memoize the beginning code point of the segment. */
   let _hd = cp;
 
   while (cursor < len) {
     cp = /** @type {number} */ (input.codePointAt(cursor));
     catAfter = cat(cp);
 
-    if (catBefore === 10 /* Regional_Indicator */) {
-      risCount++;
-    } else {
-      risCount = 0;
-      if (
-        catAfter === 14 /* ZWJ */
-        && (catBefore === 3 /* Extend */ || catBefore === 4 /* Extended_Pictographic */)
-      ) {
-        emoji = true;
+    let boundary = true;
 
-      } else if (catAfter === 0) {
-        incb = consonant && linker && isIndicConjunctConsonant(cp);
+    // GB3: CR × LF
+    if (catBefore === 1) {
+      boundary = catAfter !== 6;
+      // GB4 is implicit: CR breaks unless followed by LF
+    }
+    // GB4: (Control | CR | LF) ÷
+    else if (catBefore === 2 || catBefore === 6) {
+      boundary = true;
+    }
+    // GB5: ÷ (Control | CR | LF)
+    else if (catAfter === 1 || catAfter === 2 || catAfter === 6) {
+      boundary = true;
+    }
+    // GB9, GB9a: × (Extend | ZWJ | SpacingMark) - most common no-break case
+    else if (catAfter === 3 || catAfter === 14 || catAfter === 11) {
+      boundary = false;
+      // Update emoji state for GB11: track Extend/ExtPic followed by ZWJ
+      if (catAfter === 14 && (catBefore === 3 || catBefore === 4)) {
+        emoji = true;
       }
     }
+    // GB9b: Prepend ×
+    else if (catBefore === 9) {
+      boundary = false;
+    }
+    // GB11: ExtPic Extend* ZWJ × ExtPic
+    else if (catBefore === 14 && catAfter === 4) {
+      boundary = !emoji;
+      // emoji state consumed, will be reset on boundary
+    }
+    // GB12, GB13: RI × RI (odd count means no break)
+    else if (catBefore === 10 && catAfter === 10) {
+      // risCount is count BEFORE current RI, so odd means this is 2nd, 4th, etc.
+      boundary = risCount % 2 === 1;
+    }
+    // GB6: L × (L | V | LV | LVT)
+    else if (catBefore === 5) {
+      boundary = !(catAfter === 5 || catAfter === 13 || catAfter === 7 || catAfter === 8);
+    }
+    // GB7: (LV | V) × (V | T)
+    else if ((catBefore === 7 || catBefore === 13) && (catAfter === 13 || catAfter === 12)) {
+      boundary = false;
+    }
+    // GB8: (LVT | T) × T
+    else if ((catBefore === 8 || catBefore === 12) && catAfter === 12) {
+      boundary = false;
+    }
+    // GB9c: InCB=Consonant InCB=Extend* InCB=Linker InCB=Extend* × InCB=Consonant
+    else if (catAfter === 0 && consonant && linker && isIndicConjunctConsonant(cp)) {
+      boundary = false;
+      linker = false;
+    }
+    // else GB999: ÷ Any
 
-    if (isBoundary(catBefore, catAfter, risCount, emoji, incb)) {
+    if (boundary) {
       yield {
         segment: input.slice(index, cursor),
         index,
@@ -114,23 +155,29 @@ export function* graphemeSegments(input) {
         _catEnd: catBefore,
       };
 
-      // flush
+      // Reset segment state
       emoji = false;
-      incb = false;
+      risCount = 0;
       index = cursor;
       _catBegin = catAfter;
       _hd = cp;
-
-    } else if (cp >= 2325) {
-      // Note: Avoid InCB state checking much as possible
-      // Update InCB state only when continuing within a segment
-      if (!consonant && catBefore === 0)
-        consonant = isIndicConjunctConsonant(_hd);
-
-      if (consonant && catAfter === 3)
-        linker = isIndicConjunctLinker(cp);
-      else if (catAfter === 0)
-        linker = false;
+    } else {
+      // Update state for continuing segment
+      
+      // RI counting for GB12/13
+      if (catBefore === 10) {
+        risCount++;
+      }
+      
+      // InCB state for GB9c (only for Indic scripts, cp >= 2325)
+      if (cp >= 2325) {
+        if (!consonant && catBefore === 0) {
+          consonant = isIndicConjunctConsonant(_hd);
+        }
+        if (consonant && catAfter === 3) {
+          linker = linker || isIndicConjunctLinker(cp);
+        }
+      }
     }
 
     cursor += cp <= BMP_MAX ? 1 : 2;
@@ -312,80 +359,4 @@ function isIndicConjunctLinker(cp) {
     cp === 3149 /* 0x0C4D */ ||
     cp === 3405 /* 0x0D4D */
   );
-}
-
-/**
- * @param {GraphemeCategoryNum} catBefore
- * @param {GraphemeCategoryNum} catAfter
- * @param {number} risCount Regional_Indicator state
- * @param {boolean} emoji Extended_Pictographic state
- * @param {boolean} incb Indic_Conjunct_Break state
- * @return {boolean}
- *
- * @see https://www.unicode.org/reports/tr29/tr29-43.html#Grapheme_Cluster_Boundary_Rules
- */
-function isBoundary(catBefore, catAfter, risCount, emoji, incb) {
-  // GB3
-  if (catBefore === 1 && catAfter === 6) {
-    return false;
-  }
-
-  // GB4
-  if (catBefore === 1 || catBefore === 2 || catBefore === 6) {
-    return true;
-  }
-
-  // GB5
-  if (catAfter === 1 || catAfter === 2 || catAfter === 6) {
-    return true;
-  }
-
-  // Most common cases - GB9, GB9a extend rules
-  if (catAfter === 3 || catAfter === 14 || catAfter === 11) {
-    return false;
-  }
-
-  // GB6 - L x (L | V | LV | LVT)
-  if (catBefore === 5) {
-    return !(catAfter === 5 || catAfter === 7 || catAfter === 8 || catAfter === 13);
-  }
-
-  // GB7 - (LV | V) x (V | T)
-  if (
-    (catBefore === 7 || catBefore === 13) &&
-    (catAfter === 13 || catAfter === 12)
-  ) {
-    return false;
-  }
-
-  // GB8 - (LVT | T) x T
-  if (
-    (catBefore === 8 || catBefore === 12) &&
-    catAfter === 12
-  ) {
-    return false;
-  }
-
-  // GB9b
-  if (catBefore === 9) {
-    return false;
-  }
-
-  // GB9c
-  if (catAfter === 0 && incb) {
-    return false;
-  }
-
-  // GB11
-  if (catBefore === 14 && catAfter === 4) {
-    return !emoji;
-  }
-
-  // GB12, GB13
-  if (catBefore === 10 && catAfter === 10) {
-    return risCount % 2 === 0;
-  }
-
-  // GB999
-  return true;
 }
