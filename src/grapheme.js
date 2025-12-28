@@ -45,15 +45,16 @@ const BMP_MAX = 0xFFFF;
  * @return {GraphemeSegmenter} iterator for grapheme cluster segments
  */
 export function* graphemeSegments(input) {
+  let cp = input.codePointAt(0);
+
+  // do nothing on empty string
+  if (cp == null) return;
+
   /** Total length of the input string. */
   let len = input.length;
 
-  // do nothing on empty string
-  if (len === 0) return;
-
   let index = 0;
   let cursor = 0;
-  let cp = /** @type {number} */ (input.codePointAt(cursor));
 
   /** Category of codepoint immediately preceding cursor */
   let catBefore = cat(cp);
