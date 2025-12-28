@@ -94,7 +94,6 @@ export function* graphemeSegments(input) {
     // GB3: CR × LF
     if (catBefore === 1) {
       boundary = catAfter !== 6;
-      // GB4 is implicit: CR breaks unless followed by LF
     }
     // GB4: (Control | CR | LF) ÷
     else if (catBefore === 2 || catBefore === 6) {
@@ -107,10 +106,6 @@ export function* graphemeSegments(input) {
     // GB9, GB9a: × (Extend | ZWJ | SpacingMark) - most common no-break case
     else if (catAfter === 3 || catAfter === 14 || catAfter === 11) {
       boundary = false;
-      // Update emoji state for GB11: track Extend/ExtPic followed by ZWJ
-      if (catAfter === 14 && (catBefore === 3 || catBefore === 4)) {
-        emoji = true;
-      }
     }
     // GB9b: Prepend ×
     else if (catBefore === 9) {
@@ -119,12 +114,11 @@ export function* graphemeSegments(input) {
     // GB11: ExtPic Extend* ZWJ × ExtPic
     else if (catBefore === 14 && catAfter === 4) {
       boundary = !emoji;
-      // emoji state consumed, will be reset on boundary
     }
     // GB12, GB13: RI × RI (odd count means no break)
     else if (catBefore === 10 && catAfter === 10) {
       // risCount is count BEFORE current RI, so odd means this is 2nd, 4th, etc.
-      boundary = risCount % 2 === 1;
+      boundary = risCount++ % 2 === 1;
     }
     // GB6: L × (L | V | LV | LVT)
     else if (catBefore === 5) {
@@ -161,16 +155,15 @@ export function* graphemeSegments(input) {
       index = cursor;
       _catBegin = catAfter;
       _hd = cp;
-    } else {
-      // Update state for continuing segment
-      
-      // RI counting for GB12/13
-      if (catBefore === 10) {
-        risCount++;
+    } 
+    // Update state for continuing segment
+    else {
+      // emoji state for GB11
+      if (catAfter === 14 && (catBefore === 3 || catBefore === 4)) {
+        emoji = true;
       }
-      
-      // InCB state for GB9c (only for Indic scripts, cp >= 2325)
-      if (cp >= 2325) {
+      // InCB state for GB9c
+      else if (cp >= 2325) {
         if (!consonant && catBefore === 0) {
           consonant = isIndicConjunctConsonant(_hd);
         }
