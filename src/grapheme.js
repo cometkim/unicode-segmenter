@@ -45,16 +45,15 @@ const BMP_MAX = 0xFFFF;
  * @return {GraphemeSegmenter} iterator for grapheme cluster segments
  */
 export function* graphemeSegments(input) {
-  let cp = input.codePointAt(0);
-
-  // do nothing on empty string
-  if (cp == null) return;
-
-  /** Current cursor position. */
-  let cursor = cp <= BMP_MAX ? 1 : 2;
-
   /** Total length of the input string. */
   let len = input.length;
+
+  // do nothing on empty string
+  if (len === 0) return;
+
+  let index = 0;
+  let cursor = 0;
+  let cp = /** @type {number} */ (input.codePointAt(cursor));
 
   /** Category of codepoint immediately preceding cursor */
   let catBefore = cat(cp);
@@ -62,8 +61,8 @@ export function* graphemeSegments(input) {
   /** @type {GraphemeCategoryNum} Category of codepoint immediately preceding cursor. */
   let catAfter = 0;
 
-  /** The number of RIS codepoints preceding `cursor`. */
-  let risCount = 0;
+  /** The number of RI codepoints preceding `cursor`. */
+  let riCount = 0;
 
   /**
    * Emoji state for GB11: tracks if we've seen Extended_Pictographic followed by Extend* ZWJ
@@ -71,21 +70,18 @@ export function* graphemeSegments(input) {
    */
   let emoji = false;
 
-  /** InCB=Consonant - segment started with Indic consonant */
-  let consonant = false;
+  /** State for Indic scripts */
+  let consonant = false, linker = false;
 
-  /** InCB=Linker - seen a linker after consonant */
-  let linker = false;
-
-  let index = 0;
-
-  /** Beginning category of a segment */
+  /** Memoize the beginning category of the segment */
   let _catBegin = catBefore;
 
   /** Memoize the beginning code point of the segment. */
   let _hd = cp;
 
   while (cursor < len) {
+    cursor += cp <= BMP_MAX ? 1 : 2;
+
     cp = /** @type {number} */ (input.codePointAt(cursor));
     catAfter = cat(cp);
 
@@ -117,8 +113,8 @@ export function* graphemeSegments(input) {
     }
     // GB12, GB13: RI × RI (odd count means no break)
     else if (catBefore === 10 && catAfter === 10) {
-      // risCount is count BEFORE current RI, so odd means this is 2nd, 4th, etc.
-      boundary = risCount++ % 2 === 1;
+      // riCount is count BEFORE current RI, so odd means this is 2nd, 4th, etc.
+      boundary = riCount++ % 2 === 1;
     }
     // GB6: L × (L | V | LV | LVT)
     else if (catBefore === 5) {
@@ -150,7 +146,7 @@ export function* graphemeSegments(input) {
 
       // Reset segment state
       emoji = false;
-      risCount = 0;
+      riCount = 0;
       index = cursor;
       _catBegin = catAfter;
       _hd = cp;
@@ -181,7 +177,6 @@ export function* graphemeSegments(input) {
       }
     }
 
-    cursor += cp <= BMP_MAX ? 1 : 2;
     catBefore = catAfter;
   }
 
