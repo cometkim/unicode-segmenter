@@ -167,15 +167,14 @@ export function* graphemeSegments(input) {
           consonant = isIndicConjunctConsonant(_hd);
         }
         if (consonant && catAfter === 3) {
-          switch (cp) {
-            case 0x094D:
-            case 0x09CD:
-            case 0x0ACD:
-            case 0x0B4D:
-            case 0x0C4D:
-            case 0x0D4D:
-              linker = true;
-          }
+          linker = linker
+            || cp === 0x094D
+            || cp === 0x09CD
+            || cp === 0x0A4D
+            || cp === 0x0ACD
+            || cp === 0x0B4D
+            || cp === 0x0C4D
+            || cp === 0x0D4D;
         } else {
           linker = false;
         }
