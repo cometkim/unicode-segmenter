@@ -167,7 +167,15 @@ export function* graphemeSegments(input) {
           consonant = isIndicConjunctConsonant(_hd);
         }
         if (consonant && catAfter === 3) {
-          linker = linker || isIndicConjunctLinker(cp);
+          switch (cp) {
+            case 0x094D:
+            case 0x09CD:
+            case 0x0ACD:
+            case 0x0B4D:
+            case 0x0C4D:
+            case 0x0D4D:
+              linker = true;
+          }
         } else {
           linker = false;
         }
@@ -338,19 +346,4 @@ function cat(cp) {
  */
 function isIndicConjunctConsonant(cp) {
   return findUnicodeRangeIndex(cp, consonant_ranges) >= 0;
-}
-
-/**
- * @param {number} cp
- * @return {boolean}
- */
-function isIndicConjunctLinker(cp) {
-  return (
-    cp === 2381 /* 0x094D */ ||
-    cp === 2509 /* 0x09CD */ ||
-    cp === 2765 /* 0x0ACD */ ||
-    cp === 2893 /* 0x0B4D */ ||
-    cp === 3149 /* 0x0C4D */ ||
-    cp === 3405 /* 0x0D4D */
-  );
 }
