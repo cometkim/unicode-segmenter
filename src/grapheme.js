@@ -138,7 +138,7 @@ export function* graphemeSegments(input) {
     }
     // else GB999: ÷ Any
 
-    if (boundary) {
+    if (boundary || cursor === len) {
       yield {
         segment: input.slice(index, cursor),
         index,
@@ -182,17 +182,6 @@ export function* graphemeSegments(input) {
     }
 
     catBefore = catAfter;
-  }
-
-  if (index < len) {
-    yield {
-      segment: input.slice(index),
-      index,
-      input,
-      _hd,
-      _catBegin,
-      _catEnd: catBefore,
-    };
   }
 }
 
