@@ -1,5 +1,16 @@
 # unicode-segmenter
 
+## 0.14.5
+
+### Patch Changes
+
+- 9d482aa: Inlined the grapheme boundary checking
+  to avoid unnecessary function calls in the hotpath and consolidating internal state.
+
+  This achieved the runtime perf by 2% and a slight bundle size reduction.
+
+- d737dfe: Inlined the InCB=Linker checking for Indic scripts
+
 ## 0.14.4
 
 ### Patch Changes
