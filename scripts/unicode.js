@@ -430,28 +430,63 @@ let printTableRaw = (f, name, table, format) => {
 
 /**
  * @param {WriteStream} f 
- * @param {CategorizedUnicodeRange[]} breakTable 
- * @param {string[]} breakCats 
+ * @param {CategorizedUnicodeRange[]} ranges
+ * @param {string[]} cats
+ * @param {string} catsModule
  * @param {string} name 
  * @returns 
  */
-let printBreakModule = (f, breakTable, breakCats, name) => {
-  let cats = ['Any', ...breakCats.toSorted()];
-
+let printDataModule = (f, ranges, cats, catsModule, name) => {
   let capitalName = capitalize(name);
   let typeName = `${capitalName}Category`;
-  let keyTypeName = `${typeName}Key`;
   let numTypeName = `${typeName}Num`;
   let rangeTypeName = `${typeName}Range`;
+
+  /** @type {Record<string, number>} */
+  let inversed = {};
+  cats.forEach((cat, idx) => {
+    inversed[cat] = idx;
+  });
 
   f.write(preamble);
   f.write(`
 import { decodeUnicodeData } from './core.js';
 
 /**
+ * @typedef {import('./${catsModule}').${numTypeName}} ${numTypeName}
  * @typedef {import('./core.js').UnicodeDataEncoding} UnicodeDataEncoding
+ * @typedef {import('./core.js').CategorizedUnicodeRange<${numTypeName}>} ${rangeTypeName}
  */
+`,
+  );
 
+  f.write(`
+/**
+ * @type {${rangeTypeName}[]}
+ */
+export const ${name}_ranges = decodeUnicodeData(
+  /** @type {UnicodeDataEncoding} */
+  ('${encodeUnicodeData(ranges.map(range => [range[0], range[1], 0]))}'),
+  '${ranges.map(range => inversed[range[2]].toString(36)).join('')}',
+);
+`,
+  );
+};
+
+/**
+ * @param {WriteStream} f 
+ * @param {string[]} cats
+ * @param {string} name 
+ * @returns 
+ */
+let printCategoryModule = (f, cats, name) => {
+  let capitalName = capitalize(name);
+  let typeName = `${capitalName}Category`;
+  let keyTypeName = `${typeName}Key`;
+  let numTypeName = `${typeName}Num`;
+
+  f.write(preamble);
+  f.write(`
 /**
 `,
   );
@@ -471,13 +506,6 @@ import { decodeUnicodeData } from './core.js';
 
   f.write(`
 /**
- * @typedef {import('./core.js').CategorizedUnicodeRange<${numTypeName}>} ${rangeTypeName}
- */
-`,
-  );
-
-  f.write(`
-/**
  * @typedef {(
 `,
   );
@@ -489,33 +517,15 @@ import { decodeUnicodeData } from './core.js';
 
   f.write(`
 /**
- * Grapheme category enum
- *
- * Note:
- *   The object isn't actually frozen
- *   because using \`Object.freeze\` increases 800 bytes on Brotli compression.
- *
- * @type {Readonly<Record<${keyTypeName}, ${numTypeName}>>}
+ * ${capitalName}_Break property values
  */
-export const ${typeName} = {
+export const ${typeName} = /** @type {const} */ ({
 `.trimStart(),
   );
   for (let cat of cats) {
     f.write(`  ${cat}: ${inversed[cat]},\n`);
   }
-  f.write('};\n');
-
-  f.write(`
-/**
- * @type {${rangeTypeName}[]}
- */
-export const ${name}_ranges = decodeUnicodeData(
-  /** @type {UnicodeDataEncoding} */
-  ('${encodeUnicodeData(breakTable.map(row => [row[0], row[1], 0]))}'),
-  '${breakTable.map(row => inversed[row[2]].toString(36)).join('')}',
-);
-`,
-  );
+  f.write('});\n');
 };
 
 /**
@@ -865,12 +875,27 @@ let graphemeTableOptimized = graphemeTable.filter(([from, to, cat]) => {
   return true;
 });
 
+let graphemeCategories =
+  ['Any', ...Object.keys(graphemeCats).concat(['Extended_Pictographic']).toSorted()];
+
+let graphemCatsModule = '_grapheme_categories.js'
+
+await emitSrc(
+  graphemCatsModule,
+  async f => printCategoryModule(
+    f,
+    graphemeCategories,
+    'grapheme',
+  ),
+);
+
 await emitSrc(
   '_grapheme_data.js',
-  async f => printBreakModule(
+  async f => printDataModule(
     f,
     graphemeTableOptimized,
-    Object.keys(graphemeCats).concat(['Extended_Pictographic']),
+    graphemeCategories,
+    graphemCatsModule,
     'grapheme',
   ),
 );

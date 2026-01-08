@@ -14,12 +14,12 @@
 // @ts-check
 
 import { findUnicodeRangeIndex } from './core.js';
-import { GraphemeCategory, grapheme_ranges } from './_grapheme_data.js';
+import { grapheme_ranges } from './_grapheme_data.js';
 import { consonant_ranges } from './_incb_data.js';
 
+export { GraphemeCategory } from './_grapheme_categories.js';
+
 /**
- * @typedef {import('./_grapheme_data.js').GC_Any} GC_Any
- *
  * @typedef {import('./_grapheme_data.js').GraphemeCategoryNum} GraphemeCategoryNum
  * @typedef {import('./_grapheme_data.js').GraphemeCategoryRange} GraphemeCategoryRange
  *
@@ -30,8 +30,6 @@ import { consonant_ranges } from './_incb_data.js';
  *
  * @typedef {import('./core.js').Segmenter<GraphemeSegmentExtra>} GraphemeSegmenter
  */
-
-export { GraphemeCategory };
 
 const BMP_MAX = 0xFFFF;
 

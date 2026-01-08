@@ -6,94 +6,10 @@
 import { decodeUnicodeData } from './core.js';
 
 /**
+ * @typedef {import('./_grapheme_categories.js').GraphemeCategoryNum} GraphemeCategoryNum
  * @typedef {import('./core.js').UnicodeDataEncoding} UnicodeDataEncoding
- */
-
-/**
- * @typedef {0} GC_Any
- * @typedef {1} GC_CR
- * @typedef {2} GC_Control
- * @typedef {3} GC_Extend
- * @typedef {4} GC_Extended_Pictographic
- * @typedef {5} GC_L
- * @typedef {6} GC_LF
- * @typedef {7} GC_LV
- * @typedef {8} GC_LVT
- * @typedef {9} GC_Prepend
- * @typedef {10} GC_Regional_Indicator
- * @typedef {11} GC_SpacingMark
- * @typedef {12} GC_T
- * @typedef {13} GC_V
- * @typedef {14} GC_ZWJ
- * @typedef {(
- *   | GC_Any
- *   | GC_CR
- *   | GC_Control
- *   | GC_Extend
- *   | GC_Extended_Pictographic
- *   | GC_L
- *   | GC_LF
- *   | GC_LV
- *   | GC_LVT
- *   | GC_Prepend
- *   | GC_Regional_Indicator
- *   | GC_SpacingMark
- *   | GC_T
- *   | GC_V
- *   | GC_ZWJ
- * )} GraphemeCategoryNum
- */
-
-/**
  * @typedef {import('./core.js').CategorizedUnicodeRange<GraphemeCategoryNum>} GraphemeCategoryRange
  */
-
-/**
- * @typedef {(
- *   | 'Any'
- *   | 'CR'
- *   | 'Control'
- *   | 'Extend'
- *   | 'Extended_Pictographic'
- *   | 'L'
- *   | 'LF'
- *   | 'LV'
- *   | 'LVT'
- *   | 'Prepend'
- *   | 'Regional_Indicator'
- *   | 'SpacingMark'
- *   | 'T'
- *   | 'V'
- *   | 'ZWJ'
- * )} GraphemeCategoryKey
- */
-
-/**
- * Grapheme category enum
- *
- * Note:
- *   The object isn't actually frozen
- *   because using `Object.freeze` increases 800 bytes on Brotli compression.
- *
- * @type {Readonly<Record<GraphemeCategoryKey, GraphemeCategoryNum>>}
- */
-export const GraphemeCategory = {
-  Any: 0,
-  CR: 1,
-  Control: 2,
-  Extend: 3,
-  Extended_Pictographic: 4,
-  L: 5,
-  LF: 6,
-  LV: 7,
-  LVT: 8,
-  Prepend: 9,
-  Regional_Indicator: 10,
-  SpacingMark: 11,
-  T: 12,
-  V: 13,
-  ZWJ: 14,
-};
 
 /**
  * @type {GraphemeCategoryRange[]}
