@@ -92,7 +92,7 @@ countGraphemes('a̐éö̲');
 > [!NOTE]
 > `countGraphemes()` is a small wrapper around `graphemeSegments()`.
 > 
-> If you need it more than once at a time, consider memoization or use `graphemeSegments()` or `splitSegments()` once instead.
+> If you need it more than once at a time, consider memoization or use `graphemeSegments()` or `splitGraphemes()` once instead.
 
 #### Example: Build an advanced grapheme matcher
 
