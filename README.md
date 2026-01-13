@@ -205,9 +205,9 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 ### `unicode-segmenter/grapheme` vs
 
-- [graphemer]@1.4.0 (34.4M+ weekly downloads on NPM)
-- [grapheme-splitter]@1.0.4 (6.3M+ weekly downloads on NPM)
-- [@formatjs/intl-segmenter]@11.7.12 (10K+ weekly downloads on NPM)
+- [graphemer]@1.4.0
+- [grapheme-splitter]@1.0.4
+- [@formatjs/intl-segmenter]@11.7.12
 - WebAssembly build of [unicode-segmentation]@1.12.0 with minimum bindings
 - Built-in [`Intl.Segmenter`] API
 
