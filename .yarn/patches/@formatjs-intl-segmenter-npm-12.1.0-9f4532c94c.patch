@@ -1,0 +1,12 @@
+diff --git a/package.json b/package.json
+index 2e0ae779f7803c8f0fcf5a6478e2cd59496b15ca..1676f570f4159bda2c465de53a87b6ac3ee2d8f4 100644
+--- a/package.json
++++ b/package.json
+@@ -6,6 +6,7 @@
+   "author": "Matija Gaspar <matijagaspar@gmail.com>",
+   "type": "module",
+   "exports": {
++    "./segmenter.js": "./src/segmenter.js",
+     "./polyfill.js": "./polyfill.js",
+     "./polyfill-force.js": "./polyfill-force.js",
+     "./should-polyfill.js": "./should-polyfill.js"

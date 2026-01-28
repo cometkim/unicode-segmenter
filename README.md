@@ -207,7 +207,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 - [graphemer]@1.4.0
 - [grapheme-splitter]@1.0.4
-- [@formatjs/intl-segmenter]@11.7.12
+- [@formatjs/intl-segmenter]@12.1.0
 - WebAssembly build of [unicode-segmentation]@1.12.0 with minimum bindings
 - Built-in [`Intl.Segmenter`] API
 
@@ -217,8 +217,8 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|----------------:|
 | `unicode-segmenter/grapheme` |   17.0.0 |   ✔️ |    11,873 |      7,754 |           3,857 |         3,121 |           3,984 |
 | `graphemer`                  |   15.0.0 |   ✖️ ️|   410,435 |     95,104 |          15,752 |        10,660 |          15,911 |
-| `grapheme-splitter`          |   10.0.0 |   ✖️ |   122,254 |     23,682 |           7,852 |         4,802 |           6,753 |
-| `@formatjs/intl-segmenter`*  |   15.0.0 |   ✖️ |   603,510 |    369,673 |          72,273 |        49,530 |          68,027 |
+| `grapheme-splittetr`          |   10.0.0 |   ✖️ |   122,254 |     23,682 |           7,852 |         4,802 |           6,753 |
+| `@formatjs/intl-segmenter`*  |   17.0.0 |   ✖️ |   268,301 |    176,759 |          45,988 |        31,701 |          45,370 |
 | `unicode-segmentation`*      |   15.1.0 |    - |    56,529 |     52,439 |          24,108 |        17,343 |          24,375 |
 | `Intl.Segmenter`*            |        - |    - |         0 |          0 |               0 |             0 |               0 |
 
@@ -234,8 +234,9 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 | `unicode-segmenter/grapheme` |        21,395 |                12,027 |
 | `graphemer`                  |       134,085 |                31,770 |
 | `grapheme-splitter`          |        63,942 |                19,165 |
+| `@formatjs/intl-segmenter`   |       329,547 |               136,751 |
 
-* It would be compressed when included as an app asset.
+* The installation size contains _compressed_ assets.
 
 #### Runtime Performance
 

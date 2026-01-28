@@ -1,1 +1,1 @@
-export { Segmenter } from '@formatjs/intl-segmenter/src/segmenter.js';
+import '@formatjs/intl-segmenter/polyfill-force.js';

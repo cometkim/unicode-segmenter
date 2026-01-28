@@ -11,7 +11,7 @@ import {
 import Graphemer from 'graphemer';
 import GraphemeSplitter from 'grapheme-splitter';
 import * as unicodeSegmentation from 'unicode-segmentation-wasm';
-import { Segmenter as FormatjsSegmenter } from '@formatjs/intl-segmenter/src/segmenter.js';
+import { Segmenter as FormatjsSegmenter } from '@formatjs/intl-segmenter/segmenter.js';
 
 import { graphemeSegments } from '../../src/grapheme.js';
 
