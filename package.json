@@ -92,7 +92,7 @@
   ],
   "scripts": {
     "prepack": "yarn clean && yarn build",
-    "clean": "rimraf -g \"*.js\" \"*.cjs\" \"*.map\" \"*.d.ts\" \"bundle\"",
+    "clean": "rimraf -g \"*.js\" \"*.cjs\" \"*.map\" \"*.d.ts\" \"*.d.cts\" \"bundle\"",
     "build": "node scripts/build-exports.js",
     "test": "node --test --test-reporter spec --test-reporter-destination=stdout",
     "test:coverage": "yarn test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info",
