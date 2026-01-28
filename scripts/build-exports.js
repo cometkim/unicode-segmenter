@@ -107,11 +107,7 @@ function rewriteCjs(content) {
   });
 }
 
-if (process.argv.includes('--no-tsc')) {
-  process.exit(0);
-}
-
-{
+if (!process.argv.includes('--no-tsc')) {
   console.log('Building type declarations...');
   const { promise, resolve, reject } = Promise.withResolvers();
   spawn(
