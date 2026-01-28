@@ -51,37 +51,30 @@
     "types": "./index.d.ts",
     "exports": {
       ".": {
-        "types": "./index.d.ts",
         "import": "./index.js",
         "require": "./index.cjs"
       },
       "./emoji": {
-        "types": "./emoji.d.ts",
         "import": "./emoji.js",
         "require": "./emoji.cjs"
       },
       "./general": {
-        "types": "./general.d.ts",
         "import": "./general.js",
         "require": "./general.cjs"
       },
       "./grapheme": {
-        "types": "./grapheme.d.ts",
         "import": "./grapheme.js",
         "require": "./grapheme.cjs"
       },
       "./utils": {
-        "types": "./utils.d.ts",
         "import": "./utils.js",
         "require": "./utils.cjs"
       },
       "./intl-adapter": {
-        "types": "./intl-adapter.d.ts",
         "import": "./intl-adapter.js",
         "require": "./intl-adapter.cjs"
       },
       "./intl-polyfill": {
-        "types": "./intl-polyfill.d.ts",
         "import": "./intl-polyfill.js",
         "require": "./intl-polyfill.cjs"
       },
@@ -93,13 +86,14 @@
     "/*.js",
     "/*.cjs",
     "/*.d.ts",
+    "/*.d.cts",
     "/licenses",
     "/bundle"
   ],
   "scripts": {
     "prepack": "yarn clean && yarn build",
-    "clean": "rimraf -g \"*.js\" \"*.cjs\" \"*.map\" \"*.d.ts\" \"bundle\"",
-    "build": "node scripts/build-exports.js && tsc -p tsconfig.build.json",
+    "clean": "rimraf -g \"*.js\" \"*.cjs\" \"*.map\" \"*.d.ts\" \"*.d.cts\" \"bundle\"",
+    "build": "node scripts/build-exports.js",
     "test": "node --test --test-reporter spec --test-reporter-destination=stdout",
     "test:coverage": "yarn test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info",
     "bundle-stats:emoji": "node benchmark/emoji/bundle-stats.js",
