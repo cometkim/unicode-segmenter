@@ -127,9 +127,12 @@ if (process.argv.includes('--no-tsc')) {
     process.exit(exitCode);
   }
 
-  console.log('Copying declaration files for CommonJS...');
+  console.log('Building shims for CommonJS type resolution...');
   for await (const file of fs.glob('*.d.ts', { cwd: rootDir })) {
-    // Expected they have the same content, but this is still required for TypeScript's Node16 resolution.
-    await fs.copyFile(dist(file), dist(file.replace('.d.ts', '.d.cts')));
+    await fs.writeFile(
+      dist(file.replace('.d.ts', '.d.cts')),
+      `export * from "./${file.replace('.d.ts', '.js')}";`,
+      'utf8',
+    );
   }
 }
