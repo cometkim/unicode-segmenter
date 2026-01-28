@@ -12,6 +12,7 @@ node_modules/
 /scripts/__pycache__/
 
 /*.d.ts
+/*.d.cts
 /*.js
 /*.js.map
 /*.cjs
