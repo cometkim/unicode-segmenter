@@ -27,9 +27,9 @@ A lightweight implementation of the [Unicode Text Segmentation (UAX \#29)](https
 
 ## Unicode® Version
 
-Unicode® 16.0.0
+Unicode® 17.0.0
 
-Unicode® Standard Annex \#29 - [Revision 45](https://www.unicode.org/reports/tr29/tr29-45.html) (2024-08-28)
+Unicode® Standard Annex \#29 - [Revision 47](https://www.unicode.org/reports/tr29/tr29-47.html) (2025-08-17)
 
 ## APIs
 
@@ -215,7 +215,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) | Size (min+zstd) |
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|----------------:|
-| `unicode-segmenter/grapheme` |   16.0.0 |   ✔️ |    10,708 |      6,659 |           3,363 |         2,739 |           3,490 |
+| `unicode-segmenter/grapheme` |   17.0.0 |   ✔️ |    11,873 |      7,754 |           3,857 |         3,121 |           3,984 |
 | `graphemer`                  |   15.0.0 |   ✖️ ️|   410,435 |     95,104 |          15,752 |        10,660 |          15,911 |
 | `grapheme-splitter`          |   10.0.0 |   ✖️ |   122,254 |     23,682 |           7,852 |         4,802 |           6,753 |
 | `@formatjs/intl-segmenter`*  |   15.0.0 |   ✖️ |   603,510 |    369,673 |          72,273 |        49,530 |          68,027 |
@@ -231,9 +231,9 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Bytecode size | Bytecode size (gzip)* |
 |------------------------------|--------------:|----------------------:|
-| `unicode-segmenter/grapheme` |        20,259 |                11,417 |
-| `graphemer`                  |       134,089 |                31,766 |
-| `grapheme-splitter`          |        63,946 |                19,162 |
+| `unicode-segmenter/grapheme` |        21,395 |                12,027 |
+| `graphemer`                  |       134,085 |                31,770 |
+| `grapheme-splitter`          |        63,942 |                19,165 |
 
 * It would be compressed when included as an app asset.
 

@@ -51,7 +51,7 @@ let preamble = `
 `.trimStart();
 
 /** @type {[major: number, minor: number, patch: number]} */
-const UNICODE_VERSION = [16, 0, 0];
+const UNICODE_VERSION = [17, 0, 0];
 const UNICODE_VERSION_STRING = UNICODE_VERSION.join('.');
 
 // these are the surrogate codepoints, which are not valid rust characters

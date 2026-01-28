@@ -168,13 +168,27 @@ export function* graphemeSegments(input) {
         }
         if (consonant && catAfter === 3) {
           linker = linker
-            || cp === 0x094D
-            || cp === 0x09CD
-            || cp === 0x0A4D
-            || cp === 0x0ACD
-            || cp === 0x0B4D
-            || cp === 0x0C4D
-            || cp === 0x0D4D;
+            || cp === 0x094D   // Devanagari Sign Virama
+            || cp === 0x09CD   // Bengali Sign Virama
+            || cp === 0x0A4D   // Gurmukhi Sign Virama
+            || cp === 0x0ACD   // Gujarati Sign Virama
+            || cp === 0x0B4D   // Oriya Sign Virama
+            || cp === 0x0C4D   // Telugu Sign Virama
+            || cp === 0x0D4D   // Malayalam Sign Virama
+            || cp === 0x1039   // Myanmar Sign Virama
+            || cp === 0x17D2   // Khmer Sign Coeng
+            || cp === 0x1A60   // Tai Tham Sign Sakot
+            || cp === 0x1B44   // Balinese Adeg Adeg
+            || cp === 0x1BAB   // Sundanese Sign Virama
+            || cp === 0xA9C0   // Javanese Pangkon
+            || cp === 0xAAF6   // Meetei Mayek Virama
+            || cp === 0x10A3F  // Kharoshthi Virama
+            || cp === 0x11133  // Chakma Virama
+            || cp === 0x113D0  // Tulu-Tigalari Conjoiner
+            || cp === 0x1193E  // Dives Akuru Virama
+            || cp === 0x11A47  // Zanabazar Square Subjoiner
+            || cp === 0x11A99  // Soyombo Subjoiner
+            || cp === 0x11F42; // Kawi Conjoiner
         } else {
           linker = false;
         }
