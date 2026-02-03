@@ -62,8 +62,8 @@ export function* graphemeSegments(input) {
   /** @type {GraphemeCategoryNum} Category of codepoint immediately preceding cursor. */
   let catAfter = 0;
 
-  /** The number of RIS codepoints preceding `cursor`. */
-  let risCount = 0;
+  /** The number of RI codepoints preceding `cursor`. */
+  let riCount = 0;
 
   /**
    * Emoji state for GB11: tracks if we've seen Extended_Pictographic followed by Extend* ZWJ
@@ -117,8 +117,8 @@ export function* graphemeSegments(input) {
     }
     // GB12, GB13: RI × RI (odd count means no break)
     else if (catBefore === 10 && catAfter === 10) {
-      // risCount is count BEFORE current RI, so odd means this is 2nd, 4th, etc.
-      boundary = risCount++ % 2 === 1;
+      // riCount is count BEFORE current RI, so odd means this is 2nd, 4th, etc.
+      boundary = riCount++ % 2 === 1;
     }
     // GB6: L × (L | V | LV | LVT)
     else if (catBefore === 5) {
@@ -150,7 +150,7 @@ export function* graphemeSegments(input) {
 
       // Reset segment state
       emoji = false;
-      risCount = 0;
+      riCount = 0;
       index = cursor;
       _catBegin = catAfter;
       _hd = cp;
