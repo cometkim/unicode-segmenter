@@ -12,6 +12,8 @@ jobs:
   integration:
     name: Check everything
     runs-on: ubuntu-24.04-arm
+    permissions:
+      id-token: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
