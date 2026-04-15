@@ -73,40 +73,6 @@ function rewriteCjs(content) {
   // );
 }
 
-{
-  console.log('Build browser bundles...');
-
-  let bundleEntryPoints = [
-    src('index.js'),
-    src('emoji.js'),
-    src('general.js'),
-    src('grapheme.js'),
-    src('intl-adapter.js'),
-    src('intl-polyfill.js'),
-  ];
-  await build({
-    bundle: true,
-    entryPoints: bundleEntryPoints,
-    outdir: bundleDir,
-    outExtension: { '.js': '.js' },
-    format: 'esm',
-    treeShaking: true,
-    write: true,
-    sourcemap: false,
-  });
-  await build({
-    bundle: true,
-    entryPoints: bundleEntryPoints,
-    outdir: bundleDir,
-    outExtension: { '.js': '.min.js' },
-    format: 'esm',
-    minify: true,
-    treeShaking: true,
-    write: true,
-    sourcemap: false,
-  });
-}
-
 if (!process.argv.includes('--no-tsc')) {
   console.log('Building type declarations...');
   const { promise, resolve, reject } = Promise.withResolvers();

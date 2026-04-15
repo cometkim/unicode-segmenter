@@ -78,7 +78,6 @@
         "import": "./intl-polyfill.js",
         "require": "./intl-polyfill.cjs"
       },
-      "./bundle/*": "./bundle/*.js",
       "./package.json": "./package.json"
     }
   },
@@ -87,12 +86,11 @@
     "/*.cjs",
     "/*.d.ts",
     "/*.d.cts",
-    "/licenses",
-    "/bundle"
+    "/licenses"
   ],
   "scripts": {
     "prepack": "yarn clean && yarn build",
-    "clean": "rimraf -g \"*.js\" \"*.cjs\" \"*.map\" \"*.d.ts\" \"*.d.cts\" \"bundle\"",
+    "clean": "rimraf -g \"*.js\" \"*.cjs\" \"*.map\" \"*.d.ts\" \"*.d.cts\"",
     "build": "node scripts/build-exports.js",
     "test": "node --test --test-reporter spec --test-reporter-destination=stdout",
     "test:coverage": "yarn test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info",
