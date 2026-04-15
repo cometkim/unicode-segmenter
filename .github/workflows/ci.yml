@@ -9,32 +9,13 @@ on:
       - main
 
 jobs:
-  build:
-    name: Checking build
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 25
-          cache: yarn
-
-      - name: Install Dependencies
-        run: yarn install --immutable
-
-      - name: Build
-        run: yarn build
-
-  test:
-    name: Running tests
+  integration:
+    name: Check everything
     runs-on: ubuntu-24.04-arm
     permissions:
       id-token: write
     steps:
-      - name: Checkout Repo
+      - name: Checkout repo
         uses: actions/checkout@v6
 
       - name: Setup Node.js
@@ -43,16 +24,19 @@ jobs:
           node-version: 25
           cache: yarn
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Execute Tests
+      - name: Run tests
         run: |
           node \
             --test --test-reporter spec --test-reporter-destination=stdout \
             --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           use_oidc: true
+
+      - name: Build and publish to pkg.pr.new
+        run: yarn pkg-pr-new publish
