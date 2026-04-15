@@ -150,6 +150,7 @@ export function* graphemeSegments(input) {
 
       // Reset segment state
       emoji = false;
+      consonant = false;
       riCount = 0;
       index = cursor;
       _catBegin = catAfter;
