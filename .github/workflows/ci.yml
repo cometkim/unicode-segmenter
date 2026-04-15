@@ -56,3 +56,23 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           use_oidc: true
+
+  publish:
+    needs: [build, test]
+    name: Publish pkg.pr.new
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 25
+          cache: yarn
+
+      - name: Install Dependencies
+        run: yarn install --immutable
+
+      - name: Publish pkg.pr.new
+        run: yarn pkg-pr-new publish

@@ -127,6 +127,7 @@
     "metro": "^0.83.3",
     "mitata": "^1.0.34",
     "os-browserify": "^0.3.0",
+    "pkg-pr-new": "^0.0.66",
     "pretty-bytes": "^7.1.0",
     "rimraf": "^6.1.2",
     "tinybench": "^5.1.0",
