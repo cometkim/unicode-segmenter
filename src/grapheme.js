@@ -166,8 +166,10 @@ export function* graphemeSegments(input) {
         if (!consonant && catBefore === 0) {
           consonant = isIndicConjunctConsonant(_hd);
         }
-        if (consonant && catAfter === 3) {
-          linker = linker
+        if (consonant && (catAfter === 3 || catAfter === 14)) {
+          // ZWNJ(U+200C) has InCB=None, it should break the GB9c pattern
+          linker = cp !== 0x200C && (
+            linker
             || cp === 0x094D   // Devanagari Sign Virama
             || cp === 0x09CD   // Bengali Sign Virama
             || cp === 0x0A4D   // Gurmukhi Sign Virama
@@ -188,7 +190,8 @@ export function* graphemeSegments(input) {
             || cp === 0x1193E  // Dives Akuru Virama
             || cp === 0x11A47  // Zanabazar Square Subjoiner
             || cp === 0x11A99  // Soyombo Subjoiner
-            || cp === 0x11F42; // Kawi Conjoiner
+            || cp === 0x11F42  // Kawi Conjoiner
+          );
         } else {
           linker = false;
         }
