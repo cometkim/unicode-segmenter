@@ -39,4 +39,4 @@ jobs:
           use_oidc: true
 
       - name: Build and publish to pkg.pr.new
-        run: yarn pkg-pr-new publish
+        run: yarn pkg-pr-new publish --yarn
