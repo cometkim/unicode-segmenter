@@ -65,9 +65,12 @@ export function* graphemeSegments(input) {
   /** The number of RI codepoints preceding `cursor`. */
   let riCount = 0;
 
+  /** Tracks if Extended_Pictographic was seen in the current Extend* sequence for GB11 */
+  let extPic = catBefore === 4;
+
   /**
    * Emoji state for GB11: tracks if we've seen Extended_Pictographic followed by Extend* ZWJ
-   * Only relevant when catBefore === ZWJ && catAfter === Extended_Pictographic
+   * Only relevant when catBefore === ZWJ && extPic (catAfter === Extended_Pictographic)
    */
   let emoji = false;
 
@@ -112,7 +115,7 @@ export function* graphemeSegments(input) {
       boundary = false;
     }
     // GB11: ExtPic Extend* ZWJ × ExtPic
-    else if (catBefore === 14 && catAfter === 4) {
+    else if (catBefore === 14 && extPic) {
       boundary = !emoji;
     }
     // GB12, GB13: RI × RI (odd count means no break)
@@ -149,6 +152,7 @@ export function* graphemeSegments(input) {
       };
 
       // Reset segment state
+      extPic = catAfter === 4;
       emoji = false;
       consonant = false;
       riCount = 0;
@@ -158,8 +162,8 @@ export function* graphemeSegments(input) {
     } 
     // Update state for continuing segment
     else {
-      // emoji state for GB11
-      if (catAfter === 14 && (catBefore === 3 || catBefore === 4)) {
+      // emoji state for GB11: ExtPic Extend* ZWJ × ExtPic
+      if (catAfter === 14 && extPic) {
         emoji = true;
       }
       // InCB state for GB9c
