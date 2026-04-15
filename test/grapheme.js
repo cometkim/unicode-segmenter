@@ -307,6 +307,7 @@ test('counterexamples', async t => {
     ' जा',
     ' କା',
     ' ଶ୍ୟା',
+    'ക് വ',
   ];
 
   for (let counter of counterExamples) {
