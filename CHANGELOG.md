@@ -1,5 +1,30 @@
 # unicode-segmenter
 
+## 0.16.0
+
+### Minor Changes
+
+- 9ee7b6d: Remove pre-built bundled entrypoints from the package
+
+### Patch Changes
+
+- 12dc573: Fix GB9c rule; reset internal "InCB=Consonant" state properly.
+
+  So giving the following input:
+
+  ```
+  # Malayalam KA + Virama + SPACE + VA
+  "क्‌ क"
+  ```
+
+  Will now produces three sperated segments correctly.
+
+  Thanks to @spaceemotion for reporting this issue.
+
+- f5d3453: Fix G9Bc rule; `ZWNJ`(InCB=None) handling was missing. Thanks to @spaceemotion for reporting this.
+- 8ec376e: Reset `InCB=Linker` tracking state for a new boundary.
+- 877b76c: Fix `Extend + Extended_Pictographic` cluster break
+
 ## 0.15.0
 
 ### Minor Changes
