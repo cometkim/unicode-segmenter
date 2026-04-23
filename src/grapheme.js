@@ -155,6 +155,7 @@ export function* graphemeSegments(input) {
       extPic = catAfter === 4;
       emoji = false;
       consonant = false;
+      linker = false;
       riCount = 0;
       index = cursor;
       _catBegin = catAfter;
