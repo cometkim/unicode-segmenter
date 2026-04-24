@@ -30,6 +30,7 @@
     "./emoji": "./src/emoji.js",
     "./general": "./src/general.js",
     "./grapheme": "./src/grapheme.js",
+    "./word": "./src/word.js",
     "./utils": "./src/utils.js",
     "./intl-adapter": {
       "types": "./src/intl-adapter.js",
@@ -65,6 +66,11 @@
       "./grapheme": {
         "import": "./grapheme.js",
         "require": "./grapheme.cjs"
+      },
+      "./word": {
+        "types": "./word.d.ts",
+        "import": "./word.js",
+        "require": "./word.cjs"
       },
       "./utils": {
         "import": "./utils.js",
