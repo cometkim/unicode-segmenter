@@ -1,6 +1,6 @@
 # unicode-segmenter
-[![NPM Package Version](https://img.shields.io/npm/v/unicode-segmenter)](https://npmjs.com/package/unicode-segmenter)
-[![NPM Downloads](https://img.shields.io/npm/dw/unicode-segmenter)](https://npmjs.com/package/unicode-segmenter)
+[![NPM Package Version](https://img.shields.io/npm/v/unicode-segmenter)](https://npmx.dev/unicode-segmenter)
+[![NPM Downloads](https://img.shields.io/npm/dw/unicode-segmenter)](https://npmx.dev/unicode-segmenter)
 [![Integration](https://github.com/cometkim/unicode-segmenter/actions/workflows/ci.yml/badge.svg)](https://github.com/cometkim/unicode-segmenter/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/cometkim/unicode-segmenter/graph/badge.svg?token=3rA29JEH4J)](https://codecov.io/gh/cometkim/unicode-segmenter)
 [![CodSpeed Badge](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/cometkim/unicode-segmenter?utm_source=badge)
