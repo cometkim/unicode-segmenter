@@ -1,16 +1,3 @@
-// Copyright 2012-2018 The Rust Project Developers. See the COPYRIGHT
-// file at the top-level directory of this distribution and at
-// http://rust-lang.org/COPYRIGHT.
-//
-// Licensed under the MIT license
-// <LICENSE-MIT or http://opensource.org/licenses/MIT>.
-//
-// Modified original Rust library [source code]
-// (https://github.com/unicode-rs/unicode-segmentation/blob/1f88570/src/grapheme.rs)
-//
-// to create JavaScript library [unicode-segmenter]
-// (https://github.com/cometkim/unicode-segmenter)
-
 // @ts-check
 
 import { decodeUnicodeData } from './core.js';

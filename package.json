@@ -85,8 +85,7 @@
     "/*.js",
     "/*.cjs",
     "/*.d.ts",
-    "/*.d.cts",
-    "/licenses"
+    "/*.d.cts"
   ],
   "scripts": {
     "prepack": "yarn clean && yarn build",
