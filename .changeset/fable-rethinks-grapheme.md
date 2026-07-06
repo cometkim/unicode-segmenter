@@ -15,4 +15,6 @@ Also fixes several segmentation bugs where results diverged from `Intl.Segmenter
 - Unassigned `U+D7FC..U+D7FF` were treated as Hangul `T`
 
 The public API is unchanged. The internal `_incb_data` module is removed
-(its data is folded into the grapheme table).
+(its data is folded into the grapheme table), and all modules now share a
+single flat-table binary search — `general`/`emoji` predicates get 27–36%
+faster with 65% less retained heap.

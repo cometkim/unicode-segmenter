@@ -588,39 +588,32 @@ let printGeneralModule = async f => {
 
   f.write(preamble);
   f.write(`
-import { decodeUnicodeData } from './core.js';
+import { decodeUnicodeFlatData } from './core.js';
 
 /**
- * @typedef {import('./core.js').UnicodeRange} UnicodeRange
  * @typedef {import('./core.js').UnicodeDataEncoding} UnicodeDataEncoding
  */
 
 /**
- * The Unicode \`L\` (Letter) properties data
- *
- * @type {UnicodeRange[]}
+ * The Unicode \`L\` (Letter) properties table
  */
-export const letter_ranges = decodeUnicodeData(
+export const letter_table = decodeUnicodeFlatData(
   /** @type {UnicodeDataEncoding} */
   ('${encodeUnicodeData(gencats['L'])}')
 );
 
 /**
- * The Unicode \`N\` (Numeric) properties data
- *
- * @type {UnicodeRange[]}
+ * The Unicode \`N\` (Numeric) properties table
  */
-export const numeric_ranges = decodeUnicodeData(
+export const numeric_table = decodeUnicodeFlatData(
   /** @type {UnicodeDataEncoding} */
   ('${encodeUnicodeData(gencats['N'])}')
 );
 
 /**
- * The Unicode \`Alphabetic\` properties data
- *
- * @type {UnicodeRange[]}
+ * The Unicode \`Alphabetic\` properties table
  */
-export const alphabetic_ranges = decodeUnicodeData(
+export const alphabetic_table = decodeUnicodeFlatData(
   /** @type {UnicodeDataEncoding} */
   ('${encodeUnicodeData(derived['Alphabetic'])}')
 );
@@ -637,29 +630,24 @@ let printEmojiModule = async f => {
 
   f.write(preamble);
   f.write(`
-import { decodeUnicodeData } from './core.js';
+import { decodeUnicodeFlatData } from './core.js';
 
 /**
- * @typedef {import('./core.js').UnicodeRange} UnicodeRange
  * @typedef {import('./core.js').UnicodeDataEncoding} UnicodeDataEncoding
  */
 
 /**
- * The Unicode \`Emoji_Presentation\` properties data
- *
- * @type {UnicodeRange[]}
+ * The Unicode \`Emoji_Presentation\` properties table
  */
-export const emoji_presentation_ranges = decodeUnicodeData(
+export const emoji_presentation_table = decodeUnicodeFlatData(
   /** @type {UnicodeDataEncoding} */
   ('${encodeUnicodeData(emojiProps['Emoji_Presentation'])}')
 );
 
 /**
- * The Unicode \`Extended_Pictographic\` properties data
- *
- * @type {UnicodeRange[]}
+ * The Unicode \`Extended_Pictographic\` properties table
  */
-export const extended_pictographic_ranges = decodeUnicodeData(
+export const extended_pictographic_table = decodeUnicodeFlatData(
   /** @type {UnicodeDataEncoding} */
   ('${encodeUnicodeData(emojiProps['Extended_Pictographic'])}')
 );

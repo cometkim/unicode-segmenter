@@ -74,18 +74,51 @@ export function decodeUnicodeData(data, cats = '') {
  */
 
 /**
- * @template {number} [T=number]
- * @param {number} cp
- * @param {CategorizedUnicodeRange<T>[]} ranges
- * @return {number} index of matched unicode range, or -1 if no match
+ * @typedef {[starts: Uint32Array, ends: Uint32Array]} UnicodeRangeTable
+ *
+ * Flat, binary-searchable range table. `starts[i]` holds the first
+ * codepoint of the i-th range, and `ends[i]` packs its last codepoint
+ * and category as `end << 5 | category`.
+ *
+ * The 5-bit category fits any break property; the largest category
+ * value is 23.
  */
-export function findUnicodeRangeIndex(cp, ranges, lo = 0, hi = ranges.length - 1) {
+
+/**
+ * Category of the range containing the given codepoint.
+ *
+ * @param {number} cp
+ * @param {Uint32Array} starts sorted, non-overlapping range starts
+ * @param {Uint32Array} ends packed `end << 5 | category`, parallel to `starts`
+ * @return {number} category of the containing range, or 0 if no match
+ */
+export function findUnicodeRangeCategory(cp, starts, ends) {
+  let lo = 0, hi = starts.length - 1;
   while (lo <= hi) {
     let mid = lo + hi >>> 1
-      , range = ranges[mid];
-    if (cp < range[0]) hi = mid - 1;
-    else if (cp > range[1]) lo = mid + 1;
-    else return mid;
+      , end = ends[mid];
+    if (cp < starts[mid]) hi = mid - 1;
+    else if (cp > end >>> 5) lo = mid + 1;
+    else return end & 31;
   }
-  return -1;
+  return 0;
+}
+
+/**
+ * Decode {@link UnicodeDataEncoding} into a membership test table for
+ * {@link findUnicodeRangeCategory}; every range takes category 1, so a
+ * match is truthy and a miss is 0.
+ *
+ * @param {UnicodeDataEncoding} data
+ * @return {UnicodeRangeTable}
+ */
+export function decodeUnicodeFlatData(data) {
+  let ranges = decodeUnicodeData(data)
+    , starts = new Uint32Array(ranges.length)
+    , ends = new Uint32Array(ranges.length);
+  for (let i = 0; i < ranges.length; i++) {
+    starts[i] = ranges[i][0];
+    ends[i] = ranges[i][1] << 5 | 1;
+  }
+  return [starts, ends];
 }

@@ -1,6 +1,6 @@
 // @ts-check
 
-import { decodeUnicodeData } from './core.js';
+import { decodeUnicodeData, findUnicodeRangeCategory } from './core.js';
 import { GraphemeCategory, grapheme_data, grapheme_cats, grapheme_pairs } from './_grapheme_data.js';
 
 /**
@@ -40,9 +40,10 @@ export { GraphemeCategory };
 const T0 = new Uint8Array(0x3000);
 const T1 = new Uint8Array(0xC00);
 const T2 = new Uint8Array(0xB00);
-const TAIL_S = new Uint32Array(320);
-const TAIL_E = new Uint32Array(320);
-let TAIL_N = 0;
+/** @type {Uint32Array} Range starts of the binary-search tail */
+let TAIL_S;
+/** @type {Uint32Array} Packed `end << 5 | category`, parallel to {@link TAIL_S} */
+let TAIL_E;
 {
   let fill = (
     /** @type {Uint8Array} */ t,
@@ -56,15 +57,18 @@ let TAIL_N = 0;
       t[cp - lo] = cat;
     }
   };
+  let starts = new Uint32Array(320), ends = new Uint32Array(320), n = 0;
   for (let [from, to, cat] of decodeUnicodeData(grapheme_data, grapheme_cats)) {
     fill(T0, 0, 0x2FFF, from, to, cat);
     fill(T1, 0xA000, 0xABFF, from, to, cat);
     fill(T2, 0x1F000, 0x1FAFF, from, to, cat);
     if (to >= 0xFE10 && !(from >= 0x1F000 && to <= 0x1FAFF)) {
-      TAIL_S[TAIL_N] = from;
-      TAIL_E[TAIL_N++] = to << 4 | cat;
+      starts[n] = from;
+      ends[n++] = to << 5 | cat;
     }
   }
+  TAIL_S = starts.slice(0, n);
+  TAIL_E = ends.slice(0, n);
 }
 
 /**
@@ -106,15 +110,7 @@ function cat(cp) {
     return ((cp >= 0xE0020 && cp < 0xE0080) || (cp >= 0xE0100 && cp < 0xE01F0)) ? 3 : 2;
   }
   // The rare tail: 0xFE10-0xFFFF, 0x10000-0x1EFFF, 0x1FB00-0xDFFFF
-  let lo = 0, hi = TAIL_N - 1;
-  while (lo <= hi) {
-    let mid = (lo + hi) >> 1;
-    let e = TAIL_E[mid];
-    if (cp < TAIL_S[mid]) hi = mid - 1;
-    else if (cp > e >>> 4) lo = mid + 1;
-    else return e & 15;
-  }
-  return 0;
+  return findUnicodeRangeCategory(cp, TAIL_S, TAIL_E);
 }
 
 // Boundary decision table for category pairs, `PAIR[catBefore << 4 | catAfter]`

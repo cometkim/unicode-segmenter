@@ -3,29 +3,24 @@
 //
 // @ts-check
 
-import { decodeUnicodeData } from './core.js';
+import { decodeUnicodeFlatData } from './core.js';
 
 /**
- * @typedef {import('./core.js').UnicodeRange} UnicodeRange
  * @typedef {import('./core.js').UnicodeDataEncoding} UnicodeDataEncoding
  */
 
 /**
- * The Unicode `Emoji_Presentation` properties data
- *
- * @type {UnicodeRange[]}
+ * The Unicode `Emoji_Presentation` properties table
  */
-export const emoji_presentation_ranges = decodeUnicodeData(
+export const emoji_presentation_table = decodeUnicodeFlatData(
   /** @type {UnicodeDataEncoding} */
   ('qhj21tc33020pg21l11i3br20j10d081h11518050l10711040207041s10j20104210t32o10e0rl31j3040uqks10qc0ub029r4p110o10k102412l11uag2c81l41l1cq244cg1303m4101qb2u3d31n1i10q11d0m5k5g3l460322333b178jeb40rh1u2191obg7c3a3o3104f2b49')
 );
 
 /**
- * The Unicode `Extended_Pictographic` properties data
- *
- * @type {UnicodeRange[]}
+ * The Unicode `Extended_Pictographic` properties table
  */
-export const extended_pictographic_ranges = decodeUnicodeData(
+export const extended_pictographic_table = decodeUnicodeFlatData(
   /** @type {UnicodeDataEncoding} */
   ('pa040tov10c0od0m10q55f1vm11c0ma0p1a42nc0ne1a090q3314902021204020112030318250105bb1201110i1021i15101131502141b15120511011k1155132040202510201010603060a1f02040104210b1g3290e0e0kn11vs12j11j3040qt40c0pl2010qmtr10n23k6bf1f0e1l29g71c1e029j1n3r1ea0k1028139m16rb2v621122i522135tf1u3b51n17127c0232041d120819052c28220104060306l5g3l4572g130152cqdl2c3o37a5o27u11c32d9m2cu2191obo57eh9gg1tv3')
 );
