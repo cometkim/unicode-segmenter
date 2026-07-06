@@ -1,2301 +1,748 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>unicode-segmenter Benchmark Results</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 20px;
-      background: #0d1117;
-      color: #c9d1d9;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>unicode-segmenter benchmark report</title>
+<style>
+  :root {
+    --surface-1: #fcfcfb;
+    --plane: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --border: rgba(11, 11, 11, 0.10);
+    --accent: #2a78d6;      /* subject bars, series 1 */
+    --deemph: #a5a49c;      /* context bars */
+    --good: #006300;
+    --bad: #d03b3b;
+    --s1: #2a78d6; --s2: #1baf7a; --s3: #eda100;
+    --s4: #008300; --s5: #4a3aa7; --s6: #e34948;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface-1: #1a1a19;
+      --plane: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #898781;
+      --grid: #2c2c2a;
+      --axis: #383835;
+      --border: rgba(255, 255, 255, 0.10);
+      --accent: #3987e5;
+      --deemph: #5c5b56;
+      --good: #0ca30c;
+      --bad: #e66767;
+      --s1: #3987e5; --s2: #199e70; --s3: #c98500;
+      --s4: #008300; --s5: #9085e9; --s6: #e66767;
     }
-    h1, h2, h3 { color: #58a6ff; }
-    h1 { text-align: center; margin-bottom: 10px; }
-    .subtitle { text-align: center; color: #8b949e; margin-bottom: 30px; }
-    .charts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
-      gap: 30px;
-    }
-    .chart-container {
-      background: #161b22;
-      border-radius: 8px;
-      padding: 20px;
-      border: 1px solid #30363d;
-    }
-    .chart-container.full-width {
-      grid-column: 1 / -1;
-    }
-    .chart-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 15px;
-      color: #c9d1d9;
-    }
-    .chart-subtitle {
-      font-size: 12px;
-      color: #8b949e;
-      margin-bottom: 10px;
-    }
-    canvas { max-height: 400px; }
-    .trend-canvas { max-height: 350px; }
-    .summary-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 30px;
-      font-size: 14px;
-    }
-    .summary-table th, .summary-table td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #30363d;
-    }
-    .summary-table th {
-      background: #21262d;
-      color: #58a6ff;
-    }
-    .summary-table tr:hover {
-      background: #21262d;
-    }
-    .speedup {
-      color: #22c55e;
-      font-weight: bold;
-    }
-    .speedup-faster {
-      color: #ef4444;
-      font-weight: bold;
-    }
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      margin: 20px 0;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      padding: 6px 12px;
-      background: #21262d;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s;
-      user-select: none;
-    }
-    .legend-item:hover {
-      border-color: #58a6ff;
-    }
-    .legend-item.disabled {
-      opacity: 0.4;
-    }
-    .legend-item.disabled .legend-color {
-      background: #484f58 !important;
-    }
-    .legend-color {
-      width: 12px;
-      height: 12px;
-      border-radius: 2px;
-      flex-shrink: 0;
-    }
-    .main-tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 30px;
-      justify-content: center;
-    }
-    .main-tab {
-      padding: 12px 24px;
-      background: #21262d;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      cursor: pointer;
-      color: #c9d1d9;
-      transition: all 0.2s;
-      font-size: 16px;
-      font-weight: 500;
-    }
-    .main-tab:hover { background: #30363d; }
-    .main-tab.active {
-      background: #238636;
-      border-color: #238636;
-    }
-    .platform-selector {
-      margin-bottom: 20px;
-    }
-    .platform-selector label {
-      font-size: 14px;
-      color: #8b949e;
-      margin-right: 10px;
-    }
-    .platform-select {
-      padding: 10px 16px;
-      background: #21262d;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      color: #c9d1d9;
-      font-size: 14px;
-      cursor: pointer;
-      min-width: 280px;
-    }
-    .platform-select:hover {
-      border-color: #58a6ff;
-    }
-    .platform-select:focus {
-      outline: none;
-      border-color: #58a6ff;
-      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
-    }
-    .platform-select option {
-      background: #21262d;
-      color: #c9d1d9;
-      padding: 10px;
-    }
-    .main-content { display: none; }
-    .main-content.active { display: block; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .trend-section {
-      margin-top: 40px;
-    }
-    .trend-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      margin-top: 20px;
-    }
-    .stat-card {
-      background: #21262d;
-      border-radius: 6px;
-      padding: 15px;
-      text-align: center;
-    }
-    .stat-value {
-      font-size: 24px;
-      font-weight: bold;
-      color: #22c55e;
-    }
-    .stat-value.negative {
-      color: #ef4444;
-    }
-    .stat-label {
-      font-size: 12px;
-      color: #8b949e;
-      margin-top: 5px;
-    }
-    .improvement-positive { color: #22c55e; }
-    .improvement-negative { color: #ef4444; }
-  </style>
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--plane); }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--text-primary);
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 24px 48px;
+    line-height: 1.45;
+  }
+  header h1 { font-size: 22px; margin: 0; }
+  header p { color: var(--text-secondary); margin: 4px 0 0; font-size: 14px; }
+  h2 { font-size: 16px; margin: 40px 0 4px; }
+  .section-note { color: var(--text-muted); font-size: 13px; margin: 0 0 16px; }
+
+  .filters {
+    display: flex; align-items: center; gap: 10px;
+    margin: 24px 0 8px;
+    font-size: 14px; color: var(--text-secondary);
+  }
+  .filters select {
+    font: inherit; color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    min-width: 260px;
+  }
+  .filters .meta { color: var(--text-muted); font-size: 13px; }
+
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 12px; margin: 12px 0 8px;
+  }
+  .kpi {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .kpi .label { font-size: 13px; color: var(--text-secondary); }
+  .kpi .value { font-size: 30px; font-weight: 600; margin-top: 2px; }
+  .kpi .note { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 14px;
+  }
+  figure.card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin: 0; padding: 14px 16px 10px;
+    min-width: 0;
+  }
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .card-head h3 { font-size: 14px; margin: 0 0 8px; font-weight: 600; }
+  .view-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; flex: none; }
+  .view-toggle button {
+    font: inherit; font-size: 11px; padding: 2px 8px; margin: 0;
+    background: transparent; color: var(--text-muted);
+    border: 0; cursor: pointer;
+  }
+  .view-toggle button[aria-pressed="true"] { background: var(--grid); color: var(--text-primary); }
+  figure.card svg { display: block; width: 100%; height: auto; }
+  figure.card .tablewrap { overflow-x: auto; }
+
+  table.data {
+    border-collapse: collapse; width: 100%;
+    font-size: 13px;
+  }
+  table.data th, table.data td {
+    text-align: right; padding: 6px 10px;
+    border-bottom: 1px solid var(--grid);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  table.data th:first-child, table.data td:first-child { text-align: left; }
+  table.data thead th { color: var(--text-secondary); font-weight: 600; border-bottom: 1px solid var(--axis); }
+  table.data td.subject { font-weight: 600; }
+  table.data .up { color: var(--good); }
+  table.data .down { color: var(--bad); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 10px; margin: 8px 0 12px; }
+  .legend button {
+    font: inherit; font-size: 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--text-secondary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px 10px; cursor: pointer;
+  }
+  .legend button .key { width: 14px; height: 0; border-top: 3px solid; border-radius: 2px; }
+  .legend button[aria-pressed="false"] { opacity: 0.35; }
+
+  #tooltip {
+    position: fixed; z-index: 10; pointer-events: none;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    padding: 8px 10px; font-size: 12px;
+    max-width: 320px; display: none;
+  }
+  #tooltip .t-title { color: var(--text-muted); margin-bottom: 4px; }
+  #tooltip .t-row { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
+  #tooltip .t-key { width: 12px; height: 0; border-top: 3px solid; border-radius: 2px; flex: none; }
+  #tooltip .t-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+  #tooltip .t-lib { color: var(--text-secondary); }
+
+  svg text { font-family: inherit; }
+  .bar-row:focus { outline: none; }
+  .bar-row:focus-visible rect.hit { stroke: var(--accent); stroke-width: 2; }
+  footer { margin-top: 40px; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--grid); padding-top: 12px; }
+  footer code { font-family: ui-monospace, monospace; }
+</style>
 </head>
 <body>
-  <h1>unicode-segmenter Benchmark Results</h1>
-  <p class="subtitle">Grapheme segmentation performance comparison across different runtimes and platforms</p>
+<header>
+  <h1>unicode-segmenter benchmark report</h1>
+  <p>Grapheme segmentation, six workloads × six implementations. Longer bars are better (throughput). Generated 2026-07-07 from the records in this directory.</p>
+</header>
 
-  <div class="main-tabs">
-    <button class="main-tab active" onclick="showMainTab('comparison')">Library Comparison</button>
-    <button class="main-tab" onclick="showMainTab('trends')">Performance Trends</button>
+<div class="filters">
+  <label for="platform">Platform</label>
+  <select id="platform"></select>
+  <span class="meta" id="platform-meta"></span>
+</div>
+
+<div class="kpis" id="kpis"></div>
+
+<h2>Latest comparison</h2>
+<p class="section-note">Throughput per workload; <span style="border-bottom: 3px solid var(--accent)">unicode-segmenter</span> highlighted against the alternatives. Hover or focus a row for exact numbers.</p>
+<div class="grid" id="scenario-grid"></div>
+
+<figure class="card" style="margin-top:14px">
+  <div class="card-head"><h3>How much faster is unicode-segmenter?</h3></div>
+  <div class="tablewrap" id="speedup-table"></div>
+</figure>
+
+<h2>unicode-segmenter over time</h2>
+<p class="section-note">Throughput of unicode-segmenter across archived records for the selected platform. Runtime versions vary between records; the tooltip shows each record's runtime.</p>
+<div class="legend" id="trend-legend"></div>
+<figure class="card">
+  <div class="card-head">
+    <h3 id="trend-title">Performance history</h3>
+    <div class="view-toggle" data-for="trend"></div>
   </div>
-
-  <div class="main-content active" id="main-comparison">
-
-  <div class="legend" id="comparison-legend">
-    
-      <div class="legend-item" data-library="unicode-segmenter/grapheme" data-index="0" onclick="toggleLibrary('unicode-segmenter/grapheme', 0)">
-        <div class="legend-color" style="background: #22c55e"></div>
-        <span>unicode-segmenter</span>
-      </div>
-    
-      <div class="legend-item" data-library="graphemer" data-index="1" onclick="toggleLibrary('graphemer', 1)">
-        <div class="legend-color" style="background: #ef4444"></div>
-        <span>graphemer</span>
-      </div>
-    
-      <div class="legend-item" data-library="grapheme-splitter" data-index="2" onclick="toggleLibrary('grapheme-splitter', 2)">
-        <div class="legend-color" style="background: #f97316"></div>
-        <span>grapheme-splitter</span>
-      </div>
-    
-      <div class="legend-item" data-library="@formatjs/intl-segmenter" data-index="3" onclick="toggleLibrary('@formatjs/intl-segmenter', 3)">
-        <div class="legend-color" style="background: #eab308"></div>
-        <span>@formatjs/intl-segmenter</span>
-      </div>
-    
-      <div class="legend-item" data-library="unicode-rs/unicode-segmentation (wasm)" data-index="4" onclick="toggleLibrary('unicode-rs/unicode-segmentation (wasm)', 4)">
-        <div class="legend-color" style="background: #3b82f6"></div>
-        <span>unicode-segmentation (wasm)</span>
-      </div>
-    
-      <div class="legend-item" data-library="Intl.Segmenter" data-index="5" onclick="toggleLibrary('Intl.Segmenter', 5)">
-        <div class="legend-color" style="background: #8b5cf6"></div>
-        <span>Intl.Segmenter</span>
-      </div>
-    
-  </div>
-
-  <div class="platform-selector">
-    <label for="comparison-platform">Platform:</label>
-    <select id="comparison-platform" class="platform-select" onchange="showTab(this.value)">
-      
-        <option value="0">Apple M4 Pro / Node.js 26.4.0</option>
-      
-        <option value="1">Apple M4 Pro / Bun 1.3.14</option>
-      
-        <option value="2">Apple M4 Pro / Chrome 150.0.0.0</option>
-      
-        <option value="3">Apple M4 Pro / Safari 26.5</option>
-      
-        <option value="4">Apple M1 Pro / Node.js 20.17.0</option>
-      
-        <option value="5">Apple M1 Pro / Bun 1.20.0</option>
-      
-        <option value="6">Apple M1 Pro / Chrome 128.0.6613.114</option>
-      
-        <option value="7">Apple M1 Pro / Firefox 130.0b9</option>
-      
-        <option value="8">Apple M1 Pro / Safari 17.5</option>
-      
-        <option value="9">Intel x86_64 / Node.js 24.2.1</option>
-      
-        <option value="10">Intel x86_64 / Bun 1.3.4</option>
-      
-        <option value="11">Intel x86_64 / Chrome 143.0.7499.40</option>
-      
-        <option value="12">Intel x86_64 / Firefox 146.0</option>
-      
-    </select>
-  </div>
-
-  
-    <div class="tab-content active" id="tab-0">
-      <h2>Apple M4 Pro - Node.js 26.4.0</h2>
-      <p class="chart-subtitle">Recorded: 2026-07-07</p>
-
-      <div class="charts-grid">
-        
-            <div class="chart-container">
-              <div class="chart-title">Lorem ipsum (ascii)</div>
-              <canvas id="chart-0-Loremipsumascii"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Emojis</div>
-              <canvas id="chart-0-Emojis"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Hindi</div>
-              <canvas id="chart-0-Hindi"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Demonic characters</div>
-              <canvas id="chart-0-Demoniccharacters"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Tweet text (combined)</div>
-              <canvas id="chart-0-Tweettextcombined"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Code snippet (combined)</div>
-              <canvas id="chart-0-Codesnippetcombined"></canvas>
-            </div>
-          
-      </div>
-
-      <h3>Speedup vs unicode-segmenter</h3>
-      <table class="summary-table">
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            <th>graphemer</th><th>grapheme-splitter</th><th>@formatjs/intl-segmenter</th><th>unicode-segmentation (wasm)</th><th>Intl.Segmenter</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-              <tr>
-                <td>Lorem ipsum (ascii)</td>
-                <td class="speedup">14.67x slower</td><td class="speedup">24.52x slower</td><td class="speedup">11.16x slower</td><td class="speedup">7.15x slower</td><td class="speedup">1.81x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Emojis</td>
-                <td class="speedup">8.03x slower</td><td class="speedup">45.07x slower</td><td class="speedup">10.72x slower</td><td class="speedup">4.63x slower</td><td class="speedup">2.38x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Hindi</td>
-                <td class="speedup">9.12x slower</td><td class="speedup">19.04x slower</td><td class="speedup">9.90x slower</td><td class="speedup">4.23x slower</td><td class="speedup">1.72x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Demonic characters</td>
-                <td class="speedup">23.49x slower</td><td class="speedup">17.33x slower</td><td class="speedup">18.71x slower</td><td class="speedup">3.48x slower</td><td class="speedup">1.63x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Tweet text (combined)</td>
-                <td class="speedup">12.52x slower</td><td class="speedup">24.62x slower</td><td class="speedup">10.61x slower</td><td class="speedup">4.26x slower</td><td class="speedup">1.91x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Code snippet (combined)</td>
-                <td class="speedup">10.70x slower</td><td class="speedup">22.11x slower</td><td class="speedup">13.55x slower</td><td class="speedup">4.18x slower</td><td class="speedup">1.74x slower</td>
-              </tr>
-            
-        </tbody>
-      </table>
-    </div>
-  
-    <div class="tab-content " id="tab-1">
-      <h2>Apple M4 Pro - Bun 1.3.14</h2>
-      <p class="chart-subtitle">Recorded: 2026-07-07</p>
-
-      <div class="charts-grid">
-        
-            <div class="chart-container">
-              <div class="chart-title">Lorem ipsum (ascii)</div>
-              <canvas id="chart-1-Loremipsumascii"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Emojis</div>
-              <canvas id="chart-1-Emojis"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Hindi</div>
-              <canvas id="chart-1-Hindi"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Demonic characters</div>
-              <canvas id="chart-1-Demoniccharacters"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Tweet text (combined)</div>
-              <canvas id="chart-1-Tweettextcombined"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Code snippet (combined)</div>
-              <canvas id="chart-1-Codesnippetcombined"></canvas>
-            </div>
-          
-      </div>
-
-      <h3>Speedup vs unicode-segmenter</h3>
-      <table class="summary-table">
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            <th>graphemer</th><th>grapheme-splitter</th><th>@formatjs/intl-segmenter</th><th>unicode-segmentation (wasm)</th><th>Intl.Segmenter</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-              <tr>
-                <td>Lorem ipsum (ascii)</td>
-                <td class="speedup">7.34x slower</td><td class="speedup">27.75x slower</td><td class="speedup">21.78x slower</td><td class="speedup">4.93x slower</td><td class="speedup">1.68x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Emojis</td>
-                <td class="speedup">5.80x slower</td><td class="speedup">20.43x slower</td><td class="speedup">22.98x slower</td><td class="speedup">3.92x slower</td><td class="speedup">1.79x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Hindi</td>
-                <td class="speedup">6.62x slower</td><td class="speedup">12.95x slower</td><td class="speedup">24.33x slower</td><td class="speedup">4.23x slower</td><td class="speedup">1.36x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Demonic characters</td>
-                <td class="speedup">18.00x slower</td><td class="speedup">15.55x slower</td><td class="speedup">156.52x slower</td><td class="speedup">4.71x slower</td><td class="speedup">1.56x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Tweet text (combined)</td>
-                <td class="speedup">5.99x slower</td><td class="speedup">13.14x slower</td><td class="speedup">19.10x slower</td><td class="speedup">3.65x slower</td><td class="speedup">1.48x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Code snippet (combined)</td>
-                <td class="speedup">5.91x slower</td><td class="speedup">12.99x slower</td><td class="speedup">17.53x slower</td><td class="speedup">3.71x slower</td><td class="speedup">1.44x slower</td>
-              </tr>
-            
-        </tbody>
-      </table>
-    </div>
-  
-    <div class="tab-content " id="tab-2">
-      <h2>Apple M4 Pro - Chrome 150.0.0.0</h2>
-      <p class="chart-subtitle">Recorded: 2026-07-07</p>
-
-      <div class="charts-grid">
-        
-            <div class="chart-container">
-              <div class="chart-title">Lorem ipsum (ascii)</div>
-              <canvas id="chart-2-Loremipsumascii"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Emojis</div>
-              <canvas id="chart-2-Emojis"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Hindi</div>
-              <canvas id="chart-2-Hindi"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Demonic characters</div>
-              <canvas id="chart-2-Demoniccharacters"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Tweet text (combined)</div>
-              <canvas id="chart-2-Tweettextcombined"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Code snippet (combined)</div>
-              <canvas id="chart-2-Codesnippetcombined"></canvas>
-            </div>
-          
-      </div>
-
-      <h3>Speedup vs unicode-segmenter</h3>
-      <table class="summary-table">
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            <th>graphemer</th><th>grapheme-splitter</th><th>@formatjs/intl-segmenter</th><th>unicode-segmentation (wasm)</th><th>Intl.Segmenter</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-              <tr>
-                <td>Lorem ipsum (ascii)</td>
-                <td class="speedup">24.28x slower</td><td class="speedup">25.64x slower</td><td class="speedup">26.25x slower</td><td class="speedup">7.19x slower</td><td class="speedup">1.88x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Emojis</td>
-                <td class="speedup">7.33x slower</td><td class="speedup">21.55x slower</td><td class="speedup">13.14x slower</td><td class="speedup">5.35x slower</td><td class="speedup">2.65x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Hindi</td>
-                <td class="speedup">8.65x slower</td><td class="speedup">24.11x slower</td><td class="speedup">24.69x slower</td><td class="speedup">9.34x slower</td><td class="speedup">1.79x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Demonic characters</td>
-                <td class="speedup">20.78x slower</td><td class="speedup">15.91x slower</td><td class="speedup">17.57x slower</td><td class="speedup">3.53x slower</td><td class="speedup">1.89x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Tweet text (combined)</td>
-                <td class="speedup">21.56x slower</td><td class="speedup">27.68x slower</td><td class="speedup">10.63x slower</td><td class="speedup">5.09x slower</td><td class="speedup">2.06x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Code snippet (combined)</td>
-                <td class="speedup">7.58x slower</td><td class="speedup">31.19x slower</td><td class="speedup">17.72x slower</td><td class="speedup">4.93x slower</td><td class="speedup">1.74x slower</td>
-              </tr>
-            
-        </tbody>
-      </table>
-    </div>
-  
-    <div class="tab-content " id="tab-3">
-      <h2>Apple M4 Pro - Safari 26.5</h2>
-      <p class="chart-subtitle">Recorded: 2026-07-07</p>
-
-      <div class="charts-grid">
-        
-            <div class="chart-container">
-              <div class="chart-title">Lorem ipsum (ascii)</div>
-              <canvas id="chart-3-Loremipsumascii"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Emojis</div>
-              <canvas id="chart-3-Emojis"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Hindi</div>
-              <canvas id="chart-3-Hindi"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Demonic characters</div>
-              <canvas id="chart-3-Demoniccharacters"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Tweet text (combined)</div>
-              <canvas id="chart-3-Tweettextcombined"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Code snippet (combined)</div>
-              <canvas id="chart-3-Codesnippetcombined"></canvas>
-            </div>
-          
-      </div>
-
-      <h3>Speedup vs unicode-segmenter</h3>
-      <table class="summary-table">
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            <th>graphemer</th><th>grapheme-splitter</th><th>@formatjs/intl-segmenter</th><th>unicode-segmentation (wasm)</th><th>Intl.Segmenter</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-              <tr>
-                <td>Lorem ipsum (ascii)</td>
-                <td class="speedup">10.75x slower</td><td class="speedup">39.45x slower</td><td class="speedup">23.36x slower</td><td class="speedup">10.82x slower</td><td class="speedup">3.43x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Emojis</td>
-                <td class="speedup">4.94x slower</td><td class="speedup">22.57x slower</td><td class="speedup">23.34x slower</td><td class="speedup">7.63x slower</td><td class="speedup">5.53x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Hindi</td>
-                <td class="speedup">5.91x slower</td><td class="speedup">12.18x slower</td><td class="speedup">18.12x slower</td><td class="speedup">5.20x slower</td><td class="speedup">1.87x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Demonic characters</td>
-                <td class="speedup">15.95x slower</td><td class="speedup">13.49x slower</td><td class="speedup">128.79x slower</td><td class="speedup">8.76x slower</td><td class="speedup">6.72x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Tweet text (combined)</td>
-                <td class="speedup">6.35x slower</td><td class="speedup">12.89x slower</td><td class="speedup">13.40x slower</td><td class="speedup">4.96x slower</td><td class="speedup">2.02x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Code snippet (combined)</td>
-                <td class="speedup">5.24x slower</td><td class="speedup">12.06x slower</td><td class="speedup">15.87x slower</td><td class="speedup">4.84x slower</td><td class="speedup">1.93x slower</td>
-              </tr>
-            
-        </tbody>
-      </table>
-    </div>
-  
-    <div class="tab-content " id="tab-4">
-      <h2>Apple M1 Pro - Node.js 20.17.0</h2>
-      <p class="chart-subtitle">Recorded: 2024-09-02</p>
-
-      <div class="charts-grid">
-        
-            <div class="chart-container">
-              <div class="chart-title">Lorem ipsum (ascii)</div>
-              <canvas id="chart-4-Loremipsumascii"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Emojis</div>
-              <canvas id="chart-4-Emojis"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Hindi</div>
-              <canvas id="chart-4-Hindi"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Demonic characters</div>
-              <canvas id="chart-4-Demoniccharacters"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Tweet text (combined)</div>
-              <canvas id="chart-4-Tweettextcombined"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Code snippet (combined)</div>
-              <canvas id="chart-4-Codesnippetcombined"></canvas>
-            </div>
-          
-      </div>
-
-      <h3>Speedup vs unicode-segmenter</h3>
-      <table class="summary-table">
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            <th>graphemer</th><th>grapheme-splitter</th><th>@formatjs/intl-segmenter</th><th>unicode-segmentation (wasm)</th><th>Intl.Segmenter</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-              <tr>
-                <td>Lorem ipsum (ascii)</td>
-                <td class="speedup">7.79x slower</td><td class="speedup">11.90x slower</td><td class="speedup">6.52x slower</td><td class="speedup">2.65x slower</td><td class="speedup">8.44x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Emojis</td>
-                <td class="speedup">6.92x slower</td><td class="speedup">14.04x slower</td><td class="speedup">7.28x slower</td><td class="speedup">2.86x slower</td><td class="speedup">7.83x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Hindi</td>
-                <td class="speedup">7.47x slower</td><td class="speedup">14.94x slower</td><td class="speedup">7.08x slower</td><td class="speedup">2.44x slower</td><td class="speedup">5.86x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Demonic characters</td>
-                <td class="speedup">15.04x slower</td><td class="speedup">10.95x slower</td><td class="speedup">9.57x slower</td><td class="speedup">1.34x slower</td><td class="speedup">2.96x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Tweet text (combined)</td>
-                <td class="speedup">7.50x slower</td><td class="speedup">16.38x slower</td><td class="speedup">7.05x slower</td><td class="speedup">2.66x slower</td><td class="speedup">7.64x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Code snippet (combined)</td>
-                <td class="speedup">7.57x slower</td><td class="speedup">16.10x slower</td><td class="speedup">6.78x slower</td><td class="speedup">2.68x slower</td><td class="speedup">7.66x slower</td>
-              </tr>
-            
-        </tbody>
-      </table>
-    </div>
-  
-    <div class="tab-content " id="tab-5">
-      <h2>Apple M1 Pro - Bun 1.20.0</h2>
-      <p class="chart-subtitle">Recorded: 2024-09-02</p>
-
-      <div class="charts-grid">
-        
-            <div class="chart-container">
-              <div class="chart-title">Lorem ipsum (ascii)</div>
-              <canvas id="chart-5-Loremipsumascii"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Emojis</div>
-              <canvas id="chart-5-Emojis"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Hindi</div>
-              <canvas id="chart-5-Hindi"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Demonic characters</div>
-              <canvas id="chart-5-Demoniccharacters"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Tweet text (combined)</div>
-              <canvas id="chart-5-Tweettextcombined"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Code snippet (combined)</div>
-              <canvas id="chart-5-Codesnippetcombined"></canvas>
-            </div>
-          
-      </div>
-
-      <h3>Speedup vs unicode-segmenter</h3>
-      <table class="summary-table">
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            <th>graphemer</th><th>grapheme-splitter</th><th>@formatjs/intl-segmenter</th><th>unicode-segmentation (wasm)</th><th>Intl.Segmenter</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-              <tr>
-                <td>Lorem ipsum (ascii)</td>
-                <td class="speedup">7.79x slower</td><td class="speedup">11.90x slower</td><td class="speedup">6.52x slower</td><td class="speedup">2.65x slower</td><td class="speedup">8.44x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Emojis</td>
-                <td class="speedup">6.92x slower</td><td class="speedup">14.04x slower</td><td class="speedup">7.28x slower</td><td class="speedup">2.86x slower</td><td class="speedup">7.83x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Hindi</td>
-                <td class="speedup">7.47x slower</td><td class="speedup">14.94x slower</td><td class="speedup">7.08x slower</td><td class="speedup">2.44x slower</td><td class="speedup">5.86x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Demonic characters</td>
-                <td class="speedup">15.04x slower</td><td class="speedup">10.95x slower</td><td class="speedup">9.57x slower</td><td class="speedup">1.34x slower</td><td class="speedup">2.96x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Tweet text (combined)</td>
-                <td class="speedup">7.50x slower</td><td class="speedup">16.38x slower</td><td class="speedup">7.05x slower</td><td class="speedup">2.66x slower</td><td class="speedup">7.64x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Code snippet (combined)</td>
-                <td class="speedup">7.57x slower</td><td class="speedup">16.10x slower</td><td class="speedup">6.78x slower</td><td class="speedup">2.68x slower</td><td class="speedup">7.66x slower</td>
-              </tr>
-            
-        </tbody>
-      </table>
-    </div>
-  
-    <div class="tab-content " id="tab-6">
-      <h2>Apple M1 Pro - Chrome 128.0.6613.114</h2>
-      <p class="chart-subtitle">Recorded: 2024-09-02</p>
-
-      <div class="charts-grid">
-        
-            <div class="chart-container">
-              <div class="chart-title">Lorem ipsum (ascii)</div>
-              <canvas id="chart-6-Loremipsumascii"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Emojis</div>
-              <canvas id="chart-6-Emojis"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Hindi</div>
-              <canvas id="chart-6-Hindi"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Demonic characters</div>
-              <canvas id="chart-6-Demoniccharacters"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Tweet text (combined)</div>
-              <canvas id="chart-6-Tweettextcombined"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Code snippet (combined)</div>
-              <canvas id="chart-6-Codesnippetcombined"></canvas>
-            </div>
-          
-      </div>
-
-      <h3>Speedup vs unicode-segmenter</h3>
-      <table class="summary-table">
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            <th>graphemer</th><th>grapheme-splitter</th><th>@formatjs/intl-segmenter</th><th>unicode-segmentation (wasm)</th><th>Intl.Segmenter</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-              <tr>
-                <td>Lorem ipsum (ascii)</td>
-                <td class="speedup">7.00x slower</td><td class="speedup">11.36x slower</td><td class="speedup">7.35x slower</td><td class="speedup">6.39x slower</td><td class="speedup">1.87x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Emojis</td>
-                <td class="speedup">5.36x slower</td><td class="speedup">12.26x slower</td><td class="speedup">7.05x slower</td><td class="speedup">5.53x slower</td><td class="speedup">2.86x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Hindi</td>
-                <td class="speedup">6.37x slower</td><td class="speedup">18.99x slower</td><td class="speedup">7.40x slower</td><td class="speedup">4.73x slower</td><td class="speedup">1.62x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Demonic characters</td>
-                <td class="speedup">11.56x slower</td><td class="speedup">10.30x slower</td><td class="speedup">9.57x slower</td><td class="speedup">2.06x slower</td><td class="speedup">1.94x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Tweet text (combined)</td>
-                <td class="speedup">6.11x slower</td><td class="speedup">20.52x slower</td><td class="speedup">7.45x slower</td><td class="speedup">5.64x slower</td><td class="speedup">1.65x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Code snippet (combined)</td>
-                <td class="speedup">6.11x slower</td><td class="speedup">19.35x slower</td><td class="speedup">7.14x slower</td><td class="speedup">5.52x slower</td><td class="speedup">1.42x slower</td>
-              </tr>
-            
-        </tbody>
-      </table>
-    </div>
-  
-    <div class="tab-content " id="tab-7">
-      <h2>Apple M1 Pro - Firefox 130.0b9</h2>
-      <p class="chart-subtitle">Recorded: 2024-09-02</p>
-
-      <div class="charts-grid">
-        
-            <div class="chart-container">
-              <div class="chart-title">Lorem ipsum (ascii)</div>
-              <canvas id="chart-7-Loremipsumascii"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Emojis</div>
-              <canvas id="chart-7-Emojis"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Hindi</div>
-              <canvas id="chart-7-Hindi"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Demonic characters</div>
-              <canvas id="chart-7-Demoniccharacters"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Tweet text (combined)</div>
-              <canvas id="chart-7-Tweettextcombined"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Code snippet (combined)</div>
-              <canvas id="chart-7-Codesnippetcombined"></canvas>
-            </div>
-          
-      </div>
-
-      <h3>Speedup vs unicode-segmenter</h3>
-      <table class="summary-table">
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            <th>graphemer</th><th>grapheme-splitter</th><th>@formatjs/intl-segmenter</th><th>unicode-segmentation (wasm)</th><th>Intl.Segmenter</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-              <tr>
-                <td>Lorem ipsum (ascii)</td>
-                <td class="speedup">2.45x slower</td><td class="speedup">4.04x slower</td><td class="speedup">2.30x slower</td><td class="speedup">1.52x slower</td><td class="speedup-faster">3.01x faster</td>
-              </tr>
-            
-              <tr>
-                <td>Emojis</td>
-                <td class="speedup">2.05x slower</td><td class="speedup">6.87x slower</td><td class="speedup">2.55x slower</td><td class="speedup">1.42x slower</td><td class="speedup-faster">3.08x faster</td>
-              </tr>
-            
-              <tr>
-                <td>Hindi</td>
-                <td class="speedup">2.02x slower</td><td class="speedup">7.39x slower</td><td class="speedup">2.42x slower</td><td class="speedup">1.13x slower</td><td class="speedup-faster">4.07x faster</td>
-              </tr>
-            
-              <tr>
-                <td>Demonic characters</td>
-                <td class="speedup">2.66x slower</td><td class="speedup">2.77x slower</td><td class="speedup">2.33x slower</td><td class="speedup-faster">2.96x faster</td><td class="speedup-faster">10.44x faster</td>
-              </tr>
-            
-              <tr>
-                <td>Tweet text (combined)</td>
-                <td class="speedup">3.65x slower</td><td class="speedup">14.03x slower</td><td class="speedup">3.99x slower</td><td class="speedup">2.26x slower</td><td class="speedup-faster">2.07x faster</td>
-              </tr>
-            
-              <tr>
-                <td>Code snippet (combined)</td>
-                <td class="speedup">3.68x slower</td><td class="speedup">13.76x slower</td><td class="speedup">3.85x slower</td><td class="speedup">2.28x slower</td><td class="speedup-faster">2.09x faster</td>
-              </tr>
-            
-        </tbody>
-      </table>
-    </div>
-  
-    <div class="tab-content " id="tab-8">
-      <h2>Apple M1 Pro - Safari 17.5</h2>
-      <p class="chart-subtitle">Recorded: 2024-09-02</p>
-
-      <div class="charts-grid">
-        
-            <div class="chart-container">
-              <div class="chart-title">Lorem ipsum (ascii)</div>
-              <canvas id="chart-8-Loremipsumascii"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Emojis</div>
-              <canvas id="chart-8-Emojis"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Hindi</div>
-              <canvas id="chart-8-Hindi"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Demonic characters</div>
-              <canvas id="chart-8-Demoniccharacters"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Tweet text (combined)</div>
-              <canvas id="chart-8-Tweettextcombined"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Code snippet (combined)</div>
-              <canvas id="chart-8-Codesnippetcombined"></canvas>
-            </div>
-          
-      </div>
-
-      <h3>Speedup vs unicode-segmenter</h3>
-      <table class="summary-table">
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            <th>graphemer</th><th>grapheme-splitter</th><th>@formatjs/intl-segmenter</th><th>unicode-segmentation (wasm)</th><th>Intl.Segmenter</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-              <tr>
-                <td>Lorem ipsum (ascii)</td>
-                <td class="speedup">2.95x slower</td><td class="speedup">9.63x slower</td><td class="speedup">9.09x slower</td><td class="speedup">2.43x slower</td><td class="speedup-faster">1.84x faster</td>
-              </tr>
-            
-              <tr>
-                <td>Emojis</td>
-                <td class="speedup">2.32x slower</td><td class="speedup">8.94x slower</td><td class="speedup">7.07x slower</td><td class="speedup">1.86x slower</td><td class="speedup-faster">1.68x faster</td>
-              </tr>
-            
-              <tr>
-                <td>Hindi</td>
-                <td class="speedup">2.22x slower</td><td class="speedup">6.07x slower</td><td class="speedup">7.92x slower</td><td class="speedup">1.58x slower</td><td class="speedup-faster">2.66x faster</td>
-              </tr>
-            
-              <tr>
-                <td>Demonic characters</td>
-                <td class="speedup">3.27x slower</td><td class="speedup">2.78x slower</td><td class="speedup">26.88x slower</td><td class="speedup-faster">1.85x faster</td><td class="speedup-faster">3.00x faster</td>
-              </tr>
-            
-              <tr>
-                <td>Tweet text (combined)</td>
-                <td class="speedup">2.49x slower</td><td class="speedup">6.82x slower</td><td class="speedup">6.72x slower</td><td class="speedup">1.83x slower</td><td class="speedup-faster">2.41x faster</td>
-              </tr>
-            
-              <tr>
-                <td>Code snippet (combined)</td>
-                <td class="speedup">2.54x slower</td><td class="speedup">6.84x slower</td><td class="speedup">6.66x slower</td><td class="speedup">1.89x slower</td><td class="speedup-faster">2.40x faster</td>
-              </tr>
-            
-        </tbody>
-      </table>
-    </div>
-  
-    <div class="tab-content " id="tab-9">
-      <h2>Intel x86_64 - Node.js 24.2.1</h2>
-      <p class="chart-subtitle">Recorded: 2025-12-13</p>
-
-      <div class="charts-grid">
-        
-            <div class="chart-container">
-              <div class="chart-title">Lorem ipsum (ascii)</div>
-              <canvas id="chart-9-Loremipsumascii"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Emojis</div>
-              <canvas id="chart-9-Emojis"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Hindi</div>
-              <canvas id="chart-9-Hindi"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Demonic characters</div>
-              <canvas id="chart-9-Demoniccharacters"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Tweet text (combined)</div>
-              <canvas id="chart-9-Tweettextcombined"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Code snippet (combined)</div>
-              <canvas id="chart-9-Codesnippetcombined"></canvas>
-            </div>
-          
-      </div>
-
-      <h3>Speedup vs unicode-segmenter</h3>
-      <table class="summary-table">
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            <th>graphemer</th><th>grapheme-splitter</th><th>@formatjs/intl-segmenter</th><th>unicode-segmentation (wasm)</th><th>Intl.Segmenter</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-              <tr>
-                <td>Lorem ipsum (ascii)</td>
-                <td class="speedup">15.95x slower</td><td class="speedup">32.68x slower</td><td class="speedup">9.80x slower</td><td class="speedup">8.06x slower</td><td class="speedup">2.18x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Emojis</td>
-                <td class="speedup">7.30x slower</td><td class="speedup">63.88x slower</td><td class="speedup">9.03x slower</td><td class="speedup">3.37x slower</td><td class="speedup">2.42x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Hindi</td>
-                <td class="speedup">10.91x slower</td><td class="speedup">36.16x slower</td><td class="speedup">11.38x slower</td><td class="speedup">4.32x slower</td><td class="speedup">2.12x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Demonic characters</td>
-                <td class="speedup">38.51x slower</td><td class="speedup">30.97x slower</td><td class="speedup">25.35x slower</td><td class="speedup">5.79x slower</td><td class="speedup">3.05x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Tweet text (combined)</td>
-                <td class="speedup">14.44x slower</td><td class="speedup">33.36x slower</td><td class="speedup">18.80x slower</td><td class="speedup">4.12x slower</td><td class="speedup">2.33x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Code snippet (combined)</td>
-                <td class="speedup">12.09x slower</td><td class="speedup">31.64x slower</td><td class="speedup">15.23x slower</td><td class="speedup">4.22x slower</td><td class="speedup">2.38x slower</td>
-              </tr>
-            
-        </tbody>
-      </table>
-    </div>
-  
-    <div class="tab-content " id="tab-10">
-      <h2>Intel x86_64 - Bun 1.3.4</h2>
-      <p class="chart-subtitle">Recorded: 2025-12-13</p>
-
-      <div class="charts-grid">
-        
-            <div class="chart-container">
-              <div class="chart-title">Lorem ipsum (ascii)</div>
-              <canvas id="chart-10-Loremipsumascii"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Emojis</div>
-              <canvas id="chart-10-Emojis"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Hindi</div>
-              <canvas id="chart-10-Hindi"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Demonic characters</div>
-              <canvas id="chart-10-Demoniccharacters"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Tweet text (combined)</div>
-              <canvas id="chart-10-Tweettextcombined"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Code snippet (combined)</div>
-              <canvas id="chart-10-Codesnippetcombined"></canvas>
-            </div>
-          
-      </div>
-
-      <h3>Speedup vs unicode-segmenter</h3>
-      <table class="summary-table">
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            <th>graphemer</th><th>grapheme-splitter</th><th>@formatjs/intl-segmenter</th><th>unicode-segmentation (wasm)</th><th>Intl.Segmenter</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-              <tr>
-                <td>Lorem ipsum (ascii)</td>
-                <td class="speedup">8.06x slower</td><td class="speedup">35.77x slower</td><td class="speedup">24.66x slower</td><td class="speedup">7.29x slower</td><td class="speedup">1.95x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Emojis</td>
-                <td class="speedup">3.77x slower</td><td class="speedup">18.13x slower</td><td class="speedup">15.10x slower</td><td class="speedup">3.00x slower</td><td class="speedup">1.56x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Hindi</td>
-                <td class="speedup">5.90x slower</td><td class="speedup">10.08x slower</td><td class="speedup">26.57x slower</td><td class="speedup">4.69x slower</td><td class="speedup">1.65x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Demonic characters</td>
-                <td class="speedup">14.02x slower</td><td class="speedup">10.95x slower</td><td class="speedup">74.57x slower</td><td class="speedup">4.49x slower</td><td class="speedup">1.41x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Tweet text (combined)</td>
-                <td class="speedup">4.79x slower</td><td class="speedup">14.70x slower</td><td class="speedup">20.84x slower</td><td class="speedup">3.66x slower</td><td class="speedup">1.66x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Code snippet (combined)</td>
-                <td class="speedup">6.17x slower</td><td class="speedup">12.37x slower</td><td class="speedup">17.79x slower</td><td class="speedup">5.12x slower</td><td class="speedup">1.73x slower</td>
-              </tr>
-            
-        </tbody>
-      </table>
-    </div>
-  
-    <div class="tab-content " id="tab-11">
-      <h2>Intel x86_64 - Chrome 143.0.7499.40</h2>
-      <p class="chart-subtitle">Recorded: 2025-12-13</p>
-
-      <div class="charts-grid">
-        
-            <div class="chart-container">
-              <div class="chart-title">Lorem ipsum (ascii)</div>
-              <canvas id="chart-11-Loremipsumascii"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Emojis</div>
-              <canvas id="chart-11-Emojis"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Hindi</div>
-              <canvas id="chart-11-Hindi"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Demonic characters</div>
-              <canvas id="chart-11-Demoniccharacters"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Tweet text (combined)</div>
-              <canvas id="chart-11-Tweettextcombined"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Code snippet (combined)</div>
-              <canvas id="chart-11-Codesnippetcombined"></canvas>
-            </div>
-          
-      </div>
-
-      <h3>Speedup vs unicode-segmenter</h3>
-      <table class="summary-table">
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            <th>graphemer</th><th>grapheme-splitter</th><th>@formatjs/intl-segmenter</th><th>unicode-segmentation (wasm)</th><th>Intl.Segmenter</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-              <tr>
-                <td>Lorem ipsum (ascii)</td>
-                <td class="speedup">16.39x slower</td><td class="speedup">146.41x slower</td><td class="speedup">13.59x slower</td><td class="speedup">11.67x slower</td><td class="speedup">2.96x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Emojis</td>
-                <td class="speedup">1.93x slower</td><td class="speedup">113.12x slower</td><td class="speedup">4.79x slower</td><td class="speedup">1.91x slower</td><td class="speedup">1.53x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Hindi</td>
-                <td class="speedup">8.77x slower</td><td class="speedup">159.30x slower</td><td class="speedup">17.40x slower</td><td class="speedup">6.66x slower</td><td class="speedup">2.87x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Demonic characters</td>
-                <td class="speedup">19.84x slower</td><td class="speedup">17.19x slower</td><td class="speedup">16.35x slower</td><td class="speedup">4.94x slower</td><td class="speedup">4.74x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Tweet text (combined)</td>
-                <td class="speedup">17.16x slower</td><td class="speedup">116.38x slower</td><td class="speedup">17.67x slower</td><td class="speedup">7.41x slower</td><td class="speedup">2.48x slower</td>
-              </tr>
-            
-              <tr>
-                <td>Code snippet (combined)</td>
-                <td class="speedup">17.47x slower</td><td class="speedup">70.72x slower</td><td class="speedup">17.27x slower</td><td class="speedup">7.24x slower</td><td class="speedup">2.01x slower</td>
-              </tr>
-            
-        </tbody>
-      </table>
-    </div>
-  
-    <div class="tab-content " id="tab-12">
-      <h2>Intel x86_64 - Firefox 146.0</h2>
-      <p class="chart-subtitle">Recorded: 2025-12-13</p>
-
-      <div class="charts-grid">
-        
-            <div class="chart-container">
-              <div class="chart-title">Lorem ipsum (ascii)</div>
-              <canvas id="chart-12-Loremipsumascii"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Emojis</div>
-              <canvas id="chart-12-Emojis"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Hindi</div>
-              <canvas id="chart-12-Hindi"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Demonic characters</div>
-              <canvas id="chart-12-Demoniccharacters"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Tweet text (combined)</div>
-              <canvas id="chart-12-Tweettextcombined"></canvas>
-            </div>
-          
-            <div class="chart-container">
-              <div class="chart-title">Code snippet (combined)</div>
-              <canvas id="chart-12-Codesnippetcombined"></canvas>
-            </div>
-          
-      </div>
-
-      <h3>Speedup vs unicode-segmenter</h3>
-      <table class="summary-table">
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            <th>graphemer</th><th>grapheme-splitter</th><th>@formatjs/intl-segmenter</th><th>unicode-segmentation (wasm)</th><th>Intl.Segmenter</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-              <tr>
-                <td>Lorem ipsum (ascii)</td>
-                <td class="speedup">2.37x slower</td><td class="speedup">5.76x slower</td><td class="speedup">3.99x slower</td><td class="speedup">2.02x slower</td><td class="speedup-faster">2.62x faster</td>
-              </tr>
-            
-              <tr>
-                <td>Emojis</td>
-                <td class="speedup">1.70x slower</td><td class="speedup">7.46x slower</td><td class="speedup">2.88x slower</td><td class="speedup">1.45x slower</td><td class="speedup-faster">2.89x faster</td>
-              </tr>
-            
-              <tr>
-                <td>Hindi</td>
-                <td class="speedup">2.08x slower</td><td class="speedup">7.34x slower</td><td class="speedup">3.58x slower</td><td class="speedup">1.75x slower</td><td class="speedup-faster">2.79x faster</td>
-              </tr>
-            
-              <tr>
-                <td>Demonic characters</td>
-                <td class="speedup">3.57x slower</td><td class="speedup">3.73x slower</td><td class="speedup">3.99x slower</td><td class="speedup">1.00x slower</td><td class="speedup-faster">4.35x faster</td>
-              </tr>
-            
-              <tr>
-                <td>Tweet text (combined)</td>
-                <td class="speedup">3.50x slower</td><td class="speedup">11.20x slower</td><td class="speedup">5.47x slower</td><td class="speedup">2.92x slower</td><td class="speedup-faster">1.75x faster</td>
-              </tr>
-            
-              <tr>
-                <td>Code snippet (combined)</td>
-                <td class="speedup">3.51x slower</td><td class="speedup">11.99x slower</td><td class="speedup">5.45x slower</td><td class="speedup">2.92x slower</td><td class="speedup-faster">1.65x faster</td>
-              </tr>
-            
-        </tbody>
-      </table>
-    </div>
-  
-
-  </div>
-
-  <div class="main-content" id="main-trends">
-    <h2>unicode-segmenter Performance Over Time</h2>
-    <p class="chart-subtitle">Track throughput changes across different benchmark scenarios and platforms (higher is better)</p>
-
-    <div class="legend" id="trend-legend">
-      
-        <div class="legend-item" data-scenario="Lorem ipsum (ascii)" data-index="0" onclick="toggleScenario('Lorem ipsum (ascii)', 0)">
-          <div class="legend-color" style="background: #22c55e"></div>
-          <span>Lorem ipsum (ascii)</span>
-        </div>
-      
-        <div class="legend-item" data-scenario="Emojis" data-index="1" onclick="toggleScenario('Emojis', 1)">
-          <div class="legend-color" style="background: #f97316"></div>
-          <span>Emojis</span>
-        </div>
-      
-        <div class="legend-item" data-scenario="Hindi" data-index="2" onclick="toggleScenario('Hindi', 2)">
-          <div class="legend-color" style="background: #eab308"></div>
-          <span>Hindi</span>
-        </div>
-      
-        <div class="legend-item" data-scenario="Demonic characters" data-index="3" onclick="toggleScenario('Demonic characters', 3)">
-          <div class="legend-color" style="background: #ef4444"></div>
-          <span>Demonic characters</span>
-        </div>
-      
-        <div class="legend-item" data-scenario="Tweet text (combined)" data-index="4" onclick="toggleScenario('Tweet text (combined)', 4)">
-          <div class="legend-color" style="background: #3b82f6"></div>
-          <span>Tweet text (combined)</span>
-        </div>
-      
-        <div class="legend-item" data-scenario="Code snippet (combined)" data-index="5" onclick="toggleScenario('Code snippet (combined)', 5)">
-          <div class="legend-color" style="background: #8b5cf6"></div>
-          <span>Code snippet (combined)</span>
-        </div>
-      
-    </div>
-
-    <div class="platform-selector">
-      <label for="trend-platform">Platform:</label>
-      <select id="trend-platform" class="platform-select" onchange="showTrendTab(this.value)">
-        
-          <option value="0">Apple M4 Pro / Node.js</option>
-        
-          <option value="1">Apple M4 Pro / Bun</option>
-        
-          <option value="2">Apple M4 Pro / Chrome</option>
-        
-          <option value="3">Apple M4 Pro / Safari</option>
-        
-          <option value="4">Apple M1 Pro / Node.js</option>
-        
-          <option value="5">Apple M1 Pro / Bun</option>
-        
-          <option value="6">Apple M1 Pro / Chrome</option>
-        
-          <option value="7">Apple M1 Pro / Firefox</option>
-        
-          <option value="8">Apple M1 Pro / Safari</option>
-        
-          <option value="9">Intel x86_64 / Node.js</option>
-        
-          <option value="10">Intel x86_64 / Bun</option>
-        
-          <option value="11">Intel x86_64 / Chrome</option>
-        
-          <option value="12">Intel x86_64 / Firefox</option>
-        
-      </select>
-    </div>
-
-    
-      <div class="tab-content trend-content active" id="trend-tab-0">
-        <div class="chart-container full-width">
-          <div class="chart-title">Apple M4 Pro / Node.js - Performance History</div>
-          <div class="chart-subtitle">4 data points from 2025-03-07 to 2026-07-07</div>
-          <canvas id="trend-chart-0" class="trend-canvas" height="300"></canvas>
-        </div>
-
-        
-    <h3>Performance Changes</h3>
-    <table class="summary-table">
-      <thead>
-        <tr>
-          <th>Scenario</th>
-          <th>First (2025-03-07)</th>
-          <th>Latest (2026-07-07)</th>
-          <th>Change</th>
-        </tr>
-      </thead>
-      <tbody>
-        
-      <tr>
-        <td>Lorem ipsum (ascii)</td>
-        <td>3.64 µs</td>
-        <td>2.98 µs</td>
-        <td class="improvement-positive">↑ 18.1% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Emojis</td>
-        <td>1.24 µs</td>
-        <td>942.51 ns</td>
-        <td class="improvement-positive">↑ 24.0% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Hindi</td>
-        <td>4.13 µs</td>
-        <td>3.13 µs</td>
-        <td class="improvement-positive">↑ 24.2% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Demonic characters</td>
-        <td>1.24 µs</td>
-        <td>644.41 ns</td>
-        <td class="improvement-positive">↑ 48.0% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Tweet text (combined)</td>
-        <td>5.68 µs</td>
-        <td>4.45 µs</td>
-        <td class="improvement-positive">↑ 21.7% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Code snippet (combined)</td>
-        <td>13.59 µs</td>
-        <td>10.79 µs</td>
-        <td class="improvement-positive">↑ 20.6% faster</td>
-      </tr>
-    
-      </tbody>
-    </table>
-  
-      </div>
-    
-      <div class="tab-content trend-content " id="trend-tab-1">
-        <div class="chart-container full-width">
-          <div class="chart-title">Apple M4 Pro / Bun - Performance History</div>
-          <div class="chart-subtitle">4 data points from 2025-03-07 to 2026-07-07</div>
-          <canvas id="trend-chart-1" class="trend-canvas" height="300"></canvas>
-        </div>
-
-        
-    <h3>Performance Changes</h3>
-    <table class="summary-table">
-      <thead>
-        <tr>
-          <th>Scenario</th>
-          <th>First (2025-03-07)</th>
-          <th>Latest (2026-07-07)</th>
-          <th>Change</th>
-        </tr>
-      </thead>
-      <tbody>
-        
-      <tr>
-        <td>Lorem ipsum (ascii)</td>
-        <td>3.31 µs</td>
-        <td>2.46 µs</td>
-        <td class="improvement-positive">↑ 25.7% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Emojis</td>
-        <td>1.79 µs</td>
-        <td>854.13 ns</td>
-        <td class="improvement-positive">↑ 52.3% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Hindi</td>
-        <td>5.15 µs</td>
-        <td>2.61 µs</td>
-        <td class="improvement-positive">↑ 49.3% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Demonic characters</td>
-        <td>1.73 µs</td>
-        <td>450.09 ns</td>
-        <td class="improvement-positive">↑ 74.0% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Tweet text (combined)</td>
-        <td>6.86 µs</td>
-        <td>4.21 µs</td>
-        <td class="improvement-positive">↑ 38.6% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Code snippet (combined)</td>
-        <td>15.40 µs</td>
-        <td>10.13 µs</td>
-        <td class="improvement-positive">↑ 34.2% faster</td>
-      </tr>
-    
-      </tbody>
-    </table>
-  
-      </div>
-    
-      <div class="tab-content trend-content " id="trend-tab-2">
-        <div class="chart-container full-width">
-          <div class="chart-title">Apple M4 Pro / Chrome - Performance History</div>
-          <div class="chart-subtitle">4 data points from 2025-03-07 to 2026-07-07</div>
-          <canvas id="trend-chart-2" class="trend-canvas" height="300"></canvas>
-        </div>
-
-        
-    <h3>Performance Changes</h3>
-    <table class="summary-table">
-      <thead>
-        <tr>
-          <th>Scenario</th>
-          <th>First (2025-03-07)</th>
-          <th>Latest (2026-07-07)</th>
-          <th>Change</th>
-        </tr>
-      </thead>
-      <tbody>
-        
-      <tr>
-        <td>Lorem ipsum (ascii)</td>
-        <td>3.29 µs</td>
-        <td>2.80 µs</td>
-        <td class="improvement-positive">↑ 14.9% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Emojis</td>
-        <td>1.29 µs</td>
-        <td>907.06 ns</td>
-        <td class="improvement-positive">↑ 29.7% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Hindi</td>
-        <td>4.30 µs</td>
-        <td>2.93 µs</td>
-        <td class="improvement-positive">↑ 31.9% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Demonic characters</td>
-        <td>1.19 µs</td>
-        <td>673.35 ns</td>
-        <td class="improvement-positive">↑ 43.4% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Tweet text (combined)</td>
-        <td>5.79 µs</td>
-        <td>4.45 µs</td>
-        <td class="improvement-positive">↑ 23.1% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Code snippet (combined)</td>
-        <td>13.27 µs</td>
-        <td>10.58 µs</td>
-        <td class="improvement-positive">↑ 20.3% faster</td>
-      </tr>
-    
-      </tbody>
-    </table>
-  
-      </div>
-    
-      <div class="tab-content trend-content " id="trend-tab-3">
-        <div class="chart-container full-width">
-          <div class="chart-title">Apple M4 Pro / Safari - Performance History</div>
-          <div class="chart-subtitle">4 data points from 2025-03-07 to 2026-07-07</div>
-          <canvas id="trend-chart-3" class="trend-canvas" height="300"></canvas>
-        </div>
-
-        
-    <h3>Performance Changes</h3>
-    <table class="summary-table">
-      <thead>
-        <tr>
-          <th>Scenario</th>
-          <th>First (2025-03-07)</th>
-          <th>Latest (2026-07-07)</th>
-          <th>Change</th>
-        </tr>
-      </thead>
-      <tbody>
-        
-      <tr>
-        <td>Lorem ipsum (ascii)</td>
-        <td>3.84 µs</td>
-        <td>1.69 µs</td>
-        <td class="improvement-positive">↑ 56.0% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Emojis</td>
-        <td>1.80 µs</td>
-        <td>876.53 ns</td>
-        <td class="improvement-positive">↑ 51.3% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Hindi</td>
-        <td>5.51 µs</td>
-        <td>2.71 µs</td>
-        <td class="improvement-positive">↑ 50.8% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Demonic characters</td>
-        <td>1.77 µs</td>
-        <td>471.56 ns</td>
-        <td class="improvement-positive">↑ 73.4% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Tweet text (combined)</td>
-        <td>7.09 µs</td>
-        <td>4.18 µs</td>
-        <td class="improvement-positive">↑ 41.0% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Code snippet (combined)</td>
-        <td>16.89 µs</td>
-        <td>10.15 µs</td>
-        <td class="improvement-positive">↑ 39.9% faster</td>
-      </tr>
-    
-      </tbody>
-    </table>
-  
-      </div>
-    
-      <div class="tab-content trend-content " id="trend-tab-4">
-        <div class="chart-container full-width">
-          <div class="chart-title">Apple M1 Pro / Node.js - Performance History</div>
-          <div class="chart-subtitle">1 data points from 2024-09-02 to 2024-09-02</div>
-          <canvas id="trend-chart-4" class="trend-canvas" height="300"></canvas>
-        </div>
-
-        <p class="chart-subtitle">Need at least 2 data points to show trends.</p>
-      </div>
-    
-      <div class="tab-content trend-content " id="trend-tab-5">
-        <div class="chart-container full-width">
-          <div class="chart-title">Apple M1 Pro / Bun - Performance History</div>
-          <div class="chart-subtitle">1 data points from 2024-09-02 to 2024-09-02</div>
-          <canvas id="trend-chart-5" class="trend-canvas" height="300"></canvas>
-        </div>
-
-        <p class="chart-subtitle">Need at least 2 data points to show trends.</p>
-      </div>
-    
-      <div class="tab-content trend-content " id="trend-tab-6">
-        <div class="chart-container full-width">
-          <div class="chart-title">Apple M1 Pro / Chrome - Performance History</div>
-          <div class="chart-subtitle">1 data points from 2024-09-02 to 2024-09-02</div>
-          <canvas id="trend-chart-6" class="trend-canvas" height="300"></canvas>
-        </div>
-
-        <p class="chart-subtitle">Need at least 2 data points to show trends.</p>
-      </div>
-    
-      <div class="tab-content trend-content " id="trend-tab-7">
-        <div class="chart-container full-width">
-          <div class="chart-title">Apple M1 Pro / Firefox - Performance History</div>
-          <div class="chart-subtitle">1 data points from 2024-09-02 to 2024-09-02</div>
-          <canvas id="trend-chart-7" class="trend-canvas" height="300"></canvas>
-        </div>
-
-        <p class="chart-subtitle">Need at least 2 data points to show trends.</p>
-      </div>
-    
-      <div class="tab-content trend-content " id="trend-tab-8">
-        <div class="chart-container full-width">
-          <div class="chart-title">Apple M1 Pro / Safari - Performance History</div>
-          <div class="chart-subtitle">1 data points from 2024-09-02 to 2024-09-02</div>
-          <canvas id="trend-chart-8" class="trend-canvas" height="300"></canvas>
-        </div>
-
-        <p class="chart-subtitle">Need at least 2 data points to show trends.</p>
-      </div>
-    
-      <div class="tab-content trend-content " id="trend-tab-9">
-        <div class="chart-container full-width">
-          <div class="chart-title">Intel x86_64 / Node.js - Performance History</div>
-          <div class="chart-subtitle">7 data points from 2024-09-03 to 2025-12-13</div>
-          <canvas id="trend-chart-9" class="trend-canvas" height="300"></canvas>
-        </div>
-
-        
-    <h3>Performance Changes</h3>
-    <table class="summary-table">
-      <thead>
-        <tr>
-          <th>Scenario</th>
-          <th>First (2024-09-03)</th>
-          <th>Latest (2025-12-13)</th>
-          <th>Change</th>
-        </tr>
-      </thead>
-      <tbody>
-        
-      <tr>
-        <td>Lorem ipsum (ascii)</td>
-        <td>9.93 µs</td>
-        <td>3.71 µs</td>
-        <td class="improvement-positive">↑ 62.6% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Emojis</td>
-        <td>3.14 µs</td>
-        <td>1.58 µs</td>
-        <td class="improvement-positive">↑ 49.7% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Hindi</td>
-        <td>10.00 µs</td>
-        <td>3.72 µs</td>
-        <td class="improvement-positive">↑ 62.8% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Demonic characters</td>
-        <td>3.17 µs</td>
-        <td>623.55 ns</td>
-        <td class="improvement-positive">↑ 80.3% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Tweet text (combined)</td>
-        <td>15.23 µs</td>
-        <td>5.94 µs</td>
-        <td class="improvement-positive">↑ 61.0% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Code snippet (combined)</td>
-        <td>34.31 µs</td>
-        <td>13.41 µs</td>
-        <td class="improvement-positive">↑ 60.9% faster</td>
-      </tr>
-    
-      </tbody>
-    </table>
-  
-      </div>
-    
-      <div class="tab-content trend-content " id="trend-tab-10">
-        <div class="chart-container full-width">
-          <div class="chart-title">Intel x86_64 / Bun - Performance History</div>
-          <div class="chart-subtitle">5 data points from 2024-11-03 to 2025-12-13</div>
-          <canvas id="trend-chart-10" class="trend-canvas" height="300"></canvas>
-        </div>
-
-        
-    <h3>Performance Changes</h3>
-    <table class="summary-table">
-      <thead>
-        <tr>
-          <th>Scenario</th>
-          <th>First (2024-11-03)</th>
-          <th>Latest (2025-12-13)</th>
-          <th>Change</th>
-        </tr>
-      </thead>
-      <tbody>
-        
-      <tr>
-        <td>Lorem ipsum (ascii)</td>
-        <td>11.10 µs</td>
-        <td>3.77 µs</td>
-        <td class="improvement-positive">↑ 66.0% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Emojis</td>
-        <td>4.73 µs</td>
-        <td>1.59 µs</td>
-        <td class="improvement-positive">↑ 66.4% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Hindi</td>
-        <td>14.79 µs</td>
-        <td>3.58 µs</td>
-        <td class="improvement-positive">↑ 75.8% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Demonic characters</td>
-        <td>4.23 µs</td>
-        <td>692.40 ns</td>
-        <td class="improvement-positive">↑ 83.6% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Tweet text (combined)</td>
-        <td>20.36 µs</td>
-        <td>6.37 µs</td>
-        <td class="improvement-positive">↑ 68.7% faster</td>
-      </tr>
-    
-      </tbody>
-    </table>
-  
-      </div>
-    
-      <div class="tab-content trend-content " id="trend-tab-11">
-        <div class="chart-container full-width">
-          <div class="chart-title">Intel x86_64 / Chrome - Performance History</div>
-          <div class="chart-subtitle">6 data points from 2024-09-03 to 2025-12-13</div>
-          <canvas id="trend-chart-11" class="trend-canvas" height="300"></canvas>
-        </div>
-
-        
-    <h3>Performance Changes</h3>
-    <table class="summary-table">
-      <thead>
-        <tr>
-          <th>Scenario</th>
-          <th>First (2024-09-03)</th>
-          <th>Latest (2025-12-13)</th>
-          <th>Change</th>
-        </tr>
-      </thead>
-      <tbody>
-        
-      <tr>
-        <td>Lorem ipsum (ascii)</td>
-        <td>8.40 µs</td>
-        <td>3.66 µs</td>
-        <td class="improvement-positive">↑ 56.4% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Emojis</td>
-        <td>3.10 µs</td>
-        <td>4.69 µs</td>
-        <td class="improvement-negative">↓ 51.2% slower</td>
-      </tr>
-    
-      <tr>
-        <td>Hindi</td>
-        <td>9.82 µs</td>
-        <td>3.81 µs</td>
-        <td class="improvement-positive">↑ 61.2% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Demonic characters</td>
-        <td>3.14 µs</td>
-        <td>892.19 ns</td>
-        <td class="improvement-positive">↑ 71.6% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Tweet text (combined)</td>
-        <td>14.13 µs</td>
-        <td>5.85 µs</td>
-        <td class="improvement-positive">↑ 58.6% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Code snippet (combined)</td>
-        <td>33.05 µs</td>
-        <td>13.09 µs</td>
-        <td class="improvement-positive">↑ 60.4% faster</td>
-      </tr>
-    
-      </tbody>
-    </table>
-  
-      </div>
-    
-      <div class="tab-content trend-content " id="trend-tab-12">
-        <div class="chart-container full-width">
-          <div class="chart-title">Intel x86_64 / Firefox - Performance History</div>
-          <div class="chart-subtitle">4 data points from 2025-03-07 to 2025-12-13</div>
-          <canvas id="trend-chart-12" class="trend-canvas" height="300"></canvas>
-        </div>
-
-        
-    <h3>Performance Changes</h3>
-    <table class="summary-table">
-      <thead>
-        <tr>
-          <th>Scenario</th>
-          <th>First (2025-03-07)</th>
-          <th>Latest (2025-12-13)</th>
-          <th>Change</th>
-        </tr>
-      </thead>
-      <tbody>
-        
-      <tr>
-        <td>Lorem ipsum (ascii)</td>
-        <td>13.92 µs</td>
-        <td>10.46 µs</td>
-        <td class="improvement-positive">↑ 24.9% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Emojis</td>
-        <td>3.05 µs</td>
-        <td>4.45 µs</td>
-        <td class="improvement-negative">↓ 45.9% slower</td>
-      </tr>
-    
-      <tr>
-        <td>Hindi</td>
-        <td>10.61 µs</td>
-        <td>11.54 µs</td>
-        <td class="improvement-negative">↓ 8.8% slower</td>
-      </tr>
-    
-      <tr>
-        <td>Demonic characters</td>
-        <td>2.56 µs</td>
-        <td>3.51 µs</td>
-        <td class="improvement-negative">↓ 37.1% slower</td>
-      </tr>
-    
-      <tr>
-        <td>Tweet text (combined)</td>
-        <td>14.79 µs</td>
-        <td>11.68 µs</td>
-        <td class="improvement-positive">↑ 21.0% faster</td>
-      </tr>
-    
-      <tr>
-        <td>Code snippet (combined)</td>
-        <td>35.01 µs</td>
-        <td>25.50 µs</td>
-        <td class="improvement-positive">↑ 27.2% faster</td>
-      </tr>
-    
-      </tbody>
-    </table>
-  
-      </div>
-    
-  </div>
-
-  <script>
-    const colors = {"unicode-segmenter/grapheme":"#22c55e","graphemer":"#ef4444","grapheme-splitter":"#f97316","@formatjs/intl-segmenter":"#eab308","unicode-rs/unicode-segmentation (wasm)":"#3b82f6","Intl.Segmenter":"#8b5cf6"};
-    const scenarioColors = {"Lorem ipsum (ascii)":"#22c55e","Emojis":"#f97316","Hindi":"#eab308","Demonic characters":"#ef4444","Tweet text (combined)":"#3b82f6","Code snippet (combined)":"#8b5cf6"};
-    const shortNames = {"unicode-segmenter/grapheme":"unicode-segmenter","graphemer":"graphemer","grapheme-splitter":"grapheme-splitter","@formatjs/intl-segmenter":"@formatjs/intl-segmenter","unicode-rs/unicode-segmentation (wasm)":"unicode-segmentation (wasm)","Intl.Segmenter":"Intl.Segmenter"};
-    const libraries = ["unicode-segmenter/grapheme","graphemer","grapheme-splitter","@formatjs/intl-segmenter","unicode-rs/unicode-segmentation (wasm)","Intl.Segmenter"];
-    const trendData = [{"cpu":"apple_m4_pro","runtime":"nodejs","label":"Apple M4 Pro / Node.js","dataPoints":[{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":3.64,"Emojis":1.24,"Hindi":4.13,"Demonic characters":1.24,"Tweet text (combined)":5.68,"Code snippet (combined)":13.59}},{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":3.63,"Emojis":1.36,"Hindi":4.37,"Demonic characters":1.27,"Tweet text (combined)":5.76,"Code snippet (combined)":13.84}},{"date":"20250623","dateFormatted":"2025-06-23","scenarios":{"Lorem ipsum (ascii)":3.22,"Emojis":1.4,"Hindi":4.76,"Demonic characters":1.05,"Tweet text (combined)":5.4,"Code snippet (combined)":12.96}},{"date":"20260707","dateFormatted":"2026-07-07","scenarios":{"Lorem ipsum (ascii)":2.98,"Emojis":0.94251,"Hindi":3.13,"Demonic characters":0.6444099999999999,"Tweet text (combined)":4.45,"Code snippet (combined)":10.79}}]},{"cpu":"apple_m4_pro","runtime":"bun","label":"Apple M4 Pro / Bun","dataPoints":[{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":3.31,"Emojis":1.79,"Hindi":5.15,"Demonic characters":1.73,"Tweet text (combined)":6.86,"Code snippet (combined)":15.4}},{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":3.15,"Emojis":1.92,"Hindi":5.22,"Demonic characters":1.68,"Tweet text (combined)":6.74,"Code snippet (combined)":15.35}},{"date":"20250623","dateFormatted":"2025-06-23","scenarios":{"Lorem ipsum (ascii)":3.12,"Emojis":2.04,"Hindi":5.69,"Demonic characters":1.66,"Tweet text (combined)":6.3,"Code snippet (combined)":14.75}},{"date":"20260707","dateFormatted":"2026-07-07","scenarios":{"Lorem ipsum (ascii)":2.46,"Emojis":0.85413,"Hindi":2.61,"Demonic characters":0.45009,"Tweet text (combined)":4.21,"Code snippet (combined)":10.13}}]},{"cpu":"apple_m4_pro","runtime":"chrome","label":"Apple M4 Pro / Chrome","dataPoints":[{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":3.29,"Emojis":1.29,"Hindi":4.3,"Demonic characters":1.19,"Tweet text (combined)":5.79,"Code snippet (combined)":13.27}},{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":3.34,"Emojis":1.41,"Hindi":4.33,"Demonic characters":1.25,"Tweet text (combined)":5.79,"Code snippet (combined)":14.13}},{"date":"20250623","dateFormatted":"2025-06-23","scenarios":{"Lorem ipsum (ascii)":3.09,"Emojis":1.46,"Hindi":4.78,"Demonic characters":1.1,"Tweet text (combined)":5.37,"Code snippet (combined)":12.59}},{"date":"20260707","dateFormatted":"2026-07-07","scenarios":{"Lorem ipsum (ascii)":2.8,"Emojis":0.90706,"Hindi":2.93,"Demonic characters":0.67335,"Tweet text (combined)":4.45,"Code snippet (combined)":10.58}}]},{"cpu":"apple_m4_pro","runtime":"safari","label":"Apple M4 Pro / Safari","dataPoints":[{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":3.84,"Emojis":1.8,"Hindi":5.51,"Demonic characters":1.77,"Tweet text (combined)":7.09,"Code snippet (combined)":16.89}},{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":2.95,"Emojis":1.86,"Hindi":5.4,"Demonic characters":1.7,"Tweet text (combined)":7.11,"Code snippet (combined)":15.88}},{"date":"20250623","dateFormatted":"2025-06-23","scenarios":{"Lorem ipsum (ascii)":5.39,"Emojis":3.42,"Hindi":12.23,"Demonic characters":3.11,"Tweet text (combined)":12.42,"Code snippet (combined)":28.7}},{"date":"20260707","dateFormatted":"2026-07-07","scenarios":{"Lorem ipsum (ascii)":1.69,"Emojis":0.8765299999999999,"Hindi":2.71,"Demonic characters":0.47156,"Tweet text (combined)":4.18,"Code snippet (combined)":10.15}}]},{"cpu":"apple_m1_pro","runtime":"nodejs","label":"Apple M1 Pro / Node.js","dataPoints":[{"date":"20240902","dateFormatted":"2024-09-02","scenarios":{"Lorem ipsum (ascii)":6.365,"Emojis":1.983,"Hindi":6.625,"Demonic characters":1.824,"Tweet text (combined)":9.16,"Code snippet (combined)":21.677}}]},{"cpu":"apple_m1_pro","runtime":"bun","label":"Apple M1 Pro / Bun","dataPoints":[{"date":"20240902","dateFormatted":"2024-09-02","scenarios":{"Lorem ipsum (ascii)":6.365,"Emojis":1.983,"Hindi":6.625,"Demonic characters":1.824,"Tweet text (combined)":9.16,"Code snippet (combined)":21.677}}]},{"cpu":"apple_m1_pro","runtime":"chrome","label":"Apple M1 Pro / Chrome","dataPoints":[{"date":"20240902","dateFormatted":"2024-09-02","scenarios":{"Lorem ipsum (ascii)":5.108,"Emojis":1.901,"Hindi":6.107,"Demonic characters":1.802,"Tweet text (combined)":8.576,"Code snippet (combined)":20.461}}]},{"cpu":"apple_m1_pro","runtime":"firefox","label":"Apple M1 Pro / Firefox","dataPoints":[{"date":"20240902","dateFormatted":"2024-09-02","scenarios":{"Lorem ipsum (ascii)":17.683,"Emojis":5.863,"Hindi":20.438,"Demonic characters":7.545,"Tweet text (combined)":17.253,"Code snippet (combined)":40.481}}]},{"cpu":"apple_m1_pro","runtime":"safari","label":"Apple M1 Pro / Safari","dataPoints":[{"date":"20240902","dateFormatted":"2024-09-02","scenarios":{"Lorem ipsum (ascii)":16.4,"Emojis":6.321,"Hindi":21.097,"Demonic characters":6.398,"Tweet text (combined)":31.087,"Code snippet (combined)":70.735}}]},{"cpu":"intel_x86_64","runtime":"nodejs","label":"Intel x86_64 / Node.js","dataPoints":[{"date":"20240903","dateFormatted":"2024-09-03","scenarios":{"Lorem ipsum (ascii)":9.927,"Emojis":3.14,"Hindi":9.998,"Demonic characters":3.172,"Tweet text (combined)":15.233,"Code snippet (combined)":34.312}},{"date":"20241103","dateFormatted":"2024-11-03","scenarios":{"Lorem ipsum (ascii)":11.032,"Emojis":3.432,"Hindi":11.759,"Demonic characters":3.265,"Tweet text (combined)":17.07,"Code snippet (combined)":38.446}},{"date":"20241103","dateFormatted":"2024-11-03","scenarios":{"Lorem ipsum (ascii)":10.924,"Emojis":3.176,"Hindi":10.865,"Demonic characters":3.214,"Tweet text (combined)":15.678,"Code snippet (combined)":36.323}},{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":4.5,"Emojis":1.53,"Hindi":4.88,"Demonic characters":1.43,"Tweet text (combined)":6.47,"Code snippet (combined)":16.67}},{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":4.26,"Emojis":1.68,"Hindi":5.21,"Demonic characters":1.54,"Tweet text (combined)":6.42,"Code snippet (combined)":15.58}},{"date":"20250620","dateFormatted":"2025-06-20","scenarios":{"Lorem ipsum (ascii)":3.46,"Emojis":1.56,"Hindi":4.74,"Demonic characters":1.28,"Tweet text (combined)":5.86,"Code snippet (combined)":14.16}},{"date":"20251213","dateFormatted":"2025-12-13","scenarios":{"Lorem ipsum (ascii)":3.71,"Emojis":1.58,"Hindi":3.72,"Demonic characters":0.6235499999999999,"Tweet text (combined)":5.94,"Code snippet (combined)":13.41}}]},{"cpu":"intel_x86_64","runtime":"bun","label":"Intel x86_64 / Bun","dataPoints":[{"date":"20241103","dateFormatted":"2024-11-03","scenarios":{"Lorem ipsum (ascii)":11.096,"Emojis":4.728,"Hindi":14.787,"Demonic characters":4.229,"Tweet text (combined)":20.364}},{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":4.98,"Emojis":2.48,"Hindi":6.79,"Demonic characters":2.13,"Tweet text (combined)":8.6,"Code snippet (combined)":20.5}},{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":4.49,"Emojis":2.41,"Hindi":6.31,"Demonic characters":2.08,"Tweet text (combined)":8.04,"Code snippet (combined)":19.51}},{"date":"20250620","dateFormatted":"2025-06-20","scenarios":{"Lorem ipsum (ascii)":4.25,"Emojis":2.69,"Hindi":7.34,"Demonic characters":2.41,"Tweet text (combined)":8.32,"Code snippet (combined)":19.01}},{"date":"20251213","dateFormatted":"2025-12-13","scenarios":{"Lorem ipsum (ascii)":3.77,"Emojis":1.59,"Hindi":3.58,"Demonic characters":0.6924,"Tweet text (combined)":6.37,"Code snippet (combined)":15.61}}]},{"cpu":"intel_x86_64","runtime":"chrome","label":"Intel x86_64 / Chrome","dataPoints":[{"date":"20240903","dateFormatted":"2024-09-03","scenarios":{"Lorem ipsum (ascii)":8.398,"Emojis":3.101,"Hindi":9.825,"Demonic characters":3.143,"Tweet text (combined)":14.135,"Code snippet (combined)":33.049}},{"date":"20241103","dateFormatted":"2024-11-03","scenarios":{"Lorem ipsum (ascii)":8.415,"Emojis":3.298,"Hindi":11.704,"Demonic characters":3.069,"Tweet text (combined)":16.019,"Code snippet (combined)":37.077}},{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":3.64,"Emojis":1.45,"Hindi":4.42,"Demonic characters":1.36,"Tweet text (combined)":6.46,"Code snippet (combined)":14.93}},{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":3.75,"Emojis":1.49,"Hindi":5.06,"Demonic characters":1.35,"Tweet text (combined)":6.52,"Code snippet (combined)":15.16}},{"date":"20250620","dateFormatted":"2025-06-20","scenarios":{"Lorem ipsum (ascii)":3.47,"Emojis":1.65,"Hindi":4.63,"Demonic characters":1.31,"Tweet text (combined)":6.2,"Code snippet (combined)":15.04}},{"date":"20251213","dateFormatted":"2025-12-13","scenarios":{"Lorem ipsum (ascii)":3.66,"Emojis":4.69,"Hindi":3.81,"Demonic characters":0.89219,"Tweet text (combined)":5.85,"Code snippet (combined)":13.09}}]},{"cpu":"intel_x86_64","runtime":"firefox","label":"Intel x86_64 / Firefox","dataPoints":[{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":13.92,"Emojis":3.05,"Hindi":10.61,"Demonic characters":2.56,"Tweet text (combined)":14.79,"Code snippet (combined)":35.01}},{"date":"20250307","dateFormatted":"2025-03-07","scenarios":{"Lorem ipsum (ascii)":12.97,"Emojis":3.06,"Hindi":9.87,"Demonic characters":2.52,"Tweet text (combined)":14.3,"Code snippet (combined)":31.01}},{"date":"20250620","dateFormatted":"2025-06-20","scenarios":{"Lorem ipsum (ascii)":12.7,"Emojis":3.18,"Hindi":9.89,"Demonic characters":2.26,"Tweet text (combined)":13.81,"Code snippet (combined)":32.37}},{"date":"20251213","dateFormatted":"2025-12-13","scenarios":{"Lorem ipsum (ascii)":10.46,"Emojis":4.45,"Hindi":11.54,"Demonic characters":3.51,"Tweet text (combined)":11.68,"Code snippet (combined)":25.5}}]}];
-
-    function formatTimeJS(us) {
-      if (us < 1) return (us * 1000).toFixed(2) + ' ns';
-      if (us < 1000) return us.toFixed(2) + ' µs';
-      return (us / 1000).toFixed(2) + ' ms';
-    }
-
-    function showMainTab(tabName) {
-      document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.main-content').forEach(c => c.classList.remove('active'));
-
-      document.querySelector(`.main-tab[onclick*="${tabName}"]`).classList.add('active');
-      document.getElementById('main-' + tabName).classList.add('active');
-
-      // Initialize trend charts when switching to trends tab
-      if (tabName === 'trends' && !window.trendChartsInitialized) {
-        initTrendCharts();
-        window.trendChartsInitialized = true;
-      }
-    }
-
-    function showTab(index) {
-      index = parseInt(index);
-      document.querySelectorAll('.tab-content:not(.trend-content)').forEach((c, i) => c.classList.toggle('active', i === index));
-    }
-
-    function showTrendTab(index) {
-      index = parseInt(index);
-      document.querySelectorAll('.trend-content').forEach((c, i) => c.classList.toggle('active', i === index));
-    }
-
-    const results = [{"date":"20260707","cpu":"apple_m4_pro","os":"macos_26.5","runtime":"nodejs_26.4.0","filename":"20260707-apple_m4_pro-macos_26.5-nodejs_26.4.0","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":2.98,"graphemer":43.73,"grapheme-splitter":73.08,"@formatjs/intl-segmenter":33.26,"unicode-rs/unicode-segmentation (wasm)":21.31,"Intl.Segmenter":5.39},"Emojis":{"unicode-segmenter/grapheme":0.94251,"graphemer":7.57,"grapheme-splitter":42.48,"@formatjs/intl-segmenter":10.1,"unicode-rs/unicode-segmentation (wasm)":4.36,"Intl.Segmenter":2.24},"Hindi":{"unicode-segmenter/grapheme":3.13,"graphemer":28.53,"grapheme-splitter":59.6,"@formatjs/intl-segmenter":31,"unicode-rs/unicode-segmentation (wasm)":13.23,"Intl.Segmenter":5.38},"Demonic characters":{"unicode-segmenter/grapheme":0.6444099999999999,"graphemer":15.14,"grapheme-splitter":11.17,"@formatjs/intl-segmenter":12.06,"unicode-rs/unicode-segmentation (wasm)":2.24,"Intl.Segmenter":1.05},"Tweet text (combined)":{"unicode-segmenter/grapheme":4.45,"graphemer":55.7,"grapheme-splitter":109.54,"@formatjs/intl-segmenter":47.23,"unicode-rs/unicode-segmentation (wasm)":18.96,"Intl.Segmenter":8.49},"Code snippet (combined)":{"unicode-segmenter/grapheme":10.79,"graphemer":115.5,"grapheme-splitter":238.57,"@formatjs/intl-segmenter":146.19,"unicode-rs/unicode-segmentation (wasm)":45.05,"Intl.Segmenter":18.82}}},{"date":"20260707","cpu":"apple_m4_pro","os":"macos_26.5","runtime":"bun_1.3.14","filename":"20260707-apple_m4_pro-macos_26.5-bun_1.3.14","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":2.46,"graphemer":18.05,"grapheme-splitter":68.26,"@formatjs/intl-segmenter":53.59,"unicode-rs/unicode-segmentation (wasm)":12.14,"Intl.Segmenter":4.14},"Emojis":{"unicode-segmenter/grapheme":0.85413,"graphemer":4.95,"grapheme-splitter":17.45,"@formatjs/intl-segmenter":19.63,"unicode-rs/unicode-segmentation (wasm)":3.35,"Intl.Segmenter":1.53},"Hindi":{"unicode-segmenter/grapheme":2.61,"graphemer":17.27,"grapheme-splitter":33.8,"@formatjs/intl-segmenter":63.51,"unicode-rs/unicode-segmentation (wasm)":11.03,"Intl.Segmenter":3.55},"Demonic characters":{"unicode-segmenter/grapheme":0.45009,"graphemer":8.1,"grapheme-splitter":7,"@formatjs/intl-segmenter":70.45,"unicode-rs/unicode-segmentation (wasm)":2.12,"Intl.Segmenter":0.7040299999999999},"Tweet text (combined)":{"unicode-segmenter/grapheme":4.21,"graphemer":25.22,"grapheme-splitter":55.33,"@formatjs/intl-segmenter":80.4,"unicode-rs/unicode-segmentation (wasm)":15.36,"Intl.Segmenter":6.23},"Code snippet (combined)":{"unicode-segmenter/grapheme":10.13,"graphemer":59.86,"grapheme-splitter":131.58,"@formatjs/intl-segmenter":177.56,"unicode-rs/unicode-segmentation (wasm)":37.59,"Intl.Segmenter":14.55}}},{"date":"20260707","cpu":"apple_m4_pro","os":"macos_26.5","runtime":"chrome_150.0.0.0","filename":"20260707-apple_m4_pro-macos_26.5-chrome_150.0.0.0","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":2.8,"graphemer":67.97,"grapheme-splitter":71.78,"@formatjs/intl-segmenter":73.51,"unicode-rs/unicode-segmentation (wasm)":20.12,"Intl.Segmenter":5.26},"Emojis":{"unicode-segmenter/grapheme":0.90706,"graphemer":6.65,"grapheme-splitter":19.55,"@formatjs/intl-segmenter":11.92,"unicode-rs/unicode-segmentation (wasm)":4.85,"Intl.Segmenter":2.4},"Hindi":{"unicode-segmenter/grapheme":2.93,"graphemer":25.34,"grapheme-splitter":70.64,"@formatjs/intl-segmenter":72.35,"unicode-rs/unicode-segmentation (wasm)":27.37,"Intl.Segmenter":5.24},"Demonic characters":{"unicode-segmenter/grapheme":0.67335,"graphemer":13.99,"grapheme-splitter":10.71,"@formatjs/intl-segmenter":11.83,"unicode-rs/unicode-segmentation (wasm)":2.38,"Intl.Segmenter":1.27},"Tweet text (combined)":{"unicode-segmenter/grapheme":4.45,"graphemer":95.96,"grapheme-splitter":123.16,"@formatjs/intl-segmenter":47.3,"unicode-rs/unicode-segmentation (wasm)":22.64,"Intl.Segmenter":9.15},"Code snippet (combined)":{"unicode-segmenter/grapheme":10.58,"graphemer":80.16,"grapheme-splitter":329.97,"@formatjs/intl-segmenter":187.47,"unicode-rs/unicode-segmentation (wasm)":52.11,"Intl.Segmenter":18.4}}},{"date":"20260707","cpu":"apple_m4_pro","os":"macos_26.5","runtime":"safari_26.5","filename":"20260707-apple_m4_pro-macos_26.5-safari_26.5","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":1.69,"graphemer":18.17,"grapheme-splitter":66.67,"@formatjs/intl-segmenter":39.47,"unicode-rs/unicode-segmentation (wasm)":18.28,"Intl.Segmenter":5.79},"Emojis":{"unicode-segmenter/grapheme":0.8765299999999999,"graphemer":4.33,"grapheme-splitter":19.78,"@formatjs/intl-segmenter":20.46,"unicode-rs/unicode-segmentation (wasm)":6.69,"Intl.Segmenter":4.85},"Hindi":{"unicode-segmenter/grapheme":2.71,"graphemer":16.01,"grapheme-splitter":33.02,"@formatjs/intl-segmenter":49.11,"unicode-rs/unicode-segmentation (wasm)":14.09,"Intl.Segmenter":5.08},"Demonic characters":{"unicode-segmenter/grapheme":0.47156,"graphemer":7.52,"grapheme-splitter":6.36,"@formatjs/intl-segmenter":60.73,"unicode-rs/unicode-segmentation (wasm)":4.13,"Intl.Segmenter":3.17},"Tweet text (combined)":{"unicode-segmenter/grapheme":4.18,"graphemer":26.56,"grapheme-splitter":53.87,"@formatjs/intl-segmenter":56.01,"unicode-rs/unicode-segmentation (wasm)":20.73,"Intl.Segmenter":8.46},"Code snippet (combined)":{"unicode-segmenter/grapheme":10.15,"graphemer":53.16,"grapheme-splitter":122.4,"@formatjs/intl-segmenter":161.09,"unicode-rs/unicode-segmentation (wasm)":49.11,"Intl.Segmenter":19.61}}},{"date":"20240902","cpu":"apple_m1_pro","os":"macos_14.5","runtime":"nodejs_20.17.0","filename":"20240902-apple_m1_pro-macos_14.5-nodejs_20.17.0","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":6.365,"graphemer":49.588,"grapheme-splitter":75.737,"@formatjs/intl-segmenter":41.488,"unicode-rs/unicode-segmentation (wasm)":16.896,"Intl.Segmenter":53.747},"Emojis":{"unicode-segmenter/grapheme":1.983,"graphemer":13.724,"grapheme-splitter":27.848,"@formatjs/intl-segmenter":14.437,"unicode-rs/unicode-segmentation (wasm)":5.672,"Intl.Segmenter":15.536},"Hindi":{"unicode-segmenter/grapheme":6.625,"graphemer":49.501,"grapheme-splitter":99.005,"@formatjs/intl-segmenter":46.919,"unicode-rs/unicode-segmentation (wasm)":16.141,"Intl.Segmenter":38.799},"Demonic characters":{"unicode-segmenter/grapheme":1.824,"graphemer":27.432,"grapheme-splitter":19.979,"@formatjs/intl-segmenter":17.447,"unicode-rs/unicode-segmentation (wasm)":2.438,"Intl.Segmenter":5.39},"Tweet text (combined)":{"unicode-segmenter/grapheme":9.16,"graphemer":68.664,"grapheme-splitter":150,"@formatjs/intl-segmenter":64.577,"unicode-rs/unicode-segmentation (wasm)":24.324,"Intl.Segmenter":69.986},"Code snippet (combined)":{"unicode-segmenter/grapheme":21.677,"graphemer":164,"grapheme-splitter":349,"@formatjs/intl-segmenter":147,"unicode-rs/unicode-segmentation (wasm)":58,"Intl.Segmenter":166}}},{"date":"20240902","cpu":"apple_m1_pro","os":"macos_14.5","runtime":"bun_1.20.0","filename":"20240902-apple_m1_pro-macos_14.5-bun_1.20.0","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":6.365,"graphemer":49.588,"grapheme-splitter":75.737,"@formatjs/intl-segmenter":41.488,"unicode-rs/unicode-segmentation (wasm)":16.896,"Intl.Segmenter":53.747},"Emojis":{"unicode-segmenter/grapheme":1.983,"graphemer":13.724,"grapheme-splitter":27.848,"@formatjs/intl-segmenter":14.437,"unicode-rs/unicode-segmentation (wasm)":5.672,"Intl.Segmenter":15.536},"Hindi":{"unicode-segmenter/grapheme":6.625,"graphemer":49.501,"grapheme-splitter":99.005,"@formatjs/intl-segmenter":46.919,"unicode-rs/unicode-segmentation (wasm)":16.141,"Intl.Segmenter":38.799},"Demonic characters":{"unicode-segmenter/grapheme":1.824,"graphemer":27.432,"grapheme-splitter":19.979,"@formatjs/intl-segmenter":17.447,"unicode-rs/unicode-segmentation (wasm)":2.438,"Intl.Segmenter":5.39},"Tweet text (combined)":{"unicode-segmenter/grapheme":9.16,"graphemer":68.664,"grapheme-splitter":150,"@formatjs/intl-segmenter":64.577,"unicode-rs/unicode-segmentation (wasm)":24.324,"Intl.Segmenter":69.986},"Code snippet (combined)":{"unicode-segmenter/grapheme":21.677,"graphemer":164,"grapheme-splitter":349,"@formatjs/intl-segmenter":147,"unicode-rs/unicode-segmentation (wasm)":58,"Intl.Segmenter":166}}},{"date":"20240902","cpu":"apple_m1_pro","os":"macos_14.5","runtime":"chrome_128.0.6613.114","filename":"20240902-apple_m1_pro-macos_14.5-chrome_128.0.6613.114","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":5.108,"graphemer":35.764,"grapheme-splitter":58.002,"@formatjs/intl-segmenter":37.537,"unicode-rs/unicode-segmentation (wasm)":32.653,"Intl.Segmenter":9.576},"Emojis":{"unicode-segmenter/grapheme":1.901,"graphemer":10.197,"grapheme-splitter":23.297,"@formatjs/intl-segmenter":13.409,"unicode-rs/unicode-segmentation (wasm)":10.51,"Intl.Segmenter":5.444},"Hindi":{"unicode-segmenter/grapheme":6.107,"graphemer":38.889,"grapheme-splitter":116,"@formatjs/intl-segmenter":45.204,"unicode-rs/unicode-segmentation (wasm)":28.897,"Intl.Segmenter":9.902},"Demonic characters":{"unicode-segmenter/grapheme":1.802,"graphemer":20.838,"grapheme-splitter":18.569,"@formatjs/intl-segmenter":17.239,"unicode-rs/unicode-segmentation (wasm)":3.713,"Intl.Segmenter":3.487},"Tweet text (combined)":{"unicode-segmenter/grapheme":8.576,"graphemer":52.379,"grapheme-splitter":176,"@formatjs/intl-segmenter":63.887,"unicode-rs/unicode-segmentation (wasm)":48.371,"Intl.Segmenter":14.152},"Code snippet (combined)":{"unicode-segmenter/grapheme":20.461,"graphemer":125,"grapheme-splitter":396,"@formatjs/intl-segmenter":146,"unicode-rs/unicode-segmentation (wasm)":113,"Intl.Segmenter":29.107}}},{"date":"20240902","cpu":"apple_m1_pro","os":"macos_14.5","runtime":"firefox_130.0b9","filename":"20240902-apple_m1_pro-macos_14.5-firefox_130.0b9","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":17.683,"graphemer":43.349,"grapheme-splitter":71.363,"@formatjs/intl-segmenter":40.709,"unicode-rs/unicode-segmentation (wasm)":26.871,"Intl.Segmenter":5.883},"Emojis":{"unicode-segmenter/grapheme":5.863,"graphemer":12.021,"grapheme-splitter":40.256,"@formatjs/intl-segmenter":14.966,"unicode-rs/unicode-segmentation (wasm)":8.336,"Intl.Segmenter":1.901},"Hindi":{"unicode-segmenter/grapheme":20.438,"graphemer":41.368,"grapheme-splitter":151,"@formatjs/intl-segmenter":49.487,"unicode-rs/unicode-segmentation (wasm)":23.077,"Intl.Segmenter":5.018},"Demonic characters":{"unicode-segmenter/grapheme":7.545,"graphemer":20.089,"grapheme-splitter":20.903,"@formatjs/intl-segmenter":17.613,"unicode-rs/unicode-segmentation (wasm)":2.546,"Intl.Segmenter":0.723},"Tweet text (combined)":{"unicode-segmenter/grapheme":17.253,"graphemer":62.988,"grapheme-splitter":242,"@formatjs/intl-segmenter":68.797,"unicode-rs/unicode-segmentation (wasm)":38.969,"Intl.Segmenter":8.316},"Code snippet (combined)":{"unicode-segmenter/grapheme":40.481,"graphemer":149,"grapheme-splitter":557,"@formatjs/intl-segmenter":156,"unicode-rs/unicode-segmentation (wasm)":92.425,"Intl.Segmenter":19.388}}},{"date":"20240902","cpu":"apple_m1_pro","os":"macos_14.5","runtime":"safari_17.5","filename":"20240902-apple_m1_pro-macos_14.5-safari_17.5","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":16.4,"graphemer":48.379,"grapheme-splitter":158,"@formatjs/intl-segmenter":149,"unicode-rs/unicode-segmentation (wasm)":39.772,"Intl.Segmenter":8.89},"Emojis":{"unicode-segmenter/grapheme":6.321,"graphemer":14.695,"grapheme-splitter":56.493,"@formatjs/intl-segmenter":44.697,"unicode-rs/unicode-segmentation (wasm)":11.742,"Intl.Segmenter":3.771},"Hindi":{"unicode-segmenter/grapheme":21.097,"graphemer":46.805,"grapheme-splitter":128,"@formatjs/intl-segmenter":167,"unicode-rs/unicode-segmentation (wasm)":33.257,"Intl.Segmenter":7.929},"Demonic characters":{"unicode-segmenter/grapheme":6.398,"graphemer":20.942,"grapheme-splitter":17.756,"@formatjs/intl-segmenter":172,"unicode-rs/unicode-segmentation (wasm)":3.461,"Intl.Segmenter":2.133},"Tweet text (combined)":{"unicode-segmenter/grapheme":31.087,"graphemer":77.524,"grapheme-splitter":212,"@formatjs/intl-segmenter":209,"unicode-rs/unicode-segmentation (wasm)":56.943,"Intl.Segmenter":12.885},"Code snippet (combined)":{"unicode-segmenter/grapheme":70.735,"graphemer":180,"grapheme-splitter":484,"@formatjs/intl-segmenter":471,"unicode-rs/unicode-segmentation (wasm)":134,"Intl.Segmenter":29.502}}},{"date":"20251213","cpu":"intel_x86_64","os":"linux","runtime":"nodejs_24.2.1","filename":"20251213-intel_x86_64-linux-nodejs_24.2.1","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":3.71,"graphemer":59.16,"grapheme-splitter":121.24,"@formatjs/intl-segmenter":36.35,"unicode-rs/unicode-segmentation (wasm)":29.92,"Intl.Segmenter":8.07},"Emojis":{"unicode-segmenter/grapheme":1.58,"graphemer":11.54,"grapheme-splitter":100.93,"@formatjs/intl-segmenter":14.26,"unicode-rs/unicode-segmentation (wasm)":5.33,"Intl.Segmenter":3.82},"Hindi":{"unicode-segmenter/grapheme":3.72,"graphemer":40.6,"grapheme-splitter":134.51,"@formatjs/intl-segmenter":42.34,"unicode-rs/unicode-segmentation (wasm)":16.06,"Intl.Segmenter":7.9},"Demonic characters":{"unicode-segmenter/grapheme":0.6235499999999999,"graphemer":24.01,"grapheme-splitter":19.31,"@formatjs/intl-segmenter":15.81,"unicode-rs/unicode-segmentation (wasm)":3.61,"Intl.Segmenter":1.9},"Tweet text (combined)":{"unicode-segmenter/grapheme":5.94,"graphemer":85.77,"grapheme-splitter":198.18,"@formatjs/intl-segmenter":111.7,"unicode-rs/unicode-segmentation (wasm)":24.48,"Intl.Segmenter":13.86},"Code snippet (combined)":{"unicode-segmenter/grapheme":13.41,"graphemer":162.06,"grapheme-splitter":424.35,"@formatjs/intl-segmenter":204.23,"unicode-rs/unicode-segmentation (wasm)":56.63,"Intl.Segmenter":31.86}}},{"date":"20251213","cpu":"intel_x86_64","os":"linux","runtime":"bun_1.3.4","filename":"20251213-intel_x86_64-linux-bun_1.3.4","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":3.77,"graphemer":30.4,"grapheme-splitter":134.86,"@formatjs/intl-segmenter":92.96,"unicode-rs/unicode-segmentation (wasm)":27.48,"Intl.Segmenter":7.37},"Emojis":{"unicode-segmenter/grapheme":1.59,"graphemer":5.99,"grapheme-splitter":28.82,"@formatjs/intl-segmenter":24.01,"unicode-rs/unicode-segmentation (wasm)":4.77,"Intl.Segmenter":2.48},"Hindi":{"unicode-segmenter/grapheme":3.58,"graphemer":21.11,"grapheme-splitter":36.09,"@formatjs/intl-segmenter":95.11,"unicode-rs/unicode-segmentation (wasm)":16.78,"Intl.Segmenter":5.92},"Demonic characters":{"unicode-segmenter/grapheme":0.6924,"graphemer":9.71,"grapheme-splitter":7.58,"@formatjs/intl-segmenter":51.63,"unicode-rs/unicode-segmentation (wasm)":3.11,"Intl.Segmenter":0.97972},"Tweet text (combined)":{"unicode-segmenter/grapheme":6.37,"graphemer":30.52,"grapheme-splitter":93.65,"@formatjs/intl-segmenter":132.75,"unicode-rs/unicode-segmentation (wasm)":23.34,"Intl.Segmenter":10.55},"Code snippet (combined)":{"unicode-segmenter/grapheme":15.61,"graphemer":96.34,"grapheme-splitter":193.16,"@formatjs/intl-segmenter":277.65,"unicode-rs/unicode-segmentation (wasm)":79.87,"Intl.Segmenter":27.07}}},{"date":"20251213","cpu":"intel_x86_64","os":"linux","runtime":"chrome_143.0.7499.40","filename":"20251213-intel_x86_64-linux-chrome_143.0.7499.40","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":3.66,"graphemer":59.99,"grapheme-splitter":535.85,"@formatjs/intl-segmenter":49.75,"unicode-rs/unicode-segmentation (wasm)":42.7,"Intl.Segmenter":10.85},"Emojis":{"unicode-segmenter/grapheme":4.69,"graphemer":9.05,"grapheme-splitter":530.52,"@formatjs/intl-segmenter":22.45,"unicode-rs/unicode-segmentation (wasm)":8.94,"Intl.Segmenter":7.19},"Hindi":{"unicode-segmenter/grapheme":3.81,"graphemer":33.41,"grapheme-splitter":606.93,"@formatjs/intl-segmenter":66.28,"unicode-rs/unicode-segmentation (wasm)":25.39,"Intl.Segmenter":10.92},"Demonic characters":{"unicode-segmenter/grapheme":0.89219,"graphemer":17.7,"grapheme-splitter":15.34,"@formatjs/intl-segmenter":14.59,"unicode-rs/unicode-segmentation (wasm)":4.41,"Intl.Segmenter":4.23},"Tweet text (combined)":{"unicode-segmenter/grapheme":5.85,"graphemer":100.36,"grapheme-splitter":680.82,"@formatjs/intl-segmenter":103.38,"unicode-rs/unicode-segmentation (wasm)":43.33,"Intl.Segmenter":14.52},"Code snippet (combined)":{"unicode-segmenter/grapheme":13.09,"graphemer":228.71,"grapheme-splitter":925.69,"@formatjs/intl-segmenter":226.07,"unicode-rs/unicode-segmentation (wasm)":94.73,"Intl.Segmenter":26.28}}},{"date":"20251213","cpu":"intel_x86_64","os":"linux","runtime":"firefox_146.0","filename":"20251213-intel_x86_64-linux-firefox_146.0","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":10.46,"graphemer":24.79,"grapheme-splitter":60.29,"@formatjs/intl-segmenter":41.74,"unicode-rs/unicode-segmentation (wasm)":21.17,"Intl.Segmenter":3.99},"Emojis":{"unicode-segmenter/grapheme":4.45,"graphemer":7.57,"grapheme-splitter":33.2,"@formatjs/intl-segmenter":12.81,"unicode-rs/unicode-segmentation (wasm)":6.45,"Intl.Segmenter":1.54},"Hindi":{"unicode-segmenter/grapheme":11.54,"graphemer":24.03,"grapheme-splitter":84.75,"@formatjs/intl-segmenter":41.3,"unicode-rs/unicode-segmentation (wasm)":20.2,"Intl.Segmenter":4.13},"Demonic characters":{"unicode-segmenter/grapheme":3.51,"graphemer":12.53,"grapheme-splitter":13.1,"@formatjs/intl-segmenter":13.99,"unicode-rs/unicode-segmentation (wasm)":3.52,"Intl.Segmenter":0.8061499999999999},"Tweet text (combined)":{"unicode-segmenter/grapheme":11.68,"graphemer":40.91,"grapheme-splitter":130.8,"@formatjs/intl-segmenter":63.88,"unicode-rs/unicode-segmentation (wasm)":34.1,"Intl.Segmenter":6.69},"Code snippet (combined)":{"unicode-segmenter/grapheme":25.5,"graphemer":89.38,"grapheme-splitter":305.75,"@formatjs/intl-segmenter":138.92,"unicode-rs/unicode-segmentation (wasm)":74.44,"Intl.Segmenter":15.42}}}];
-    const scenarios = ["Lorem ipsum (ascii)","Emojis","Hindi","Demonic characters","Tweet text (combined)","Code snippet (combined)"];
-
-    // Track hidden libraries and scenarios
-    const hiddenLibraries = new Set();
-    const hiddenScenarios = new Set();
-
-    // Store all charts for updating
-    const comparisonCharts = [];
-    const trendCharts = [];
-
-    // Convert time (µs) to throughput (ops/sec)
-    function timeToThroughput(us) {
-      return 1_000_000 / us; // ops per second
-    }
-
-    // Format throughput for display
-    function formatThroughput(opsPerSec) {
-      if (opsPerSec >= 1_000_000) return (opsPerSec / 1_000_000).toFixed(2) + 'M ops/s';
-      if (opsPerSec >= 1_000) return (opsPerSec / 1_000).toFixed(2) + 'K ops/s';
-      return opsPerSec.toFixed(0) + ' ops/s';
-    }
-
-    // Toggle library visibility
-    function toggleLibrary(libName, idx) {
-      const legendItem = document.querySelector(`.legend-item[data-library="${libName}"]`);
-
-      if (hiddenLibraries.has(libName)) {
-        hiddenLibraries.delete(libName);
-        legendItem.classList.remove('disabled');
-      } else {
-        hiddenLibraries.add(libName);
-        legendItem.classList.add('disabled');
-      }
-
-      // Update all comparison charts
-      updateComparisonCharts();
-    }
-
-    // Toggle scenario visibility in trend charts
-    function toggleScenario(scenarioName, idx) {
-      const legendItem = document.querySelector(`.legend-item[data-scenario="${scenarioName}"]`);
-
-      if (hiddenScenarios.has(scenarioName)) {
-        hiddenScenarios.delete(scenarioName);
-        legendItem.classList.remove('disabled');
-      } else {
-        hiddenScenarios.add(scenarioName);
-        legendItem.classList.add('disabled');
-      }
-
-      // Update all trend charts
-      updateTrendCharts();
-    }
-
-    // Update trend charts based on hidden scenarios
-    function updateTrendCharts() {
-      trendCharts.forEach(chartInfo => {
-        const { chart } = chartInfo;
-
-        chart.data.datasets.forEach((dataset, idx) => {
-          const scenarioName = dataset.label;
-          dataset.hidden = hiddenScenarios.has(scenarioName);
-        });
-
-        chart.update();
-      });
-    }
-
-    // Update comparison charts based on hidden libraries
-    function updateComparisonCharts() {
-      comparisonCharts.forEach(chartInfo => {
-        const { chart, result, scenario } = chartInfo;
-        const data = result.scenarios[scenario];
-        if (!data) return;
-
-        const labels = [];
-        const values = [];
-        const originalTimes = [];
-        const bgColors = [];
-
-        libraries.forEach(lib => {
-          if (data[lib] != null && !hiddenLibraries.has(lib)) {
-            labels.push(shortNames[lib] || lib);
-            values.push(timeToThroughput(data[lib]));
-            originalTimes.push(data[lib]);
-            bgColors.push(colors[lib]);
-          }
-        });
-
-        chart.data.labels = labels;
-        chart.data.datasets[0].data = values;
-        chart.data.datasets[0].backgroundColor = bgColors;
-        chart.data.datasets[0].originalTimes = originalTimes;
-        chart.update();
-      });
-    }
-
-    // Initialize comparison charts
-    results.forEach((result, i) => {
-      scenarios.forEach(scenario => {
-        const canvasId = 'chart-' + i + '-' + scenario.replace(/[^a-z0-9]/gi, '');
-        const canvas = document.getElementById(canvasId);
-        if (!canvas) return;
-
-        const data = result.scenarios[scenario];
-        if (!data) return;
-
-        const labels = [];
-        const values = [];
-        const originalTimes = [];
-        const bgColors = [];
-
-        libraries.forEach(lib => {
-          if (data[lib] != null) {
-            labels.push(shortNames[lib] || lib);
-            values.push(timeToThroughput(data[lib]));
-            originalTimes.push(data[lib]);
-            bgColors.push(colors[lib]);
-          }
-        });
-
-        const chart = new Chart(canvas, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [{
-              data: values,
-              backgroundColor: bgColors,
-              borderWidth: 0,
-              originalTimes: originalTimes
-            }]
-          },
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: function(ctx) {
-                    const throughput = ctx.raw;
-                    const time = ctx.dataset.originalTimes[ctx.dataIndex];
-                    return formatThroughput(throughput) + ' (' + formatTimeJS(time) + ')';
-                  }
-                }
-              }
-            },
-            scales: {
-              x: {
-                beginAtZero: true,
-                grid: { color: '#30363d' },
-                title: {
-                  display: true,
-                  text: 'Throughput (ops/sec) - Higher is Better',
-                  color: '#8b949e'
-                },
-                ticks: {
-                  color: '#8b949e',
-                  callback: function(val) {
-                    if (val >= 1_000_000) return (val / 1_000_000).toFixed(1) + 'M';
-                    if (val >= 1_000) return (val / 1_000).toFixed(0) + 'K';
-                    return val.toFixed(0);
-                  }
-                }
-              },
-              y: {
-                grid: { display: false },
-                ticks: { color: '#c9d1d9' }
-              }
-            }
-          }
-        });
-
-        // Store chart reference for later updates
-        comparisonCharts.push({ chart, result, scenario });
-      });
+  <div id="trend-chart"></div>
+  <div class="tablewrap" id="trend-table" hidden></div>
+</figure>
+<figure class="card" style="margin-top:14px" id="trend-delta-card" hidden>
+  <div class="card-head"><h3>First record vs latest</h3></div>
+  <div class="tablewrap" id="trend-delta"></div>
+</figure>
+
+<footer>
+  Regenerate with <code>node benchmark/grapheme/_records/report.mjs</code> after adding a record.
+  Sources: mitata outputs named <code>YYYYMMDD-cpu-os-runtime.txt</code>.
+</footer>
+
+<div id="tooltip" role="status"></div>
+
+<script>
+const DATA = {"generated":"2026-07-07","subject":"unicode-segmenter/grapheme","libraries":["unicode-segmenter/grapheme","Intl.Segmenter","unicode-rs/unicode-segmentation (wasm)","graphemer","grapheme-splitter","@formatjs/intl-segmenter"],"shortNames":{"unicode-segmenter/grapheme":"unicode-segmenter","graphemer":"graphemer","grapheme-splitter":"grapheme-splitter","@formatjs/intl-segmenter":"@formatjs/intl-segmenter","unicode-rs/unicode-segmentation (wasm)":"unicode-segmentation (wasm)","Intl.Segmenter":"Intl.Segmenter"},"scenarios":["Lorem ipsum (ascii)","Emojis","Hindi","Demonic characters","Tweet text (combined)","Code snippet (combined)"],"platforms":[{"id":"apple_m4_pro/nodejs","label":"Apple M4 Pro · Node.js","latest":{"date":"2026-07-07","runtime":"Node.js 26.4.0","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":2.98,"graphemer":43.73,"grapheme-splitter":73.08,"@formatjs/intl-segmenter":33.26,"unicode-rs/unicode-segmentation (wasm)":21.31,"Intl.Segmenter":5.39},"Emojis":{"unicode-segmenter/grapheme":0.94251,"graphemer":7.57,"grapheme-splitter":42.48,"@formatjs/intl-segmenter":10.1,"unicode-rs/unicode-segmentation (wasm)":4.36,"Intl.Segmenter":2.24},"Hindi":{"unicode-segmenter/grapheme":3.13,"graphemer":28.53,"grapheme-splitter":59.6,"@formatjs/intl-segmenter":31,"unicode-rs/unicode-segmentation (wasm)":13.23,"Intl.Segmenter":5.38},"Demonic characters":{"unicode-segmenter/grapheme":0.6444099999999999,"graphemer":15.14,"grapheme-splitter":11.17,"@formatjs/intl-segmenter":12.06,"unicode-rs/unicode-segmentation (wasm)":2.24,"Intl.Segmenter":1.05},"Tweet text (combined)":{"unicode-segmenter/grapheme":4.45,"graphemer":55.7,"grapheme-splitter":109.54,"@formatjs/intl-segmenter":47.23,"unicode-rs/unicode-segmentation (wasm)":18.96,"Intl.Segmenter":8.49},"Code snippet (combined)":{"unicode-segmenter/grapheme":10.79,"graphemer":115.5,"grapheme-splitter":238.57,"@formatjs/intl-segmenter":146.19,"unicode-rs/unicode-segmentation (wasm)":45.05,"Intl.Segmenter":18.82}}},"history":[{"date":"2025-03-07","runtime":"Node.js 23.9.0","scenarios":{"Lorem ipsum (ascii)":3.64,"Emojis":1.24,"Hindi":4.13,"Demonic characters":1.24,"Tweet text (combined)":5.68,"Code snippet (combined)":13.59}},{"date":"2025-03-07","runtime":"Node.js 23.9.0","scenarios":{"Lorem ipsum (ascii)":3.63,"Emojis":1.36,"Hindi":4.37,"Demonic characters":1.27,"Tweet text (combined)":5.76,"Code snippet (combined)":13.84}},{"date":"2025-06-23","runtime":"Node.js 24.2.0","scenarios":{"Lorem ipsum (ascii)":3.22,"Emojis":1.4,"Hindi":4.76,"Demonic characters":1.05,"Tweet text (combined)":5.4,"Code snippet (combined)":12.96}},{"date":"2026-07-07","runtime":"Node.js 26.4.0","scenarios":{"Lorem ipsum (ascii)":2.98,"Emojis":0.94251,"Hindi":3.13,"Demonic characters":0.6444099999999999,"Tweet text (combined)":4.45,"Code snippet (combined)":10.79}}]},{"id":"apple_m4_pro/bun","label":"Apple M4 Pro · Bun","latest":{"date":"2026-07-07","runtime":"Bun 1.3.14","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":2.46,"graphemer":18.05,"grapheme-splitter":68.26,"@formatjs/intl-segmenter":53.59,"unicode-rs/unicode-segmentation (wasm)":12.14,"Intl.Segmenter":4.14},"Emojis":{"unicode-segmenter/grapheme":0.85413,"graphemer":4.95,"grapheme-splitter":17.45,"@formatjs/intl-segmenter":19.63,"unicode-rs/unicode-segmentation (wasm)":3.35,"Intl.Segmenter":1.53},"Hindi":{"unicode-segmenter/grapheme":2.61,"graphemer":17.27,"grapheme-splitter":33.8,"@formatjs/intl-segmenter":63.51,"unicode-rs/unicode-segmentation (wasm)":11.03,"Intl.Segmenter":3.55},"Demonic characters":{"unicode-segmenter/grapheme":0.45009,"graphemer":8.1,"grapheme-splitter":7,"@formatjs/intl-segmenter":70.45,"unicode-rs/unicode-segmentation (wasm)":2.12,"Intl.Segmenter":0.7040299999999999},"Tweet text (combined)":{"unicode-segmenter/grapheme":4.21,"graphemer":25.22,"grapheme-splitter":55.33,"@formatjs/intl-segmenter":80.4,"unicode-rs/unicode-segmentation (wasm)":15.36,"Intl.Segmenter":6.23},"Code snippet (combined)":{"unicode-segmenter/grapheme":10.13,"graphemer":59.86,"grapheme-splitter":131.58,"@formatjs/intl-segmenter":177.56,"unicode-rs/unicode-segmentation (wasm)":37.59,"Intl.Segmenter":14.55}}},"history":[{"date":"2025-03-07","runtime":"Bun 1.2.4","scenarios":{"Lorem ipsum (ascii)":3.31,"Emojis":1.79,"Hindi":5.15,"Demonic characters":1.73,"Tweet text (combined)":6.86,"Code snippet (combined)":15.4}},{"date":"2025-03-07","runtime":"Bun 1.2.4","scenarios":{"Lorem ipsum (ascii)":3.15,"Emojis":1.92,"Hindi":5.22,"Demonic characters":1.68,"Tweet text (combined)":6.74,"Code snippet (combined)":15.35}},{"date":"2025-06-23","runtime":"Bun 1.2.16","scenarios":{"Lorem ipsum (ascii)":3.12,"Emojis":2.04,"Hindi":5.69,"Demonic characters":1.66,"Tweet text (combined)":6.3,"Code snippet (combined)":14.75}},{"date":"2026-07-07","runtime":"Bun 1.3.14","scenarios":{"Lorem ipsum (ascii)":2.46,"Emojis":0.85413,"Hindi":2.61,"Demonic characters":0.45009,"Tweet text (combined)":4.21,"Code snippet (combined)":10.13}}]},{"id":"apple_m4_pro/chrome","label":"Apple M4 Pro · Chrome","latest":{"date":"2026-07-07","runtime":"Chrome 150.0.0.0","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":2.8,"graphemer":67.97,"grapheme-splitter":71.78,"@formatjs/intl-segmenter":73.51,"unicode-rs/unicode-segmentation (wasm)":20.12,"Intl.Segmenter":5.26},"Emojis":{"unicode-segmenter/grapheme":0.90706,"graphemer":6.65,"grapheme-splitter":19.55,"@formatjs/intl-segmenter":11.92,"unicode-rs/unicode-segmentation (wasm)":4.85,"Intl.Segmenter":2.4},"Hindi":{"unicode-segmenter/grapheme":2.93,"graphemer":25.34,"grapheme-splitter":70.64,"@formatjs/intl-segmenter":72.35,"unicode-rs/unicode-segmentation (wasm)":27.37,"Intl.Segmenter":5.24},"Demonic characters":{"unicode-segmenter/grapheme":0.67335,"graphemer":13.99,"grapheme-splitter":10.71,"@formatjs/intl-segmenter":11.83,"unicode-rs/unicode-segmentation (wasm)":2.38,"Intl.Segmenter":1.27},"Tweet text (combined)":{"unicode-segmenter/grapheme":4.45,"graphemer":95.96,"grapheme-splitter":123.16,"@formatjs/intl-segmenter":47.3,"unicode-rs/unicode-segmentation (wasm)":22.64,"Intl.Segmenter":9.15},"Code snippet (combined)":{"unicode-segmenter/grapheme":10.58,"graphemer":80.16,"grapheme-splitter":329.97,"@formatjs/intl-segmenter":187.47,"unicode-rs/unicode-segmentation (wasm)":52.11,"Intl.Segmenter":18.4}}},"history":[{"date":"2025-03-07","runtime":"Chrome 134.0.6998.45","scenarios":{"Lorem ipsum (ascii)":3.29,"Emojis":1.29,"Hindi":4.3,"Demonic characters":1.19,"Tweet text (combined)":5.79,"Code snippet (combined)":13.27}},{"date":"2025-03-07","runtime":"Chrome 134.0.6998.45","scenarios":{"Lorem ipsum (ascii)":3.34,"Emojis":1.41,"Hindi":4.33,"Demonic characters":1.25,"Tweet text (combined)":5.79,"Code snippet (combined)":14.13}},{"date":"2025-06-23","runtime":"Chrome 137.0.7151.120","scenarios":{"Lorem ipsum (ascii)":3.09,"Emojis":1.46,"Hindi":4.78,"Demonic characters":1.1,"Tweet text (combined)":5.37,"Code snippet (combined)":12.59}},{"date":"2026-07-07","runtime":"Chrome 150.0.0.0","scenarios":{"Lorem ipsum (ascii)":2.8,"Emojis":0.90706,"Hindi":2.93,"Demonic characters":0.67335,"Tweet text (combined)":4.45,"Code snippet (combined)":10.58}}]},{"id":"apple_m4_pro/safari","label":"Apple M4 Pro · Safari","latest":{"date":"2026-07-07","runtime":"Safari 26.5","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":1.69,"graphemer":18.17,"grapheme-splitter":66.67,"@formatjs/intl-segmenter":39.47,"unicode-rs/unicode-segmentation (wasm)":18.28,"Intl.Segmenter":5.79},"Emojis":{"unicode-segmenter/grapheme":0.8765299999999999,"graphemer":4.33,"grapheme-splitter":19.78,"@formatjs/intl-segmenter":20.46,"unicode-rs/unicode-segmentation (wasm)":6.69,"Intl.Segmenter":4.85},"Hindi":{"unicode-segmenter/grapheme":2.71,"graphemer":16.01,"grapheme-splitter":33.02,"@formatjs/intl-segmenter":49.11,"unicode-rs/unicode-segmentation (wasm)":14.09,"Intl.Segmenter":5.08},"Demonic characters":{"unicode-segmenter/grapheme":0.47156,"graphemer":7.52,"grapheme-splitter":6.36,"@formatjs/intl-segmenter":60.73,"unicode-rs/unicode-segmentation (wasm)":4.13,"Intl.Segmenter":3.17},"Tweet text (combined)":{"unicode-segmenter/grapheme":4.18,"graphemer":26.56,"grapheme-splitter":53.87,"@formatjs/intl-segmenter":56.01,"unicode-rs/unicode-segmentation (wasm)":20.73,"Intl.Segmenter":8.46},"Code snippet (combined)":{"unicode-segmenter/grapheme":10.15,"graphemer":53.16,"grapheme-splitter":122.4,"@formatjs/intl-segmenter":161.09,"unicode-rs/unicode-segmentation (wasm)":49.11,"Intl.Segmenter":19.61}}},"history":[{"date":"2025-03-07","runtime":"Safari 18.3","scenarios":{"Lorem ipsum (ascii)":3.84,"Emojis":1.8,"Hindi":5.51,"Demonic characters":1.77,"Tweet text (combined)":7.09,"Code snippet (combined)":16.89}},{"date":"2025-03-07","runtime":"Safari 18.3","scenarios":{"Lorem ipsum (ascii)":2.95,"Emojis":1.86,"Hindi":5.4,"Demonic characters":1.7,"Tweet text (combined)":7.11,"Code snippet (combined)":15.88}},{"date":"2025-06-23","runtime":"Safari 18.5","scenarios":{"Lorem ipsum (ascii)":5.39,"Emojis":3.42,"Hindi":12.23,"Demonic characters":3.11,"Tweet text (combined)":12.42,"Code snippet (combined)":28.7}},{"date":"2026-07-07","runtime":"Safari 26.5","scenarios":{"Lorem ipsum (ascii)":1.69,"Emojis":0.8765299999999999,"Hindi":2.71,"Demonic characters":0.47156,"Tweet text (combined)":4.18,"Code snippet (combined)":10.15}}]},{"id":"apple_m1_pro/nodejs","label":"Apple M1 Pro · Node.js","latest":{"date":"2024-09-02","runtime":"Node.js 20.17.0","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":6.365,"graphemer":49.588,"grapheme-splitter":75.737,"@formatjs/intl-segmenter":41.488,"unicode-rs/unicode-segmentation (wasm)":16.896,"Intl.Segmenter":53.747},"Emojis":{"unicode-segmenter/grapheme":1.983,"graphemer":13.724,"grapheme-splitter":27.848,"@formatjs/intl-segmenter":14.437,"unicode-rs/unicode-segmentation (wasm)":5.672,"Intl.Segmenter":15.536},"Hindi":{"unicode-segmenter/grapheme":6.625,"graphemer":49.501,"grapheme-splitter":99.005,"@formatjs/intl-segmenter":46.919,"unicode-rs/unicode-segmentation (wasm)":16.141,"Intl.Segmenter":38.799},"Demonic characters":{"unicode-segmenter/grapheme":1.824,"graphemer":27.432,"grapheme-splitter":19.979,"@formatjs/intl-segmenter":17.447,"unicode-rs/unicode-segmentation (wasm)":2.438,"Intl.Segmenter":5.39},"Tweet text (combined)":{"unicode-segmenter/grapheme":9.16,"graphemer":68.664,"grapheme-splitter":150,"@formatjs/intl-segmenter":64.577,"unicode-rs/unicode-segmentation (wasm)":24.324,"Intl.Segmenter":69.986},"Code snippet (combined)":{"unicode-segmenter/grapheme":21.677,"graphemer":164,"grapheme-splitter":349,"@formatjs/intl-segmenter":147,"unicode-rs/unicode-segmentation (wasm)":58,"Intl.Segmenter":166}}},"history":[{"date":"2024-09-02","runtime":"Node.js 20.17.0","scenarios":{"Lorem ipsum (ascii)":6.365,"Emojis":1.983,"Hindi":6.625,"Demonic characters":1.824,"Tweet text (combined)":9.16,"Code snippet (combined)":21.677}}]},{"id":"apple_m1_pro/bun","label":"Apple M1 Pro · Bun","latest":{"date":"2024-09-02","runtime":"Bun 1.20.0","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":6.365,"graphemer":49.588,"grapheme-splitter":75.737,"@formatjs/intl-segmenter":41.488,"unicode-rs/unicode-segmentation (wasm)":16.896,"Intl.Segmenter":53.747},"Emojis":{"unicode-segmenter/grapheme":1.983,"graphemer":13.724,"grapheme-splitter":27.848,"@formatjs/intl-segmenter":14.437,"unicode-rs/unicode-segmentation (wasm)":5.672,"Intl.Segmenter":15.536},"Hindi":{"unicode-segmenter/grapheme":6.625,"graphemer":49.501,"grapheme-splitter":99.005,"@formatjs/intl-segmenter":46.919,"unicode-rs/unicode-segmentation (wasm)":16.141,"Intl.Segmenter":38.799},"Demonic characters":{"unicode-segmenter/grapheme":1.824,"graphemer":27.432,"grapheme-splitter":19.979,"@formatjs/intl-segmenter":17.447,"unicode-rs/unicode-segmentation (wasm)":2.438,"Intl.Segmenter":5.39},"Tweet text (combined)":{"unicode-segmenter/grapheme":9.16,"graphemer":68.664,"grapheme-splitter":150,"@formatjs/intl-segmenter":64.577,"unicode-rs/unicode-segmentation (wasm)":24.324,"Intl.Segmenter":69.986},"Code snippet (combined)":{"unicode-segmenter/grapheme":21.677,"graphemer":164,"grapheme-splitter":349,"@formatjs/intl-segmenter":147,"unicode-rs/unicode-segmentation (wasm)":58,"Intl.Segmenter":166}}},"history":[{"date":"2024-09-02","runtime":"Bun 1.20.0","scenarios":{"Lorem ipsum (ascii)":6.365,"Emojis":1.983,"Hindi":6.625,"Demonic characters":1.824,"Tweet text (combined)":9.16,"Code snippet (combined)":21.677}}]},{"id":"apple_m1_pro/chrome","label":"Apple M1 Pro · Chrome","latest":{"date":"2024-09-02","runtime":"Chrome 128.0.6613.114","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":5.108,"graphemer":35.764,"grapheme-splitter":58.002,"@formatjs/intl-segmenter":37.537,"unicode-rs/unicode-segmentation (wasm)":32.653,"Intl.Segmenter":9.576},"Emojis":{"unicode-segmenter/grapheme":1.901,"graphemer":10.197,"grapheme-splitter":23.297,"@formatjs/intl-segmenter":13.409,"unicode-rs/unicode-segmentation (wasm)":10.51,"Intl.Segmenter":5.444},"Hindi":{"unicode-segmenter/grapheme":6.107,"graphemer":38.889,"grapheme-splitter":116,"@formatjs/intl-segmenter":45.204,"unicode-rs/unicode-segmentation (wasm)":28.897,"Intl.Segmenter":9.902},"Demonic characters":{"unicode-segmenter/grapheme":1.802,"graphemer":20.838,"grapheme-splitter":18.569,"@formatjs/intl-segmenter":17.239,"unicode-rs/unicode-segmentation (wasm)":3.713,"Intl.Segmenter":3.487},"Tweet text (combined)":{"unicode-segmenter/grapheme":8.576,"graphemer":52.379,"grapheme-splitter":176,"@formatjs/intl-segmenter":63.887,"unicode-rs/unicode-segmentation (wasm)":48.371,"Intl.Segmenter":14.152},"Code snippet (combined)":{"unicode-segmenter/grapheme":20.461,"graphemer":125,"grapheme-splitter":396,"@formatjs/intl-segmenter":146,"unicode-rs/unicode-segmentation (wasm)":113,"Intl.Segmenter":29.107}}},"history":[{"date":"2024-09-02","runtime":"Chrome 128.0.6613.114","scenarios":{"Lorem ipsum (ascii)":5.108,"Emojis":1.901,"Hindi":6.107,"Demonic characters":1.802,"Tweet text (combined)":8.576,"Code snippet (combined)":20.461}}]},{"id":"apple_m1_pro/firefox","label":"Apple M1 Pro · Firefox","latest":{"date":"2024-09-02","runtime":"Firefox 130.0b9","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":17.683,"graphemer":43.349,"grapheme-splitter":71.363,"@formatjs/intl-segmenter":40.709,"unicode-rs/unicode-segmentation (wasm)":26.871,"Intl.Segmenter":5.883},"Emojis":{"unicode-segmenter/grapheme":5.863,"graphemer":12.021,"grapheme-splitter":40.256,"@formatjs/intl-segmenter":14.966,"unicode-rs/unicode-segmentation (wasm)":8.336,"Intl.Segmenter":1.901},"Hindi":{"unicode-segmenter/grapheme":20.438,"graphemer":41.368,"grapheme-splitter":151,"@formatjs/intl-segmenter":49.487,"unicode-rs/unicode-segmentation (wasm)":23.077,"Intl.Segmenter":5.018},"Demonic characters":{"unicode-segmenter/grapheme":7.545,"graphemer":20.089,"grapheme-splitter":20.903,"@formatjs/intl-segmenter":17.613,"unicode-rs/unicode-segmentation (wasm)":2.546,"Intl.Segmenter":0.723},"Tweet text (combined)":{"unicode-segmenter/grapheme":17.253,"graphemer":62.988,"grapheme-splitter":242,"@formatjs/intl-segmenter":68.797,"unicode-rs/unicode-segmentation (wasm)":38.969,"Intl.Segmenter":8.316},"Code snippet (combined)":{"unicode-segmenter/grapheme":40.481,"graphemer":149,"grapheme-splitter":557,"@formatjs/intl-segmenter":156,"unicode-rs/unicode-segmentation (wasm)":92.425,"Intl.Segmenter":19.388}}},"history":[{"date":"2024-09-02","runtime":"Firefox 130.0b9","scenarios":{"Lorem ipsum (ascii)":17.683,"Emojis":5.863,"Hindi":20.438,"Demonic characters":7.545,"Tweet text (combined)":17.253,"Code snippet (combined)":40.481}}]},{"id":"apple_m1_pro/safari","label":"Apple M1 Pro · Safari","latest":{"date":"2024-09-02","runtime":"Safari 17.5","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":16.4,"graphemer":48.379,"grapheme-splitter":158,"@formatjs/intl-segmenter":149,"unicode-rs/unicode-segmentation (wasm)":39.772,"Intl.Segmenter":8.89},"Emojis":{"unicode-segmenter/grapheme":6.321,"graphemer":14.695,"grapheme-splitter":56.493,"@formatjs/intl-segmenter":44.697,"unicode-rs/unicode-segmentation (wasm)":11.742,"Intl.Segmenter":3.771},"Hindi":{"unicode-segmenter/grapheme":21.097,"graphemer":46.805,"grapheme-splitter":128,"@formatjs/intl-segmenter":167,"unicode-rs/unicode-segmentation (wasm)":33.257,"Intl.Segmenter":7.929},"Demonic characters":{"unicode-segmenter/grapheme":6.398,"graphemer":20.942,"grapheme-splitter":17.756,"@formatjs/intl-segmenter":172,"unicode-rs/unicode-segmentation (wasm)":3.461,"Intl.Segmenter":2.133},"Tweet text (combined)":{"unicode-segmenter/grapheme":31.087,"graphemer":77.524,"grapheme-splitter":212,"@formatjs/intl-segmenter":209,"unicode-rs/unicode-segmentation (wasm)":56.943,"Intl.Segmenter":12.885},"Code snippet (combined)":{"unicode-segmenter/grapheme":70.735,"graphemer":180,"grapheme-splitter":484,"@formatjs/intl-segmenter":471,"unicode-rs/unicode-segmentation (wasm)":134,"Intl.Segmenter":29.502}}},"history":[{"date":"2024-09-02","runtime":"Safari 17.5","scenarios":{"Lorem ipsum (ascii)":16.4,"Emojis":6.321,"Hindi":21.097,"Demonic characters":6.398,"Tweet text (combined)":31.087,"Code snippet (combined)":70.735}}]},{"id":"intel_x86_64/nodejs","label":"Intel x86_64 · Node.js","latest":{"date":"2025-12-13","runtime":"Node.js 24.2.1","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":3.71,"graphemer":59.16,"grapheme-splitter":121.24,"@formatjs/intl-segmenter":36.35,"unicode-rs/unicode-segmentation (wasm)":29.92,"Intl.Segmenter":8.07},"Emojis":{"unicode-segmenter/grapheme":1.58,"graphemer":11.54,"grapheme-splitter":100.93,"@formatjs/intl-segmenter":14.26,"unicode-rs/unicode-segmentation (wasm)":5.33,"Intl.Segmenter":3.82},"Hindi":{"unicode-segmenter/grapheme":3.72,"graphemer":40.6,"grapheme-splitter":134.51,"@formatjs/intl-segmenter":42.34,"unicode-rs/unicode-segmentation (wasm)":16.06,"Intl.Segmenter":7.9},"Demonic characters":{"unicode-segmenter/grapheme":0.6235499999999999,"graphemer":24.01,"grapheme-splitter":19.31,"@formatjs/intl-segmenter":15.81,"unicode-rs/unicode-segmentation (wasm)":3.61,"Intl.Segmenter":1.9},"Tweet text (combined)":{"unicode-segmenter/grapheme":5.94,"graphemer":85.77,"grapheme-splitter":198.18,"@formatjs/intl-segmenter":111.7,"unicode-rs/unicode-segmentation (wasm)":24.48,"Intl.Segmenter":13.86},"Code snippet (combined)":{"unicode-segmenter/grapheme":13.41,"graphemer":162.06,"grapheme-splitter":424.35,"@formatjs/intl-segmenter":204.23,"unicode-rs/unicode-segmentation (wasm)":56.63,"Intl.Segmenter":31.86}}},"history":[{"date":"2024-09-03","runtime":"Node.js 22.2.0","scenarios":{"Lorem ipsum (ascii)":9.927,"Emojis":3.14,"Hindi":9.998,"Demonic characters":3.172,"Tweet text (combined)":15.233,"Code snippet (combined)":34.312}},{"date":"2024-11-03","runtime":"Node.js 22.9.0","scenarios":{"Lorem ipsum (ascii)":11.032,"Emojis":3.432,"Hindi":11.759,"Demonic characters":3.265,"Tweet text (combined)":17.07,"Code snippet (combined)":38.446}},{"date":"2024-11-03","runtime":"Node.js 23.1.0","scenarios":{"Lorem ipsum (ascii)":10.924,"Emojis":3.176,"Hindi":10.865,"Demonic characters":3.214,"Tweet text (combined)":15.678,"Code snippet (combined)":36.323}},{"date":"2025-03-07","runtime":"Node.js 23.9.0","scenarios":{"Lorem ipsum (ascii)":4.5,"Emojis":1.53,"Hindi":4.88,"Demonic characters":1.43,"Tweet text (combined)":6.47,"Code snippet (combined)":16.67}},{"date":"2025-03-07","runtime":"Node.js 23.9.0","scenarios":{"Lorem ipsum (ascii)":4.26,"Emojis":1.68,"Hindi":5.21,"Demonic characters":1.54,"Tweet text (combined)":6.42,"Code snippet (combined)":15.58}},{"date":"2025-06-20","runtime":"Node.js 24.2.0","scenarios":{"Lorem ipsum (ascii)":3.46,"Emojis":1.56,"Hindi":4.74,"Demonic characters":1.28,"Tweet text (combined)":5.86,"Code snippet (combined)":14.16}},{"date":"2025-12-13","runtime":"Node.js 24.2.1","scenarios":{"Lorem ipsum (ascii)":3.71,"Emojis":1.58,"Hindi":3.72,"Demonic characters":0.6235499999999999,"Tweet text (combined)":5.94,"Code snippet (combined)":13.41}}]},{"id":"intel_x86_64/bun","label":"Intel x86_64 · Bun","latest":{"date":"2025-12-13","runtime":"Bun 1.3.4","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":3.77,"graphemer":30.4,"grapheme-splitter":134.86,"@formatjs/intl-segmenter":92.96,"unicode-rs/unicode-segmentation (wasm)":27.48,"Intl.Segmenter":7.37},"Emojis":{"unicode-segmenter/grapheme":1.59,"graphemer":5.99,"grapheme-splitter":28.82,"@formatjs/intl-segmenter":24.01,"unicode-rs/unicode-segmentation (wasm)":4.77,"Intl.Segmenter":2.48},"Hindi":{"unicode-segmenter/grapheme":3.58,"graphemer":21.11,"grapheme-splitter":36.09,"@formatjs/intl-segmenter":95.11,"unicode-rs/unicode-segmentation (wasm)":16.78,"Intl.Segmenter":5.92},"Demonic characters":{"unicode-segmenter/grapheme":0.6924,"graphemer":9.71,"grapheme-splitter":7.58,"@formatjs/intl-segmenter":51.63,"unicode-rs/unicode-segmentation (wasm)":3.11,"Intl.Segmenter":0.97972},"Tweet text (combined)":{"unicode-segmenter/grapheme":6.37,"graphemer":30.52,"grapheme-splitter":93.65,"@formatjs/intl-segmenter":132.75,"unicode-rs/unicode-segmentation (wasm)":23.34,"Intl.Segmenter":10.55},"Code snippet (combined)":{"unicode-segmenter/grapheme":15.61,"graphemer":96.34,"grapheme-splitter":193.16,"@formatjs/intl-segmenter":277.65,"unicode-rs/unicode-segmentation (wasm)":79.87,"Intl.Segmenter":27.07}}},"history":[{"date":"2024-11-03","runtime":"Bun 1.33.0","scenarios":{"Lorem ipsum (ascii)":11.096,"Emojis":4.728,"Hindi":14.787,"Demonic characters":4.229,"Tweet text (combined)":20.364}},{"date":"2025-03-07","runtime":"Bun 1.2.4","scenarios":{"Lorem ipsum (ascii)":4.98,"Emojis":2.48,"Hindi":6.79,"Demonic characters":2.13,"Tweet text (combined)":8.6,"Code snippet (combined)":20.5}},{"date":"2025-03-07","runtime":"Bun 1.2.4","scenarios":{"Lorem ipsum (ascii)":4.49,"Emojis":2.41,"Hindi":6.31,"Demonic characters":2.08,"Tweet text (combined)":8.04,"Code snippet (combined)":19.51}},{"date":"2025-06-20","runtime":"Bun 1.2.16","scenarios":{"Lorem ipsum (ascii)":4.25,"Emojis":2.69,"Hindi":7.34,"Demonic characters":2.41,"Tweet text (combined)":8.32,"Code snippet (combined)":19.01}},{"date":"2025-12-13","runtime":"Bun 1.3.4","scenarios":{"Lorem ipsum (ascii)":3.77,"Emojis":1.59,"Hindi":3.58,"Demonic characters":0.6924,"Tweet text (combined)":6.37,"Code snippet (combined)":15.61}}]},{"id":"intel_x86_64/chrome","label":"Intel x86_64 · Chrome","latest":{"date":"2025-12-13","runtime":"Chrome 143.0.7499.40","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":3.66,"graphemer":59.99,"grapheme-splitter":535.85,"@formatjs/intl-segmenter":49.75,"unicode-rs/unicode-segmentation (wasm)":42.7,"Intl.Segmenter":10.85},"Emojis":{"unicode-segmenter/grapheme":4.69,"graphemer":9.05,"grapheme-splitter":530.52,"@formatjs/intl-segmenter":22.45,"unicode-rs/unicode-segmentation (wasm)":8.94,"Intl.Segmenter":7.19},"Hindi":{"unicode-segmenter/grapheme":3.81,"graphemer":33.41,"grapheme-splitter":606.93,"@formatjs/intl-segmenter":66.28,"unicode-rs/unicode-segmentation (wasm)":25.39,"Intl.Segmenter":10.92},"Demonic characters":{"unicode-segmenter/grapheme":0.89219,"graphemer":17.7,"grapheme-splitter":15.34,"@formatjs/intl-segmenter":14.59,"unicode-rs/unicode-segmentation (wasm)":4.41,"Intl.Segmenter":4.23},"Tweet text (combined)":{"unicode-segmenter/grapheme":5.85,"graphemer":100.36,"grapheme-splitter":680.82,"@formatjs/intl-segmenter":103.38,"unicode-rs/unicode-segmentation (wasm)":43.33,"Intl.Segmenter":14.52},"Code snippet (combined)":{"unicode-segmenter/grapheme":13.09,"graphemer":228.71,"grapheme-splitter":925.69,"@formatjs/intl-segmenter":226.07,"unicode-rs/unicode-segmentation (wasm)":94.73,"Intl.Segmenter":26.28}}},"history":[{"date":"2024-09-03","runtime":"Chrome 127.0.6533.99","scenarios":{"Lorem ipsum (ascii)":8.398,"Emojis":3.101,"Hindi":9.825,"Demonic characters":3.143,"Tweet text (combined)":14.135,"Code snippet (combined)":33.049}},{"date":"2024-11-03","runtime":"Chrome 130.0.6723.58","scenarios":{"Lorem ipsum (ascii)":8.415,"Emojis":3.298,"Hindi":11.704,"Demonic characters":3.069,"Tweet text (combined)":16.019,"Code snippet (combined)":37.077}},{"date":"2025-03-07","runtime":"Chrome 133.0.6943.141","scenarios":{"Lorem ipsum (ascii)":3.64,"Emojis":1.45,"Hindi":4.42,"Demonic characters":1.36,"Tweet text (combined)":6.46,"Code snippet (combined)":14.93}},{"date":"2025-03-07","runtime":"Chrome 133.0.6943.141","scenarios":{"Lorem ipsum (ascii)":3.75,"Emojis":1.49,"Hindi":5.06,"Demonic characters":1.35,"Tweet text (combined)":6.52,"Code snippet (combined)":15.16}},{"date":"2025-06-20","runtime":"Chrome 137.0.7151.103","scenarios":{"Lorem ipsum (ascii)":3.47,"Emojis":1.65,"Hindi":4.63,"Demonic characters":1.31,"Tweet text (combined)":6.2,"Code snippet (combined)":15.04}},{"date":"2025-12-13","runtime":"Chrome 143.0.7499.40","scenarios":{"Lorem ipsum (ascii)":3.66,"Emojis":4.69,"Hindi":3.81,"Demonic characters":0.89219,"Tweet text (combined)":5.85,"Code snippet (combined)":13.09}}]},{"id":"intel_x86_64/firefox","label":"Intel x86_64 · Firefox","latest":{"date":"2025-12-13","runtime":"Firefox 146.0","scenarios":{"Lorem ipsum (ascii)":{"unicode-segmenter/grapheme":10.46,"graphemer":24.79,"grapheme-splitter":60.29,"@formatjs/intl-segmenter":41.74,"unicode-rs/unicode-segmentation (wasm)":21.17,"Intl.Segmenter":3.99},"Emojis":{"unicode-segmenter/grapheme":4.45,"graphemer":7.57,"grapheme-splitter":33.2,"@formatjs/intl-segmenter":12.81,"unicode-rs/unicode-segmentation (wasm)":6.45,"Intl.Segmenter":1.54},"Hindi":{"unicode-segmenter/grapheme":11.54,"graphemer":24.03,"grapheme-splitter":84.75,"@formatjs/intl-segmenter":41.3,"unicode-rs/unicode-segmentation (wasm)":20.2,"Intl.Segmenter":4.13},"Demonic characters":{"unicode-segmenter/grapheme":3.51,"graphemer":12.53,"grapheme-splitter":13.1,"@formatjs/intl-segmenter":13.99,"unicode-rs/unicode-segmentation (wasm)":3.52,"Intl.Segmenter":0.8061499999999999},"Tweet text (combined)":{"unicode-segmenter/grapheme":11.68,"graphemer":40.91,"grapheme-splitter":130.8,"@formatjs/intl-segmenter":63.88,"unicode-rs/unicode-segmentation (wasm)":34.1,"Intl.Segmenter":6.69},"Code snippet (combined)":{"unicode-segmenter/grapheme":25.5,"graphemer":89.38,"grapheme-splitter":305.75,"@formatjs/intl-segmenter":138.92,"unicode-rs/unicode-segmentation (wasm)":74.44,"Intl.Segmenter":15.42}}},"history":[{"date":"2025-03-07","runtime":"Firefox 136.0","scenarios":{"Lorem ipsum (ascii)":13.92,"Emojis":3.05,"Hindi":10.61,"Demonic characters":2.56,"Tweet text (combined)":14.79,"Code snippet (combined)":35.01}},{"date":"2025-03-07","runtime":"Firefox 136.0","scenarios":{"Lorem ipsum (ascii)":12.97,"Emojis":3.06,"Hindi":9.87,"Demonic characters":2.52,"Tweet text (combined)":14.3,"Code snippet (combined)":31.01}},{"date":"2025-06-20","runtime":"Firefox 139.0.1","scenarios":{"Lorem ipsum (ascii)":12.7,"Emojis":3.18,"Hindi":9.89,"Demonic characters":2.26,"Tweet text (combined)":13.81,"Code snippet (combined)":32.37}},{"date":"2025-12-13","runtime":"Firefox 146.0","scenarios":{"Lorem ipsum (ascii)":10.46,"Emojis":4.45,"Hindi":11.54,"Demonic characters":3.51,"Tweet text (combined)":11.68,"Code snippet (combined)":25.5}}]}]};
+
+const SUBJECT = DATA.subject;
+const SVGNS = 'http://www.w3.org/2000/svg';
+const SERIES_VARS = ['--s1', '--s2', '--s3', '--s4', '--s5', '--s6'];
+
+const fmt = {
+  time(us) {
+    if (us < 1) return (us * 1000).toFixed(0) + ' ns';
+    if (us < 100) return us.toFixed(2) + ' µs';
+    if (us < 1000) return us.toFixed(1) + ' µs';
+    return (us / 1000).toFixed(2) + ' ms';
+  },
+  ops(us) {
+    const ops = 1e6 / us;
+    if (ops >= 1e6) return (ops / 1e6).toFixed(2) + 'M ops/s';
+    if (ops >= 1e3) return Math.round(ops / 1e3) + 'K ops/s';
+    return Math.round(ops) + ' ops/s';
+  },
+  axisOps(ops) {
+    if (ops >= 1e6) return (ops / 1e6) + 'M';
+    if (ops >= 1e3) return (ops / 1e3) + 'K';
+    return String(ops);
+  },
+  ratio(r) {
+    return (r >= 10 ? r.toFixed(0) : r.toFixed(1)) + '×';
+  },
+};
+
+function el(tag, attrs = {}, text) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  if (text != null) node.textContent = text;
+  return node;
+}
+function svgEl(tag, attrs = {}, text) {
+  const node = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  if (text != null) node.textContent = text;
+  return node;
+}
+
+// clean tick steps: 1/2/5 × 10^n covering [0, max] with ~n ticks
+function ticks(max, count) {
+  const raw = max / count;
+  const pow = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 5, 10].map(m => m * pow).find(s => max / s <= count) || 10 * pow;
+  const out = [];
+  for (let v = 0; v <= max + 1e-9; v += step) out.push(v);
+  return out;
+}
+
+// ---- tooltip ----
+const tooltip = document.getElementById('tooltip');
+function showTooltip(x, y, build) {
+  tooltip.replaceChildren();
+  build(tooltip);
+  tooltip.style.display = 'block';
+  const rect = tooltip.getBoundingClientRect();
+  const px = Math.min(x + 14, window.innerWidth - rect.width - 8);
+  const py = Math.min(y + 14, window.innerHeight - rect.height - 8);
+  tooltip.style.left = Math.max(8, px) + 'px';
+  tooltip.style.top = Math.max(8, py) + 'px';
+}
+function hideTooltip() {
+  tooltip.style.display = 'none';
+}
+
+// ---- per-scenario emphasis bar chart ----
+function renderScenarioCard(scenario, data) {
+  const rows = DATA.libraries.filter(lib => data[lib] != null);
+  const card = el('figure', { class: 'card' });
+  const head = el('div', { class: 'card-head' });
+  head.append(el('h3', {}, scenario));
+  const toggle = el('div', { class: 'view-toggle' });
+  head.append(toggle);
+  card.append(head);
+
+  const chartHost = el('div');
+  const tableHost = el('div', { class: 'tablewrap', hidden: '' });
+  card.append(chartHost, tableHost);
+
+  const subjectTime = data[SUBJECT];
+
+  // chart geometry
+  const W = 584, gutter = 192, band = 30, barH = 20;
+  const axisBand = 22, topPad = 4;
+  const H = topPad + rows.length * band + axisBand;
+  const plotW = W - gutter - 96; // room for tip labels
+  const maxOps = Math.max(...rows.map(lib => 1e6 / data[lib]));
+  const x = ops => (ops / maxOps) * plotW;
+
+  const svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'group' });
+  svg.append(svgEl('title', {}, scenario + ' — throughput by library'));
+
+  // gridlines + axis labels (recessive hairlines, clean steps)
+  for (const t of ticks(maxOps, 4)) {
+    const gx = gutter + x(t);
+    svg.append(svgEl('line', {
+      x1: gx, y1: topPad, x2: gx, y2: topPad + rows.length * band,
+      stroke: t === 0 ? 'var(--axis)' : 'var(--grid)', 'stroke-width': 1,
+    }));
+    svg.append(svgEl('text', {
+      x: gx, y: H - 6, 'text-anchor': 'middle',
+      'font-size': 10.5, fill: 'var(--text-muted)',
+    }, fmt.axisOps(t)));
+  }
+
+  rows.forEach((lib, i) => {
+    const time = data[lib];
+    const ops = 1e6 / time;
+    const y = topPad + i * band;
+    const isSubject = lib === SUBJECT;
+    const w = Math.max(2, x(ops));
+    const color = isSubject ? 'var(--accent)' : 'var(--deemph)';
+
+    const g = svgEl('g', { class: 'bar-row', tabindex: 0, role: 'img' });
+    g.append(svgEl('title', {},
+      DATA.shortNames[lib] + ': ' + fmt.ops(time) + ', ' + fmt.time(time) + ' per iteration'));
+
+    // y label: identity via text, not color
+    const label = svgEl('text', {
+      x: gutter - 8, y: y + band / 2 + 3.5, 'text-anchor': 'end',
+      'font-size': 11.5, fill: isSubject ? 'var(--text-primary)' : 'var(--text-secondary)',
+      'font-weight': isSubject ? 600 : 400,
+    }, DATA.shortNames[lib]);
+
+    // bar: square at baseline, 4px rounded data-end
+    const r = Math.min(4, w);
+    const bar = svgEl('path', {
+      d: 'M' + (gutter + 0.5) + ' ' + (y + (band - barH) / 2)
+        + ' h' + (w - r) + ' a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + r
+        + ' v' + (barH - 2 * r) + ' a' + r + ' ' + r + ' 0 0 1 -' + r + ' ' + r
+        + ' h-' + (w - r) + ' Z',
+      fill: color,
     });
 
-    // Initialize trend charts
-    function initTrendCharts() {
-      trendData.forEach((platform, i) => {
-        const canvas = document.getElementById('trend-chart-' + i);
-        if (!canvas) return;
+    // value at the tip
+    const tip = svgEl('text', {
+      x: gutter + w + 6, y: y + band / 2 + 3.5,
+      'font-size': 11.5, fill: 'var(--text-secondary)',
+      'font-variant-numeric': 'tabular-nums',
+    }, fmt.ops(time));
 
-        const datasets = scenarios.map(scenario => {
-          const data = platform.dataPoints
-            .filter(dp => dp.scenarios[scenario] != null)
-            .map(dp => ({
-              x: dp.dateFormatted,
-              y: timeToThroughput(dp.scenarios[scenario]),
-              originalTime: dp.scenarios[scenario]
-            }));
+    // row-sized hit target (larger than the mark)
+    const hit = svgEl('rect', {
+      class: 'hit', x: 0, y, width: W, height: band,
+      fill: 'transparent',
+    });
 
-          return {
-            label: scenario,
-            data: data,
-            borderColor: scenarioColors[scenario],
-            backgroundColor: scenarioColors[scenario] + '20',
-            fill: false,
-            tension: 0.3,
-            pointRadius: 5,
-            pointHoverRadius: 8,
-          };
-        }).filter(ds => ds.data.length > 0);
+    const overlay = svgEl('rect', {
+      x: gutter, y: y + (band - barH) / 2, width: w, height: barH,
+      fill: 'currentColor', opacity: 0, 'pointer-events': 'none',
+    });
 
-        const chart = new Chart(canvas, {
-          type: 'line',
-          data: { datasets },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-              mode: 'index',
-              intersect: false,
-            },
-            plugins: {
-              legend: {
-                display: false
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(ctx) {
-                    const throughput = ctx.raw.y;
-                    const time = ctx.raw.originalTime;
-                    return ctx.dataset.label + ': ' + formatThroughput(throughput) + ' (' + formatTimeJS(time) + ')';
-                  }
-                }
-              }
-            },
-            scales: {
-              x: {
-                type: 'category',
-                grid: { color: '#30363d' },
-                ticks: { color: '#8b949e' }
-              },
-              y: {
-                beginAtZero: true,
-                grid: { color: '#30363d' },
-                title: {
-                  display: true,
-                  text: 'Throughput (ops/sec) - Higher is Better',
-                  color: '#8b949e'
-                },
-                ticks: {
-                  color: '#8b949e',
-                  callback: function(val) {
-                    if (val >= 1_000_000) return (val / 1_000_000).toFixed(1) + 'M';
-                    if (val >= 1_000) return (val / 1_000).toFixed(0) + 'K';
-                    return val.toFixed(0);
-                  }
-                }
-              }
-            }
-          }
-        });
+    const buildTip = (root) => {
+      root.append(el('div', { class: 't-title' }, scenario));
+      const r1 = el('div', { class: 't-row' });
+      const key = el('span', { class: 't-key' });
+      key.style.borderTopColor = isSubject
+        ? getComputedStyle(document.documentElement).getPropertyValue('--accent')
+        : getComputedStyle(document.documentElement).getPropertyValue('--deemph');
+      r1.append(key, el('span', { class: 't-val' }, fmt.ops(time) + ' · ' + fmt.time(time) + '/iter'));
+      root.append(r1);
+      root.append(el('div', { class: 't-lib' }, DATA.shortNames[lib]));
+      if (!isSubject && subjectTime) {
+        root.append(el('div', { class: 't-lib' }, fmt.ratio(time / subjectTime) + ' slower than unicode-segmenter'));
+      }
+    };
+    const enter = () => { overlay.setAttribute('opacity', 0.14); };
+    const leave = () => { overlay.setAttribute('opacity', 0); hideTooltip(); };
+    g.addEventListener('pointermove', e => { enter(); showTooltip(e.clientX, e.clientY, buildTip); });
+    g.addEventListener('pointerleave', leave);
+    g.addEventListener('focus', () => {
+      enter();
+      const b = g.getBoundingClientRect();
+      showTooltip(b.right - 80, b.top, buildTip);
+    });
+    g.addEventListener('blur', leave);
 
-        // Store chart reference for later updates
-        trendCharts.push({ chart, platform });
-      });
+    g.append(hit, label, bar, overlay, tip);
+    svg.append(g);
+  });
+
+  chartHost.append(svg);
+
+  // table twin
+  const table = el('table', { class: 'data' });
+  const thead = el('thead');
+  const hr = el('tr');
+  ['Library', 'Throughput', 'Time/iter', 'vs unicode-segmenter'].forEach(h => hr.append(el('th', {}, h)));
+  thead.append(hr);
+  const tbody = el('tbody');
+  for (const lib of rows) {
+    const time = data[lib];
+    const tr = el('tr');
+    tr.append(el('td', lib === SUBJECT ? { class: 'subject' } : {}, DATA.shortNames[lib]));
+    tr.append(el('td', {}, fmt.ops(time)));
+    tr.append(el('td', {}, fmt.time(time)));
+    tr.append(el('td', {}, lib === SUBJECT ? '—' : fmt.ratio(time / subjectTime) + ' slower'));
+    tbody.append(tr);
+  }
+  table.append(thead, tbody);
+  tableHost.append(table);
+
+  makeToggle(toggle, chartHost, tableHost);
+  return card;
+}
+
+function makeToggle(host, chartHost, tableHost) {
+  const bChart = el('button', { type: 'button', 'aria-pressed': 'true' }, 'Chart');
+  const bTable = el('button', { type: 'button', 'aria-pressed': 'false' }, 'Table');
+  const set = table => {
+    bChart.setAttribute('aria-pressed', String(!table));
+    bTable.setAttribute('aria-pressed', String(table));
+    chartHost.hidden = table;
+    tableHost.hidden = !table;
+  };
+  bChart.addEventListener('click', () => set(false));
+  bTable.addEventListener('click', () => set(true));
+  host.append(bChart, bTable);
+}
+
+// ---- KPI tiles ----
+function geomean(values) {
+  const v = values.filter(x => x != null && isFinite(x));
+  if (!v.length) return null;
+  return Math.exp(v.reduce((a, x) => a + Math.log(x), 0) / v.length);
+}
+
+function renderKpis(platform) {
+  const host = document.getElementById('kpis');
+  host.replaceChildren();
+  const scen = platform.latest.scenarios;
+
+  const ratiosTo = lib => DATA.scenarios.map(s => {
+    const d = scen[s];
+    return d && d[lib] != null && d[SUBJECT] != null ? d[lib] / d[SUBJECT] : null;
+  });
+  const jsAlts = ['graphemer', 'grapheme-splitter', '@formatjs/intl-segmenter'];
+  const fastestAltRatios = DATA.scenarios.map(s => {
+    const d = scen[s];
+    if (!d || d[SUBJECT] == null) return null;
+    const times = jsAlts.map(l => d[l]).filter(t => t != null);
+    return times.length ? Math.min(...times) / d[SUBJECT] : null;
+  });
+  const wins = DATA.scenarios.filter(s => {
+    const d = scen[s];
+    if (!d || d[SUBJECT] == null) return false;
+    return Object.entries(d).every(([lib, t]) => lib === SUBJECT || t >= d[SUBJECT]);
+  }).length;
+  const total = DATA.scenarios.filter(s => scen[s] && scen[s][SUBJECT] != null).length;
+
+  const tiles = [
+    ['vs Intl.Segmenter', geomean(ratiosTo('Intl.Segmenter')), 'built-in segmenter'],
+    ['vs unicode-segmentation', geomean(ratiosTo('unicode-rs/unicode-segmentation (wasm)')), 'Rust, WASM binding'],
+    ['vs fastest JS alternative', geomean(fastestAltRatios), 'best of graphemer, grapheme-splitter, @formatjs'],
+  ];
+  for (const [label, value, note] of tiles) {
+    if (value == null) continue;
+    const tile = el('div', { class: 'kpi' });
+    tile.append(el('div', { class: 'label' }, label));
+    tile.append(el('div', { class: 'value' }, fmt.ratio(value) + ' faster'));
+    tile.append(el('div', { class: 'note' }, 'geometric mean across workloads · ' + note));
+    host.append(tile);
+  }
+  const winTile = el('div', { class: 'kpi' });
+  winTile.append(el('div', { class: 'label' }, 'Fastest implementation in'));
+  winTile.append(el('div', { class: 'value' }, wins + ' / ' + total));
+  winTile.append(el('div', { class: 'note' }, 'workloads on this platform'));
+  host.append(winTile);
+}
+
+// ---- speedup summary table ----
+function renderSpeedupTable(platform) {
+  const host = document.getElementById('speedup-table');
+  host.replaceChildren();
+  const scen = platform.latest.scenarios;
+  const others = DATA.libraries.filter(l => l !== SUBJECT);
+
+  const table = el('table', { class: 'data' });
+  const thead = el('thead');
+  const hr = el('tr');
+  hr.append(el('th', {}, 'Workload'));
+  hr.append(el('th', {}, 'unicode-segmenter'));
+  for (const lib of others) hr.append(el('th', {}, DATA.shortNames[lib]));
+  thead.append(hr);
+  const tbody = el('tbody');
+  for (const s of DATA.scenarios) {
+    const d = scen[s];
+    if (!d || d[SUBJECT] == null) continue;
+    const tr = el('tr');
+    tr.append(el('td', {}, s));
+    tr.append(el('td', { class: 'subject' }, fmt.time(d[SUBJECT])));
+    for (const lib of others) {
+      tr.append(el('td', {}, d[lib] == null ? '—' : fmt.ratio(d[lib] / d[SUBJECT]) + ' slower'));
     }
-  </script>
+    tbody.append(tr);
+  }
+  table.append(thead, tbody);
+  host.append(table);
+}
+
+// ---- trend line chart ----
+const hiddenScenarios = new Set();
+
+function renderTrendLegend() {
+  const host = document.getElementById('trend-legend');
+  host.replaceChildren();
+  DATA.scenarios.forEach((s, i) => {
+    const b = el('button', { type: 'button', 'aria-pressed': String(!hiddenScenarios.has(s)) });
+    const key = el('span', { class: 'key' });
+    key.style.borderTopColor = 'var(' + SERIES_VARS[i] + ')';
+    b.append(key, document.createTextNode(s));
+    b.addEventListener('click', () => {
+      if (hiddenScenarios.has(s)) hiddenScenarios.delete(s);
+      else hiddenScenarios.add(s);
+      b.setAttribute('aria-pressed', String(!hiddenScenarios.has(s)));
+      renderTrend(currentPlatform());
+    });
+    host.append(b);
+  });
+}
+
+function renderTrend(platform) {
+  const host = document.getElementById('trend-chart');
+  host.replaceChildren();
+  const points = platform.history;
+  document.getElementById('trend-title').textContent =
+    'Performance history — ' + platform.label + ' (' + points.length + ' record' + (points.length === 1 ? '' : 's') + ')';
+
+  const W = 960, H = 340;
+  const m = { top: 12, right: 48, bottom: 34, left: 64 };
+  const plotW = W - m.left - m.right, plotH = H - m.top - m.bottom;
+
+  const dates = points.map(p => p.date);
+  const xs = dates.map(d => new Date(d + 'T00:00:00Z').getTime());
+  const xMin = Math.min(...xs), xMax = Math.max(...xs);
+  const xPos = t => xs.length === 1
+    ? m.left + plotW / 2
+    : m.left + ((t - xMin) / (xMax - xMin)) * plotW;
+
+  const visible = DATA.scenarios.filter(s => !hiddenScenarios.has(s));
+  const allOps = points.flatMap(p => visible.map(s => p.scenarios[s]).filter(t => t != null).map(t => 1e6 / t));
+  if (!allOps.length) {
+    host.append(el('p', { class: 'section-note' }, 'No visible series — enable a workload in the legend.'));
+    return;
+  }
+  const maxOps = Math.max(...allOps);
+  const yPos = ops => m.top + plotH - (ops / maxOps) * plotH;
+
+  const svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'group' });
+  svg.append(svgEl('title', {}, 'unicode-segmenter throughput per record, ' + platform.label));
+
+  // horizontal gridlines + y ticks
+  for (const t of ticks(maxOps, 4)) {
+    const gy = yPos(t);
+    svg.append(svgEl('line', {
+      x1: m.left, y1: gy, x2: W - m.right, y2: gy,
+      stroke: t === 0 ? 'var(--axis)' : 'var(--grid)', 'stroke-width': 1,
+    }));
+    svg.append(svgEl('text', {
+      x: m.left - 8, y: gy + 3.5, 'text-anchor': 'end',
+      'font-size': 10.5, fill: 'var(--text-muted)', 'font-variant-numeric': 'tabular-nums',
+    }, fmt.axisOps(t) + (t === 0 ? ' ops/s' : '')));
+  }
+  // x tick labels (dates, dedup by position)
+  const seenX = new Set();
+  points.forEach((p, i) => {
+    const px = Math.round(xPos(xs[i]));
+    if (seenX.has(px)) return;
+    seenX.add(px);
+    svg.append(svgEl('text', {
+      x: px, y: H - 10, 'text-anchor': 'middle',
+      'font-size': 10.5, fill: 'var(--text-muted)', 'font-variant-numeric': 'tabular-nums',
+    }, p.date));
+  });
+
+  // series lines + markers (2px lines, >=8px markers with surface ring)
+  visible.forEach(s => {
+    const idx = DATA.scenarios.indexOf(s);
+    const color = 'var(' + SERIES_VARS[idx] + ')';
+    const coords = points
+      .map((p, i) => p.scenarios[s] == null ? null : [xPos(xs[i]), yPos(1e6 / p.scenarios[s])])
+      .filter(Boolean);
+    if (coords.length > 1) {
+      svg.append(svgEl('path', {
+        d: 'M' + coords.map(c => c[0].toFixed(1) + ' ' + c[1].toFixed(1)).join(' L'),
+        fill: 'none', stroke: color, 'stroke-width': 2,
+        'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+      }));
+    }
+    for (const [cx, cy] of coords) {
+      svg.append(svgEl('circle', {
+        cx, cy, r: 4.5, fill: color,
+        stroke: 'var(--surface-1)', 'stroke-width': 2,
+      }));
+    }
+  });
+
+  // crosshair + shared tooltip
+  const hair = svgEl('line', {
+    y1: m.top, y2: m.top + plotH,
+    stroke: 'var(--axis)', 'stroke-width': 1, visibility: 'hidden',
+  });
+  svg.append(hair);
+  const overlay = svgEl('rect', {
+    x: m.left, y: m.top, width: plotW, height: plotH, fill: 'transparent',
+  });
+  overlay.addEventListener('pointermove', e => {
+    const rect = svg.getBoundingClientRect();
+    const mx = ((e.clientX - rect.left) / rect.width) * W;
+    let nearest = 0, best = Infinity;
+    xs.forEach((t, i) => {
+      const d = Math.abs(xPos(t) - mx);
+      if (d < best) { best = d; nearest = i; }
+    });
+    const p = points[nearest];
+    const px = xPos(xs[nearest]);
+    hair.setAttribute('x1', px);
+    hair.setAttribute('x2', px);
+    hair.setAttribute('visibility', 'visible');
+    showTooltip(e.clientX, e.clientY, root => {
+      root.append(el('div', { class: 't-title' }, p.date + ' · ' + p.runtime));
+      for (const s of visible) {
+        const t = p.scenarios[s];
+        if (t == null) continue;
+        const row = el('div', { class: 't-row' });
+        const key = el('span', { class: 't-key' });
+        key.style.borderTopColor = getComputedStyle(document.documentElement)
+          .getPropertyValue(SERIES_VARS[DATA.scenarios.indexOf(s)]);
+        row.append(key, el('span', { class: 't-val' }, fmt.ops(t)));
+        row.append(el('span', { class: 't-lib' }, s));
+        root.append(row);
+      }
+    });
+  });
+  overlay.addEventListener('pointerleave', () => {
+    hair.setAttribute('visibility', 'hidden');
+    hideTooltip();
+  });
+  svg.append(overlay);
+  host.append(svg);
+
+  renderTrendTables(platform);
+}
+
+function renderTrendTables(platform) {
+  const points = platform.history;
+
+  // table twin: date x scenario
+  const host = document.getElementById('trend-table');
+  host.replaceChildren();
+  const table = el('table', { class: 'data' });
+  const thead = el('thead');
+  const hr = el('tr');
+  hr.append(el('th', {}, 'Record'), el('th', {}, 'Runtime'));
+  for (const s of DATA.scenarios) hr.append(el('th', {}, s));
+  thead.append(hr);
+  const tbody = el('tbody');
+  for (const p of points) {
+    const tr = el('tr');
+    tr.append(el('td', {}, p.date), el('td', {}, p.runtime));
+    for (const s of DATA.scenarios) {
+      tr.append(el('td', {}, p.scenarios[s] == null ? '—' : fmt.time(p.scenarios[s])));
+    }
+    tbody.append(tr);
+  }
+  table.append(thead, tbody);
+  host.append(table);
+
+  // first vs latest delta
+  const deltaCard = document.getElementById('trend-delta-card');
+  const deltaHost = document.getElementById('trend-delta');
+  deltaHost.replaceChildren();
+  if (points.length < 2) {
+    deltaCard.hidden = true;
+    return;
+  }
+  deltaCard.hidden = false;
+  const first = points[0], last = points[points.length - 1];
+  const dtable = el('table', { class: 'data' });
+  const dthead = el('thead');
+  const dhr = el('tr');
+  ['Workload', first.date + ' (' + first.runtime + ')', last.date + ' (' + last.runtime + ')', 'Change'].forEach(h => dhr.append(el('th', {}, h)));
+  dthead.append(dhr);
+  const dtbody = el('tbody');
+  for (const s of DATA.scenarios) {
+    const a = first.scenarios[s], b = last.scenarios[s];
+    if (a == null || b == null) continue;
+    const change = (a - b) / a * 100;
+    const tr = el('tr');
+    tr.append(el('td', {}, s));
+    tr.append(el('td', {}, fmt.time(a)));
+    tr.append(el('td', {}, fmt.time(b)));
+    tr.append(el('td', { class: change >= 0 ? 'up' : 'down' },
+      (change >= 0 ? '↑ ' : '↓ ') + Math.abs(change).toFixed(1) + '% ' + (change >= 0 ? 'faster' : 'slower')));
+    dtbody.append(tr);
+  }
+  dtable.append(dthead, dtbody);
+  deltaHost.append(dtable);
+}
+
+// ---- platform wiring ----
+const select = document.getElementById('platform');
+DATA.platforms.forEach((p, i) => {
+  select.append(el('option', { value: String(i) }, p.label));
+});
+function currentPlatform() {
+  return DATA.platforms[Number(select.value) || 0];
+}
+function renderAll() {
+  const platform = currentPlatform();
+  document.getElementById('platform-meta').textContent =
+    'latest record: ' + platform.latest.date + ' · ' + platform.latest.runtime;
+  renderKpis(platform);
+
+  const grid = document.getElementById('scenario-grid');
+  grid.replaceChildren();
+  for (const s of DATA.scenarios) {
+    const d = platform.latest.scenarios[s];
+    if (d && Object.keys(d).length) grid.append(renderScenarioCard(s, d));
+  }
+  renderSpeedupTable(platform);
+  renderTrend(platform);
+}
+select.addEventListener('change', renderAll);
+
+// trend view toggle
+makeToggle(
+  document.querySelector('.view-toggle[data-for="trend"]'),
+  document.getElementById('trend-chart'),
+  document.getElementById('trend-table'),
+);
+
+renderTrendLegend();
+renderAll();
+</script>
 </body>
 </html>

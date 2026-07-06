@@ -1,19 +1,19 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join, basename } from 'node:path';
 
 const __dirname = import.meta.dirname;
 
-// Libraries we're comparing
+// Libraries we're comparing, in fixed display order:
+// subject first, then the native/wasm references, then JS libraries.
 const LIBRARIES = [
   'unicode-segmenter/grapheme',
+  'Intl.Segmenter',
+  'unicode-rs/unicode-segmentation (wasm)',
   'graphemer',
   'grapheme-splitter',
   '@formatjs/intl-segmenter',
-  'unicode-rs/unicode-segmentation (wasm)',
-  'Intl.Segmenter',
 ];
 
-// Short names for display
 const SHORT_NAMES = {
   'unicode-segmenter/grapheme': 'unicode-segmenter',
   'graphemer': 'graphemer',
@@ -22,6 +22,8 @@ const SHORT_NAMES = {
   'unicode-rs/unicode-segmentation (wasm)': 'unicode-segmentation (wasm)',
   'Intl.Segmenter': 'Intl.Segmenter',
 };
+
+const SUBJECT = 'unicode-segmenter/grapheme';
 
 // Benchmark scenarios
 const SCENARIOS = [
@@ -35,16 +37,12 @@ const SCENARIOS = [
 
 // Parse time value to microseconds
 function parseTime(timeStr) {
-  timeStr = timeStr.trim();
-
-  // Handle formats like "3.71 µs/iter", "6'365 ns/iter", "150 µs/iter"
-  const match = timeStr.match(/^([\d',._]+)\s*(ns|µs|ms|s)/i);
+  const match = timeStr.trim().match(/^([\d',._]+)\s*(ns|µs|ms|s)/i);
   if (!match) return null;
 
-  let value = parseFloat(match[1].replace(/['_,]/g, ''));
+  const value = parseFloat(match[1].replace(/['_,]/g, ''));
   const unit = match[2].toLowerCase();
 
-  // Convert to microseconds
   switch (unit) {
     case 'ns': return value / 1000;
     case 'µs': return value;
@@ -54,18 +52,18 @@ function parseTime(timeStr) {
   }
 }
 
-// Parse a benchmark file
+// Parse a benchmark record file
 async function parseBenchmarkFile(filePath) {
   const content = await readFile(filePath, 'utf-8');
   const lines = content.split('\n');
   const filename = basename(filePath, '.txt');
 
-  // Parse filename: YYYYMMDD-cpu-os-runtime.txt
+  // Filename: YYYYMMDD-cpu-os-runtime.txt
   const parts = filename.split('-');
   const date = parts[0];
   const cpu = parts[1];
   const os = parts[2];
-  const runtime = parts.slice(3).join('-').replace(/-\d+$/, ''); // Remove trailing commit hash
+  const runtime = parts.slice(3).join('-').replace(/-\d+$/, ''); // strip trailing commit hash
 
   const results = {
     date,
@@ -79,7 +77,6 @@ async function parseBenchmarkFile(filePath) {
   let currentScenario = null;
 
   for (const line of lines) {
-    // Detect scenario headers like "• Lorem ipsum (ascii)"
     const scenarioMatch = line.match(/^•\s+(.+)$/);
     if (scenarioMatch) {
       currentScenario = scenarioMatch[1].trim();
@@ -89,962 +86,903 @@ async function parseBenchmarkFile(filePath) {
 
     if (!currentScenario) continue;
 
-    // Try to match benchmark result lines
-    // Format 1 (newer mitata): "unicode-segmenter/grapheme                       3.71 µs/iter"
-    // Format 2 (older): "unicode-segmenter/grapheme                    6'365 ns/iter"
     for (const lib of LIBRARIES) {
-      if (line.startsWith(lib)) {
-        // Extract the time part
-        const timeMatch = line.match(/(\d[\d',._]*\s*(?:ns|µs|ms|s)\/iter)/i);
-        if (timeMatch) {
-          const time = parseTime(timeMatch[1]);
-          if (time !== null) {
-            results.scenarios[currentScenario][lib] = time;
-          }
+      const matched = line.startsWith(lib)
+        || (lib.includes('wasm') && /^unicode-rs\//.test(line));
+      if (!matched) continue;
+
+      const timeMatch = line.match(/(\d[\d',._]*\s*(?:ns|µs|ms|s)\/iter)/i);
+      if (timeMatch) {
+        const time = parseTime(timeMatch[1]);
+        if (time !== null) {
+          results.scenarios[currentScenario][lib] = time;
         }
-        break;
       }
-      // Handle wasm variant
-      if (lib.includes('wasm') && line.includes('wasm')) {
-        const timeMatch = line.match(/(\d[\d',._]*\s*(?:ns|µs|ms|s)\/iter)/i);
-        if (timeMatch) {
-          const time = parseTime(timeMatch[1]);
-          if (time !== null) {
-            results.scenarios[currentScenario][lib] = time;
-          }
-        }
-        break;
-      }
+      break;
     }
   }
 
   return results;
 }
 
-// Format runtime for display
-function formatRuntime(runtime) {
-  // Replace underscores with spaces first, then format runtime names
-  const formatted = runtime.replace(/_/g, ' ');
-  if (formatted.includes('node')) return formatted.replace('nodejs', 'Node.js').replace('node', 'Node.js');
-  if (formatted.includes('bun')) return formatted.replace('bun', 'Bun');
-  if (formatted.includes('chrome')) return formatted.replace('chrome', 'Chrome');
-  if (formatted.includes('firefox')) return formatted.replace('firefox', 'Firefox');
-  if (formatted.includes('safari')) return formatted.replace('safari', 'Safari');
-  return formatted;
-}
-
-// Format CPU for display
 function formatCpu(cpu) {
   if (cpu === 'apple_m1_pro') return 'Apple M1 Pro';
   if (cpu === 'apple_m4_pro') return 'Apple M4 Pro';
   if (cpu === 'intel_x86_64') return 'Intel x86_64';
-  return cpu;
+  return cpu.replace(/_/g, ' ');
 }
 
-// Generate ASCII bar chart
-function generateBarChart(data, maxWidth = 50) {
-  const maxValue = Math.max(...Object.values(data).filter(v => v != null));
-  const lines = [];
-
-  for (const [name, value] of Object.entries(data)) {
-    if (value == null) continue;
-    const shortName = SHORT_NAMES[name] || name;
-    const barLength = Math.round((value / maxValue) * maxWidth);
-    const bar = '█'.repeat(Math.max(1, barLength));
-    const label = shortName.padEnd(18);
-    const valueStr = formatTime(value).padStart(12);
-    lines.push(`${label} ${bar} ${valueStr}`);
-  }
-
-  return lines.join('\n');
+function formatRuntime(runtime) {
+  const formatted = runtime.replace(/_/g, ' ');
+  return formatted
+    .replace(/^nodejs/, 'Node.js')
+    .replace(/^node/, 'Node.js')
+    .replace(/^bun/, 'Bun')
+    .replace(/^chrome/, 'Chrome')
+    .replace(/^firefox/, 'Firefox')
+    .replace(/^safari/, 'Safari');
 }
 
-// Format time for display
+function formatDate(yyyymmdd) {
+  return yyyymmdd.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
+}
+
 function formatTime(us) {
-  if (us < 1) return `${(us * 1000).toFixed(2)} ns`;
-  if (us < 1000) return `${us.toFixed(2)} µs`;
+  if (us < 1) return `${(us * 1000).toFixed(0)} ns`;
+  if (us < 100) return `${us.toFixed(2)} µs`;
+  if (us < 1000) return `${us.toFixed(1)} µs`;
   return `${(us / 1000).toFixed(2)} ms`;
 }
 
-// Generate trend table HTML
-function generateTrendTable(platform) {
-  const first = platform.dataPoints[0];
-  const last = platform.dataPoints[platform.dataPoints.length - 1];
+// Build the embedded data model
+function buildModel(allResults) {
+  const cpuOrder = { apple_m4_pro: 0, apple_m1_pro: 1, intel_x86_64: 2 };
+  const runtimeOrder = { nodejs: 0, bun: 1, chrome: 2, firefox: 3, safari: 4 };
 
-  const rows = SCENARIOS.map(scenario => {
-    const firstVal = first?.scenarios[scenario];
-    const lastVal = last?.scenarios[scenario];
-    if (!firstVal || !lastVal) return '';
-
-    const change = ((firstVal - lastVal) / firstVal * 100);
-    const changeClass = change > 0 ? 'improvement-positive' : change < 0 ? 'improvement-negative' : '';
-    const changeSymbol = change > 0 ? '↑' : change < 0 ? '↓' : '→';
-    const changeText = change > 0 ? 'faster' : change < 0 ? 'slower' : '';
-
-    return `
-      <tr>
-        <td>${scenario}</td>
-        <td>${formatTime(firstVal)}</td>
-        <td>${formatTime(lastVal)}</td>
-        <td class="${changeClass}">${changeSymbol} ${Math.abs(change).toFixed(1)}% ${changeText}</td>
-      </tr>
-    `;
-  }).join('');
-
-  return `
-    <h3>Performance Changes</h3>
-    <table class="summary-table">
-      <thead>
-        <tr>
-          <th>Scenario</th>
-          <th>First (${first?.dateFormatted})</th>
-          <th>Latest (${last?.dateFormatted})</th>
-          <th>Change</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows}
-      </tbody>
-    </table>
-  `;
-}
-
-// Generate trend data for unicode-segmenter over time
-function generateTrendData(allResults) {
-  // Group results by platform (cpu + runtime type)
-  const byPlatform = {};
-
+  const byPlatform = new Map();
   for (const result of allResults) {
-    const runtimeType = result.runtime.split('_')[0];
-    const key = `${result.cpu}-${runtimeType}`;
-
-    if (!byPlatform[key]) {
-      byPlatform[key] = {
+    const family = result.runtime.split('_')[0];
+    const key = `${result.cpu}/${family}`;
+    if (!byPlatform.has(key)) {
+      byPlatform.set(key, {
+        id: key,
         cpu: result.cpu,
-        runtime: runtimeType,
-        label: `${formatCpu(result.cpu)} / ${formatRuntime(runtimeType)}`,
-        dataPoints: [],
-      };
+        family,
+        label: `${formatCpu(result.cpu)} · ${formatRuntime(family)}`,
+        records: [],
+      });
     }
-
-    // Get unicode-segmenter times for each scenario
-    const dataPoint = {
-      date: result.date,
-      dateFormatted: result.date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'),
-      scenarios: {},
-    };
-
-    for (const scenario of SCENARIOS) {
-      const data = result.scenarios[scenario];
-      if (data && data['unicode-segmenter/grapheme'] != null) {
-        dataPoint.scenarios[scenario] = data['unicode-segmenter/grapheme'];
-      }
-    }
-
-    if (Object.keys(dataPoint.scenarios).length > 0) {
-      byPlatform[key].dataPoints.push(dataPoint);
-    }
+    byPlatform.get(key).records.push(result);
   }
 
-  // Sort data points by date
-  for (const platform of Object.values(byPlatform)) {
-    platform.dataPoints.sort((a, b) => a.date.localeCompare(b.date));
-  }
-
-  // Sort platforms: by CPU (Apple M4 Pro, Apple M1 Pro, Intel) then by runtime (Node.js, Bun, Chrome, Firefox, Safari)
-  const cpuOrder = { 'apple_m4_pro': 0, 'apple_m1_pro': 1, 'intel_x86_64': 2 };
-  const runtimeOrder = { 'nodejs': 0, 'bun': 1, 'chrome': 2, 'firefox': 3, 'safari': 4 };
-
-  // Filter platforms with at least 1 data point for trends, then sort
-  return Object.values(byPlatform)
-    .filter(p => p.dataPoints.length >= 1)
+  const platforms = [...byPlatform.values()]
     .sort((a, b) => {
-      const cpuA = cpuOrder[a.cpu] ?? 99;
-      const cpuB = cpuOrder[b.cpu] ?? 99;
-      if (cpuA !== cpuB) return cpuA - cpuB;
-      const rtA = runtimeOrder[a.runtime] ?? 99;
-      const rtB = runtimeOrder[b.runtime] ?? 99;
-      return rtA - rtB;
+      const c = (cpuOrder[a.cpu] ?? 99) - (cpuOrder[b.cpu] ?? 99);
+      if (c !== 0) return c;
+      return (runtimeOrder[a.family] ?? 99) - (runtimeOrder[b.family] ?? 99);
+    })
+    .map(platform => {
+      const records = platform.records.sort((a, b) => a.date.localeCompare(b.date));
+      const latest = records[records.length - 1];
+      return {
+        id: platform.id,
+        label: platform.label,
+        latest: {
+          date: formatDate(latest.date),
+          runtime: formatRuntime(latest.runtime),
+          scenarios: latest.scenarios,
+        },
+        // subject-only history for the trend view
+        history: records.map(r => ({
+          date: formatDate(r.date),
+          runtime: formatRuntime(r.runtime),
+          scenarios: Object.fromEntries(
+            SCENARIOS.flatMap(s => {
+              const t = r.scenarios[s]?.[SUBJECT];
+              return t == null ? [] : [[s, t]];
+            }),
+          ),
+        })),
+      };
     });
+
+  return {
+    generated: new Date().toLocaleDateString('sv-SE'),
+    subject: SUBJECT,
+    libraries: LIBRARIES,
+    shortNames: SHORT_NAMES,
+    scenarios: SCENARIOS,
+    platforms,
+  };
 }
 
-// Generate HTML visualization
-function generateHTML(allResults) {
-  // Group by runtime type
-  const byRuntime = {};
-  for (const result of allResults) {
-    const runtimeType = result.runtime.split('_')[0];
-    if (!byRuntime[runtimeType]) byRuntime[runtimeType] = [];
-    byRuntime[runtimeType].push(result);
-  }
-
-  // Get latest results per runtime+cpu combo
-  const latestResults = [];
-  const seen = new Set();
-  const sortedResults = [...allResults].sort((a, b) => b.date.localeCompare(a.date));
-
-  for (const result of sortedResults) {
-    const key = `${result.cpu}-${result.runtime.split('_')[0]}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      latestResults.push(result);
-    }
-  }
-
-  // Sort platforms: by CPU (Apple M4 Pro, Apple M1 Pro, Intel) then by runtime (Node.js, Bun, Chrome, Firefox, Safari)
-  const cpuOrder = { 'apple_m4_pro': 0, 'apple_m1_pro': 1, 'intel_x86_64': 2 };
-  const runtimeOrder = { 'nodejs': 0, 'bun': 1, 'chrome': 2, 'firefox': 3, 'safari': 4 };
-  latestResults.sort((a, b) => {
-    const cpuA = cpuOrder[a.cpu] ?? 99;
-    const cpuB = cpuOrder[b.cpu] ?? 99;
-    if (cpuA !== cpuB) return cpuA - cpuB;
-    const rtA = runtimeOrder[a.runtime.split('_')[0]] ?? 99;
-    const rtB = runtimeOrder[b.runtime.split('_')[0]] ?? 99;
-    return rtA - rtB;
-  });
-
-  // Generate trend data
-  const trendData = generateTrendData(allResults);
-
-  const colors = {
-    'unicode-segmenter/grapheme': '#22c55e',
-    'graphemer': '#ef4444',
-    'grapheme-splitter': '#f97316',
-    '@formatjs/intl-segmenter': '#eab308',
-    'unicode-rs/unicode-segmentation (wasm)': '#3b82f6',
-    'Intl.Segmenter': '#8b5cf6',
-  };
-
-  const scenarioColors = {
-    'Lorem ipsum (ascii)': '#22c55e',
-    'Emojis': '#f97316',
-    'Hindi': '#eab308',
-    'Demonic characters': '#ef4444',
-    'Tweet text (combined)': '#3b82f6',
-    'Code snippet (combined)': '#8b5cf6',
-  };
-
-  const html = `<!DOCTYPE html>
+// Generate the self-contained HTML report.
+//
+// Visual language follows the data-viz reference palette; the categorical
+// slots below were validated for both modes (CVD separation, lightness band,
+// chroma, contrast) with the six-checks validator. Sub-3:1 slots rely on the
+// legend, tooltips, and the table views as relief channels.
+function generateHTML(model) {
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>unicode-segmenter Benchmark Results</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 20px;
-      background: #0d1117;
-      color: #c9d1d9;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>unicode-segmenter benchmark report</title>
+<style>
+  :root {
+    --surface-1: #fcfcfb;
+    --plane: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --border: rgba(11, 11, 11, 0.10);
+    --accent: #2a78d6;      /* subject bars, series 1 */
+    --deemph: #a5a49c;      /* context bars */
+    --good: #006300;
+    --bad: #d03b3b;
+    --s1: #2a78d6; --s2: #1baf7a; --s3: #eda100;
+    --s4: #008300; --s5: #4a3aa7; --s6: #e34948;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface-1: #1a1a19;
+      --plane: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #898781;
+      --grid: #2c2c2a;
+      --axis: #383835;
+      --border: rgba(255, 255, 255, 0.10);
+      --accent: #3987e5;
+      --deemph: #5c5b56;
+      --good: #0ca30c;
+      --bad: #e66767;
+      --s1: #3987e5; --s2: #199e70; --s3: #c98500;
+      --s4: #008300; --s5: #9085e9; --s6: #e66767;
     }
-    h1, h2, h3 { color: #58a6ff; }
-    h1 { text-align: center; margin-bottom: 10px; }
-    .subtitle { text-align: center; color: #8b949e; margin-bottom: 30px; }
-    .charts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
-      gap: 30px;
-    }
-    .chart-container {
-      background: #161b22;
-      border-radius: 8px;
-      padding: 20px;
-      border: 1px solid #30363d;
-    }
-    .chart-container.full-width {
-      grid-column: 1 / -1;
-    }
-    .chart-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 15px;
-      color: #c9d1d9;
-    }
-    .chart-subtitle {
-      font-size: 12px;
-      color: #8b949e;
-      margin-bottom: 10px;
-    }
-    canvas { max-height: 400px; }
-    .trend-canvas { max-height: 350px; }
-    .summary-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 30px;
-      font-size: 14px;
-    }
-    .summary-table th, .summary-table td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #30363d;
-    }
-    .summary-table th {
-      background: #21262d;
-      color: #58a6ff;
-    }
-    .summary-table tr:hover {
-      background: #21262d;
-    }
-    .speedup {
-      color: #22c55e;
-      font-weight: bold;
-    }
-    .speedup-faster {
-      color: #ef4444;
-      font-weight: bold;
-    }
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      margin: 20px 0;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      padding: 6px 12px;
-      background: #21262d;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s;
-      user-select: none;
-    }
-    .legend-item:hover {
-      border-color: #58a6ff;
-    }
-    .legend-item.disabled {
-      opacity: 0.4;
-    }
-    .legend-item.disabled .legend-color {
-      background: #484f58 !important;
-    }
-    .legend-color {
-      width: 12px;
-      height: 12px;
-      border-radius: 2px;
-      flex-shrink: 0;
-    }
-    .main-tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 30px;
-      justify-content: center;
-    }
-    .main-tab {
-      padding: 12px 24px;
-      background: #21262d;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      cursor: pointer;
-      color: #c9d1d9;
-      transition: all 0.2s;
-      font-size: 16px;
-      font-weight: 500;
-    }
-    .main-tab:hover { background: #30363d; }
-    .main-tab.active {
-      background: #238636;
-      border-color: #238636;
-    }
-    .platform-selector {
-      margin-bottom: 20px;
-    }
-    .platform-selector label {
-      font-size: 14px;
-      color: #8b949e;
-      margin-right: 10px;
-    }
-    .platform-select {
-      padding: 10px 16px;
-      background: #21262d;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      color: #c9d1d9;
-      font-size: 14px;
-      cursor: pointer;
-      min-width: 280px;
-    }
-    .platform-select:hover {
-      border-color: #58a6ff;
-    }
-    .platform-select:focus {
-      outline: none;
-      border-color: #58a6ff;
-      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
-    }
-    .platform-select option {
-      background: #21262d;
-      color: #c9d1d9;
-      padding: 10px;
-    }
-    .main-content { display: none; }
-    .main-content.active { display: block; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .trend-section {
-      margin-top: 40px;
-    }
-    .trend-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      margin-top: 20px;
-    }
-    .stat-card {
-      background: #21262d;
-      border-radius: 6px;
-      padding: 15px;
-      text-align: center;
-    }
-    .stat-value {
-      font-size: 24px;
-      font-weight: bold;
-      color: #22c55e;
-    }
-    .stat-value.negative {
-      color: #ef4444;
-    }
-    .stat-label {
-      font-size: 12px;
-      color: #8b949e;
-      margin-top: 5px;
-    }
-    .improvement-positive { color: #22c55e; }
-    .improvement-negative { color: #ef4444; }
-  </style>
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--plane); }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--text-primary);
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 24px 48px;
+    line-height: 1.45;
+  }
+  header h1 { font-size: 22px; margin: 0; }
+  header p { color: var(--text-secondary); margin: 4px 0 0; font-size: 14px; }
+  h2 { font-size: 16px; margin: 40px 0 4px; }
+  .section-note { color: var(--text-muted); font-size: 13px; margin: 0 0 16px; }
+
+  .filters {
+    display: flex; align-items: center; gap: 10px;
+    margin: 24px 0 8px;
+    font-size: 14px; color: var(--text-secondary);
+  }
+  .filters select {
+    font: inherit; color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    min-width: 260px;
+  }
+  .filters .meta { color: var(--text-muted); font-size: 13px; }
+
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 12px; margin: 12px 0 8px;
+  }
+  .kpi {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .kpi .label { font-size: 13px; color: var(--text-secondary); }
+  .kpi .value { font-size: 30px; font-weight: 600; margin-top: 2px; }
+  .kpi .note { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 14px;
+  }
+  figure.card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin: 0; padding: 14px 16px 10px;
+    min-width: 0;
+  }
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .card-head h3 { font-size: 14px; margin: 0 0 8px; font-weight: 600; }
+  .view-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; flex: none; }
+  .view-toggle button {
+    font: inherit; font-size: 11px; padding: 2px 8px; margin: 0;
+    background: transparent; color: var(--text-muted);
+    border: 0; cursor: pointer;
+  }
+  .view-toggle button[aria-pressed="true"] { background: var(--grid); color: var(--text-primary); }
+  figure.card svg { display: block; width: 100%; height: auto; }
+  figure.card .tablewrap { overflow-x: auto; }
+
+  table.data {
+    border-collapse: collapse; width: 100%;
+    font-size: 13px;
+  }
+  table.data th, table.data td {
+    text-align: right; padding: 6px 10px;
+    border-bottom: 1px solid var(--grid);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  table.data th:first-child, table.data td:first-child { text-align: left; }
+  table.data thead th { color: var(--text-secondary); font-weight: 600; border-bottom: 1px solid var(--axis); }
+  table.data td.subject { font-weight: 600; }
+  table.data .up { color: var(--good); }
+  table.data .down { color: var(--bad); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 10px; margin: 8px 0 12px; }
+  .legend button {
+    font: inherit; font-size: 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--text-secondary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px 10px; cursor: pointer;
+  }
+  .legend button .key { width: 14px; height: 0; border-top: 3px solid; border-radius: 2px; }
+  .legend button[aria-pressed="false"] { opacity: 0.35; }
+
+  #tooltip {
+    position: fixed; z-index: 10; pointer-events: none;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    padding: 8px 10px; font-size: 12px;
+    max-width: 320px; display: none;
+  }
+  #tooltip .t-title { color: var(--text-muted); margin-bottom: 4px; }
+  #tooltip .t-row { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
+  #tooltip .t-key { width: 12px; height: 0; border-top: 3px solid; border-radius: 2px; flex: none; }
+  #tooltip .t-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+  #tooltip .t-lib { color: var(--text-secondary); }
+
+  svg text { font-family: inherit; }
+  .bar-row:focus { outline: none; }
+  .bar-row:focus-visible rect.hit { stroke: var(--accent); stroke-width: 2; }
+  footer { margin-top: 40px; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--grid); padding-top: 12px; }
+  footer code { font-family: ui-monospace, monospace; }
+</style>
 </head>
 <body>
-  <h1>unicode-segmenter Benchmark Results</h1>
-  <p class="subtitle">Grapheme segmentation performance comparison across different runtimes and platforms</p>
+<header>
+  <h1>unicode-segmenter benchmark report</h1>
+  <p>Grapheme segmentation, six workloads × six implementations. Longer bars are better (throughput). Generated ${model.generated} from the records in this directory.</p>
+</header>
 
-  <div class="main-tabs">
-    <button class="main-tab active" onclick="showMainTab('comparison')">Library Comparison</button>
-    <button class="main-tab" onclick="showMainTab('trends')">Performance Trends</button>
+<div class="filters">
+  <label for="platform">Platform</label>
+  <select id="platform"></select>
+  <span class="meta" id="platform-meta"></span>
+</div>
+
+<div class="kpis" id="kpis"></div>
+
+<h2>Latest comparison</h2>
+<p class="section-note">Throughput per workload; <span style="border-bottom: 3px solid var(--accent)">unicode-segmenter</span> highlighted against the alternatives. Hover or focus a row for exact numbers.</p>
+<div class="grid" id="scenario-grid"></div>
+
+<figure class="card" style="margin-top:14px">
+  <div class="card-head"><h3>How much faster is unicode-segmenter?</h3></div>
+  <div class="tablewrap" id="speedup-table"></div>
+</figure>
+
+<h2>unicode-segmenter over time</h2>
+<p class="section-note">Throughput of unicode-segmenter across archived records for the selected platform. Runtime versions vary between records; the tooltip shows each record's runtime.</p>
+<div class="legend" id="trend-legend"></div>
+<figure class="card">
+  <div class="card-head">
+    <h3 id="trend-title">Performance history</h3>
+    <div class="view-toggle" data-for="trend"></div>
   </div>
+  <div id="trend-chart"></div>
+  <div class="tablewrap" id="trend-table" hidden></div>
+</figure>
+<figure class="card" style="margin-top:14px" id="trend-delta-card" hidden>
+  <div class="card-head"><h3>First record vs latest</h3></div>
+  <div class="tablewrap" id="trend-delta"></div>
+</figure>
 
-  <div class="main-content active" id="main-comparison">
+<footer>
+  Regenerate with <code>node benchmark/grapheme/_records/report.mjs</code> after adding a record.
+  Sources: mitata outputs named <code>YYYYMMDD-cpu-os-runtime.txt</code>.
+</footer>
 
-  <div class="legend" id="comparison-legend">
-    ${Object.entries(colors).map(([name, color], idx) => `
-      <div class="legend-item" data-library="${name}" data-index="${idx}" onclick="toggleLibrary('${name}', ${idx})">
-        <div class="legend-color" style="background: ${color}"></div>
-        <span>${SHORT_NAMES[name] || name}</span>
-      </div>
-    `).join('')}
-  </div>
+<div id="tooltip" role="status"></div>
 
-  <div class="platform-selector">
-    <label for="comparison-platform">Platform:</label>
-    <select id="comparison-platform" class="platform-select" onchange="showTab(this.value)">
-      ${latestResults.map((r, i) => `
-        <option value="${i}">${formatCpu(r.cpu)} / ${formatRuntime(r.runtime)}</option>
-      `).join('')}
-    </select>
-  </div>
+<script>
+const DATA = ${JSON.stringify(model)};
 
-  ${latestResults.map((result, i) => `
-    <div class="tab-content ${i === 0 ? 'active' : ''}" id="tab-${i}">
-      <h2>${formatCpu(result.cpu)} - ${formatRuntime(result.runtime)}</h2>
-      <p class="chart-subtitle">Recorded: ${result.date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')}</p>
+const SUBJECT = DATA.subject;
+const SVGNS = 'http://www.w3.org/2000/svg';
+const SERIES_VARS = ['--s1', '--s2', '--s3', '--s4', '--s5', '--s6'];
 
-      <div class="charts-grid">
-        ${SCENARIOS.map(scenario => {
-          const data = result.scenarios[scenario];
-          if (!data || Object.keys(data).length === 0) return '';
-          return `
-            <div class="chart-container">
-              <div class="chart-title">${scenario}</div>
-              <canvas id="chart-${i}-${scenario.replace(/[^a-z0-9]/gi, '')}"></canvas>
-            </div>
-          `;
-        }).join('')}
-      </div>
+const fmt = {
+  time(us) {
+    if (us < 1) return (us * 1000).toFixed(0) + ' ns';
+    if (us < 100) return us.toFixed(2) + ' µs';
+    if (us < 1000) return us.toFixed(1) + ' µs';
+    return (us / 1000).toFixed(2) + ' ms';
+  },
+  ops(us) {
+    const ops = 1e6 / us;
+    if (ops >= 1e6) return (ops / 1e6).toFixed(2) + 'M ops/s';
+    if (ops >= 1e3) return Math.round(ops / 1e3) + 'K ops/s';
+    return Math.round(ops) + ' ops/s';
+  },
+  axisOps(ops) {
+    if (ops >= 1e6) return (ops / 1e6) + 'M';
+    if (ops >= 1e3) return (ops / 1e3) + 'K';
+    return String(ops);
+  },
+  ratio(r) {
+    return (r >= 10 ? r.toFixed(0) : r.toFixed(1)) + '×';
+  },
+};
 
-      <h3>Speedup vs unicode-segmenter</h3>
-      <table class="summary-table">
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            ${LIBRARIES.filter(l => l !== 'unicode-segmenter/grapheme').map(l => `<th>${SHORT_NAMES[l]}</th>`).join('')}
-          </tr>
-        </thead>
-        <tbody>
-          ${SCENARIOS.map(scenario => {
-            const data = result.scenarios[scenario];
-            if (!data) return '';
-            const baseTime = data['unicode-segmenter/grapheme'];
-            if (!baseTime) return '';
-            return `
-              <tr>
-                <td>${scenario}</td>
-                ${LIBRARIES.filter(l => l !== 'unicode-segmenter/grapheme').map(l => {
-                  const time = data[l];
-                  if (!time) return '<td>-</td>';
-                  const ratio = time / baseTime;
-                  if (ratio >= 1) {
-                    return `<td class="speedup">${ratio.toFixed(2)}x slower</td>`;
-                  } else {
-                    return `<td class="speedup-faster">${(1 / ratio).toFixed(2)}x faster</td>`;
-                  }
-                }).join('')}
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>
-  `).join('')}
+function el(tag, attrs = {}, text) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  if (text != null) node.textContent = text;
+  return node;
+}
+function svgEl(tag, attrs = {}, text) {
+  const node = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  if (text != null) node.textContent = text;
+  return node;
+}
 
-  </div>
+// clean tick steps: 1/2/5 × 10^n covering [0, max] with ~n ticks
+function ticks(max, count) {
+  const raw = max / count;
+  const pow = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 5, 10].map(m => m * pow).find(s => max / s <= count) || 10 * pow;
+  const out = [];
+  for (let v = 0; v <= max + 1e-9; v += step) out.push(v);
+  return out;
+}
 
-  <div class="main-content" id="main-trends">
-    <h2>unicode-segmenter Performance Over Time</h2>
-    <p class="chart-subtitle">Track throughput changes across different benchmark scenarios and platforms (higher is better)</p>
+// ---- tooltip ----
+const tooltip = document.getElementById('tooltip');
+function showTooltip(x, y, build) {
+  tooltip.replaceChildren();
+  build(tooltip);
+  tooltip.style.display = 'block';
+  const rect = tooltip.getBoundingClientRect();
+  const px = Math.min(x + 14, window.innerWidth - rect.width - 8);
+  const py = Math.min(y + 14, window.innerHeight - rect.height - 8);
+  tooltip.style.left = Math.max(8, px) + 'px';
+  tooltip.style.top = Math.max(8, py) + 'px';
+}
+function hideTooltip() {
+  tooltip.style.display = 'none';
+}
 
-    <div class="legend" id="trend-legend">
-      ${Object.entries(scenarioColors).map(([name, color], idx) => `
-        <div class="legend-item" data-scenario="${name}" data-index="${idx}" onclick="toggleScenario('${name}', ${idx})">
-          <div class="legend-color" style="background: ${color}"></div>
-          <span>${name}</span>
-        </div>
-      `).join('')}
-    </div>
+// ---- per-scenario emphasis bar chart ----
+function renderScenarioCard(scenario, data) {
+  const rows = DATA.libraries.filter(lib => data[lib] != null);
+  const card = el('figure', { class: 'card' });
+  const head = el('div', { class: 'card-head' });
+  head.append(el('h3', {}, scenario));
+  const toggle = el('div', { class: 'view-toggle' });
+  head.append(toggle);
+  card.append(head);
 
-    <div class="platform-selector">
-      <label for="trend-platform">Platform:</label>
-      <select id="trend-platform" class="platform-select" onchange="showTrendTab(this.value)">
-        ${trendData.map((platform, i) => `
-          <option value="${i}">${platform.label}</option>
-        `).join('')}
-      </select>
-    </div>
+  const chartHost = el('div');
+  const tableHost = el('div', { class: 'tablewrap', hidden: '' });
+  card.append(chartHost, tableHost);
 
-    ${trendData.map((platform, i) => `
-      <div class="tab-content trend-content ${i === 0 ? 'active' : ''}" id="trend-tab-${i}">
-        <div class="chart-container full-width">
-          <div class="chart-title">${platform.label} - Performance History</div>
-          <div class="chart-subtitle">${platform.dataPoints.length} data points from ${platform.dataPoints[0]?.dateFormatted || 'N/A'} to ${platform.dataPoints[platform.dataPoints.length - 1]?.dateFormatted || 'N/A'}</div>
-          <canvas id="trend-chart-${i}" class="trend-canvas" height="300"></canvas>
-        </div>
+  const subjectTime = data[SUBJECT];
 
-        ${platform.dataPoints.length >= 2 ? generateTrendTable(platform) : '<p class="chart-subtitle">Need at least 2 data points to show trends.</p>'}
-      </div>
-    `).join('')}
-  </div>
+  // chart geometry
+  const W = 584, gutter = 192, band = 30, barH = 20;
+  const axisBand = 22, topPad = 4;
+  const H = topPad + rows.length * band + axisBand;
+  const plotW = W - gutter - 96; // room for tip labels
+  const maxOps = Math.max(...rows.map(lib => 1e6 / data[lib]));
+  const x = ops => (ops / maxOps) * plotW;
 
-  <script>
-    const colors = ${JSON.stringify(colors)};
-    const scenarioColors = ${JSON.stringify(scenarioColors)};
-    const shortNames = ${JSON.stringify(SHORT_NAMES)};
-    const libraries = ${JSON.stringify(LIBRARIES)};
-    const trendData = ${JSON.stringify(trendData)};
+  const svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'group' });
+  svg.append(svgEl('title', {}, scenario + ' — throughput by library'));
 
-    function formatTimeJS(us) {
-      if (us < 1) return (us * 1000).toFixed(2) + ' ns';
-      if (us < 1000) return us.toFixed(2) + ' µs';
-      return (us / 1000).toFixed(2) + ' ms';
-    }
+  // gridlines + axis labels (recessive hairlines, clean steps)
+  for (const t of ticks(maxOps, 4)) {
+    const gx = gutter + x(t);
+    svg.append(svgEl('line', {
+      x1: gx, y1: topPad, x2: gx, y2: topPad + rows.length * band,
+      stroke: t === 0 ? 'var(--axis)' : 'var(--grid)', 'stroke-width': 1,
+    }));
+    svg.append(svgEl('text', {
+      x: gx, y: H - 6, 'text-anchor': 'middle',
+      'font-size': 10.5, fill: 'var(--text-muted)',
+    }, fmt.axisOps(t)));
+  }
 
-    function showMainTab(tabName) {
-      document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.main-content').forEach(c => c.classList.remove('active'));
+  rows.forEach((lib, i) => {
+    const time = data[lib];
+    const ops = 1e6 / time;
+    const y = topPad + i * band;
+    const isSubject = lib === SUBJECT;
+    const w = Math.max(2, x(ops));
+    const color = isSubject ? 'var(--accent)' : 'var(--deemph)';
 
-      document.querySelector(\`.main-tab[onclick*="\${tabName}"]\`).classList.add('active');
-      document.getElementById('main-' + tabName).classList.add('active');
+    const g = svgEl('g', { class: 'bar-row', tabindex: 0, role: 'img' });
+    g.append(svgEl('title', {},
+      DATA.shortNames[lib] + ': ' + fmt.ops(time) + ', ' + fmt.time(time) + ' per iteration'));
 
-      // Initialize trend charts when switching to trends tab
-      if (tabName === 'trends' && !window.trendChartsInitialized) {
-        initTrendCharts();
-        window.trendChartsInitialized = true;
-      }
-    }
+    // y label: identity via text, not color
+    const label = svgEl('text', {
+      x: gutter - 8, y: y + band / 2 + 3.5, 'text-anchor': 'end',
+      'font-size': 11.5, fill: isSubject ? 'var(--text-primary)' : 'var(--text-secondary)',
+      'font-weight': isSubject ? 600 : 400,
+    }, DATA.shortNames[lib]);
 
-    function showTab(index) {
-      index = parseInt(index);
-      document.querySelectorAll('.tab-content:not(.trend-content)').forEach((c, i) => c.classList.toggle('active', i === index));
-    }
-
-    function showTrendTab(index) {
-      index = parseInt(index);
-      document.querySelectorAll('.trend-content').forEach((c, i) => c.classList.toggle('active', i === index));
-    }
-
-    const results = ${JSON.stringify(latestResults)};
-    const scenarios = ${JSON.stringify(SCENARIOS)};
-
-    // Track hidden libraries and scenarios
-    const hiddenLibraries = new Set();
-    const hiddenScenarios = new Set();
-
-    // Store all charts for updating
-    const comparisonCharts = [];
-    const trendCharts = [];
-
-    // Convert time (µs) to throughput (ops/sec)
-    function timeToThroughput(us) {
-      return 1_000_000 / us; // ops per second
-    }
-
-    // Format throughput for display
-    function formatThroughput(opsPerSec) {
-      if (opsPerSec >= 1_000_000) return (opsPerSec / 1_000_000).toFixed(2) + 'M ops/s';
-      if (opsPerSec >= 1_000) return (opsPerSec / 1_000).toFixed(2) + 'K ops/s';
-      return opsPerSec.toFixed(0) + ' ops/s';
-    }
-
-    // Toggle library visibility
-    function toggleLibrary(libName, idx) {
-      const legendItem = document.querySelector(\`.legend-item[data-library="\${libName}"]\`);
-
-      if (hiddenLibraries.has(libName)) {
-        hiddenLibraries.delete(libName);
-        legendItem.classList.remove('disabled');
-      } else {
-        hiddenLibraries.add(libName);
-        legendItem.classList.add('disabled');
-      }
-
-      // Update all comparison charts
-      updateComparisonCharts();
-    }
-
-    // Toggle scenario visibility in trend charts
-    function toggleScenario(scenarioName, idx) {
-      const legendItem = document.querySelector(\`.legend-item[data-scenario="\${scenarioName}"]\`);
-
-      if (hiddenScenarios.has(scenarioName)) {
-        hiddenScenarios.delete(scenarioName);
-        legendItem.classList.remove('disabled');
-      } else {
-        hiddenScenarios.add(scenarioName);
-        legendItem.classList.add('disabled');
-      }
-
-      // Update all trend charts
-      updateTrendCharts();
-    }
-
-    // Update trend charts based on hidden scenarios
-    function updateTrendCharts() {
-      trendCharts.forEach(chartInfo => {
-        const { chart } = chartInfo;
-
-        chart.data.datasets.forEach((dataset, idx) => {
-          const scenarioName = dataset.label;
-          dataset.hidden = hiddenScenarios.has(scenarioName);
-        });
-
-        chart.update();
-      });
-    }
-
-    // Update comparison charts based on hidden libraries
-    function updateComparisonCharts() {
-      comparisonCharts.forEach(chartInfo => {
-        const { chart, result, scenario } = chartInfo;
-        const data = result.scenarios[scenario];
-        if (!data) return;
-
-        const labels = [];
-        const values = [];
-        const originalTimes = [];
-        const bgColors = [];
-
-        libraries.forEach(lib => {
-          if (data[lib] != null && !hiddenLibraries.has(lib)) {
-            labels.push(shortNames[lib] || lib);
-            values.push(timeToThroughput(data[lib]));
-            originalTimes.push(data[lib]);
-            bgColors.push(colors[lib]);
-          }
-        });
-
-        chart.data.labels = labels;
-        chart.data.datasets[0].data = values;
-        chart.data.datasets[0].backgroundColor = bgColors;
-        chart.data.datasets[0].originalTimes = originalTimes;
-        chart.update();
-      });
-    }
-
-    // Initialize comparison charts
-    results.forEach((result, i) => {
-      scenarios.forEach(scenario => {
-        const canvasId = 'chart-' + i + '-' + scenario.replace(/[^a-z0-9]/gi, '');
-        const canvas = document.getElementById(canvasId);
-        if (!canvas) return;
-
-        const data = result.scenarios[scenario];
-        if (!data) return;
-
-        const labels = [];
-        const values = [];
-        const originalTimes = [];
-        const bgColors = [];
-
-        libraries.forEach(lib => {
-          if (data[lib] != null) {
-            labels.push(shortNames[lib] || lib);
-            values.push(timeToThroughput(data[lib]));
-            originalTimes.push(data[lib]);
-            bgColors.push(colors[lib]);
-          }
-        });
-
-        const chart = new Chart(canvas, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [{
-              data: values,
-              backgroundColor: bgColors,
-              borderWidth: 0,
-              originalTimes: originalTimes
-            }]
-          },
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: function(ctx) {
-                    const throughput = ctx.raw;
-                    const time = ctx.dataset.originalTimes[ctx.dataIndex];
-                    return formatThroughput(throughput) + ' (' + formatTimeJS(time) + ')';
-                  }
-                }
-              }
-            },
-            scales: {
-              x: {
-                beginAtZero: true,
-                grid: { color: '#30363d' },
-                title: {
-                  display: true,
-                  text: 'Throughput (ops/sec) - Higher is Better',
-                  color: '#8b949e'
-                },
-                ticks: {
-                  color: '#8b949e',
-                  callback: function(val) {
-                    if (val >= 1_000_000) return (val / 1_000_000).toFixed(1) + 'M';
-                    if (val >= 1_000) return (val / 1_000).toFixed(0) + 'K';
-                    return val.toFixed(0);
-                  }
-                }
-              },
-              y: {
-                grid: { display: false },
-                ticks: { color: '#c9d1d9' }
-              }
-            }
-          }
-        });
-
-        // Store chart reference for later updates
-        comparisonCharts.push({ chart, result, scenario });
-      });
+    // bar: square at baseline, 4px rounded data-end
+    const r = Math.min(4, w);
+    const bar = svgEl('path', {
+      d: 'M' + (gutter + 0.5) + ' ' + (y + (band - barH) / 2)
+        + ' h' + (w - r) + ' a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + r
+        + ' v' + (barH - 2 * r) + ' a' + r + ' ' + r + ' 0 0 1 -' + r + ' ' + r
+        + ' h-' + (w - r) + ' Z',
+      fill: color,
     });
 
-    // Initialize trend charts
-    function initTrendCharts() {
-      trendData.forEach((platform, i) => {
-        const canvas = document.getElementById('trend-chart-' + i);
-        if (!canvas) return;
+    // value at the tip
+    const tip = svgEl('text', {
+      x: gutter + w + 6, y: y + band / 2 + 3.5,
+      'font-size': 11.5, fill: 'var(--text-secondary)',
+      'font-variant-numeric': 'tabular-nums',
+    }, fmt.ops(time));
 
-        const datasets = scenarios.map(scenario => {
-          const data = platform.dataPoints
-            .filter(dp => dp.scenarios[scenario] != null)
-            .map(dp => ({
-              x: dp.dateFormatted,
-              y: timeToThroughput(dp.scenarios[scenario]),
-              originalTime: dp.scenarios[scenario]
-            }));
+    // row-sized hit target (larger than the mark)
+    const hit = svgEl('rect', {
+      class: 'hit', x: 0, y, width: W, height: band,
+      fill: 'transparent',
+    });
 
-          return {
-            label: scenario,
-            data: data,
-            borderColor: scenarioColors[scenario],
-            backgroundColor: scenarioColors[scenario] + '20',
-            fill: false,
-            tension: 0.3,
-            pointRadius: 5,
-            pointHoverRadius: 8,
-          };
-        }).filter(ds => ds.data.length > 0);
+    const overlay = svgEl('rect', {
+      x: gutter, y: y + (band - barH) / 2, width: w, height: barH,
+      fill: 'currentColor', opacity: 0, 'pointer-events': 'none',
+    });
 
-        const chart = new Chart(canvas, {
-          type: 'line',
-          data: { datasets },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-              mode: 'index',
-              intersect: false,
-            },
-            plugins: {
-              legend: {
-                display: false
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(ctx) {
-                    const throughput = ctx.raw.y;
-                    const time = ctx.raw.originalTime;
-                    return ctx.dataset.label + ': ' + formatThroughput(throughput) + ' (' + formatTimeJS(time) + ')';
-                  }
-                }
-              }
-            },
-            scales: {
-              x: {
-                type: 'category',
-                grid: { color: '#30363d' },
-                ticks: { color: '#8b949e' }
-              },
-              y: {
-                beginAtZero: true,
-                grid: { color: '#30363d' },
-                title: {
-                  display: true,
-                  text: 'Throughput (ops/sec) - Higher is Better',
-                  color: '#8b949e'
-                },
-                ticks: {
-                  color: '#8b949e',
-                  callback: function(val) {
-                    if (val >= 1_000_000) return (val / 1_000_000).toFixed(1) + 'M';
-                    if (val >= 1_000) return (val / 1_000).toFixed(0) + 'K';
-                    return val.toFixed(0);
-                  }
-                }
-              }
-            }
-          }
-        });
+    const buildTip = (root) => {
+      root.append(el('div', { class: 't-title' }, scenario));
+      const r1 = el('div', { class: 't-row' });
+      const key = el('span', { class: 't-key' });
+      key.style.borderTopColor = isSubject
+        ? getComputedStyle(document.documentElement).getPropertyValue('--accent')
+        : getComputedStyle(document.documentElement).getPropertyValue('--deemph');
+      r1.append(key, el('span', { class: 't-val' }, fmt.ops(time) + ' · ' + fmt.time(time) + '/iter'));
+      root.append(r1);
+      root.append(el('div', { class: 't-lib' }, DATA.shortNames[lib]));
+      if (!isSubject && subjectTime) {
+        root.append(el('div', { class: 't-lib' }, fmt.ratio(time / subjectTime) + ' slower than unicode-segmenter'));
+      }
+    };
+    const enter = () => { overlay.setAttribute('opacity', 0.14); };
+    const leave = () => { overlay.setAttribute('opacity', 0); hideTooltip(); };
+    g.addEventListener('pointermove', e => { enter(); showTooltip(e.clientX, e.clientY, buildTip); });
+    g.addEventListener('pointerleave', leave);
+    g.addEventListener('focus', () => {
+      enter();
+      const b = g.getBoundingClientRect();
+      showTooltip(b.right - 80, b.top, buildTip);
+    });
+    g.addEventListener('blur', leave);
 
-        // Store chart reference for later updates
-        trendCharts.push({ chart, platform });
-      });
+    g.append(hit, label, bar, overlay, tip);
+    svg.append(g);
+  });
+
+  chartHost.append(svg);
+
+  // table twin
+  const table = el('table', { class: 'data' });
+  const thead = el('thead');
+  const hr = el('tr');
+  ['Library', 'Throughput', 'Time/iter', 'vs unicode-segmenter'].forEach(h => hr.append(el('th', {}, h)));
+  thead.append(hr);
+  const tbody = el('tbody');
+  for (const lib of rows) {
+    const time = data[lib];
+    const tr = el('tr');
+    tr.append(el('td', lib === SUBJECT ? { class: 'subject' } : {}, DATA.shortNames[lib]));
+    tr.append(el('td', {}, fmt.ops(time)));
+    tr.append(el('td', {}, fmt.time(time)));
+    tr.append(el('td', {}, lib === SUBJECT ? '—' : fmt.ratio(time / subjectTime) + ' slower'));
+    tbody.append(tr);
+  }
+  table.append(thead, tbody);
+  tableHost.append(table);
+
+  makeToggle(toggle, chartHost, tableHost);
+  return card;
+}
+
+function makeToggle(host, chartHost, tableHost) {
+  const bChart = el('button', { type: 'button', 'aria-pressed': 'true' }, 'Chart');
+  const bTable = el('button', { type: 'button', 'aria-pressed': 'false' }, 'Table');
+  const set = table => {
+    bChart.setAttribute('aria-pressed', String(!table));
+    bTable.setAttribute('aria-pressed', String(table));
+    chartHost.hidden = table;
+    tableHost.hidden = !table;
+  };
+  bChart.addEventListener('click', () => set(false));
+  bTable.addEventListener('click', () => set(true));
+  host.append(bChart, bTable);
+}
+
+// ---- KPI tiles ----
+function geomean(values) {
+  const v = values.filter(x => x != null && isFinite(x));
+  if (!v.length) return null;
+  return Math.exp(v.reduce((a, x) => a + Math.log(x), 0) / v.length);
+}
+
+function renderKpis(platform) {
+  const host = document.getElementById('kpis');
+  host.replaceChildren();
+  const scen = platform.latest.scenarios;
+
+  const ratiosTo = lib => DATA.scenarios.map(s => {
+    const d = scen[s];
+    return d && d[lib] != null && d[SUBJECT] != null ? d[lib] / d[SUBJECT] : null;
+  });
+  const jsAlts = ['graphemer', 'grapheme-splitter', '@formatjs/intl-segmenter'];
+  const fastestAltRatios = DATA.scenarios.map(s => {
+    const d = scen[s];
+    if (!d || d[SUBJECT] == null) return null;
+    const times = jsAlts.map(l => d[l]).filter(t => t != null);
+    return times.length ? Math.min(...times) / d[SUBJECT] : null;
+  });
+  const wins = DATA.scenarios.filter(s => {
+    const d = scen[s];
+    if (!d || d[SUBJECT] == null) return false;
+    return Object.entries(d).every(([lib, t]) => lib === SUBJECT || t >= d[SUBJECT]);
+  }).length;
+  const total = DATA.scenarios.filter(s => scen[s] && scen[s][SUBJECT] != null).length;
+
+  const tiles = [
+    ['vs Intl.Segmenter', geomean(ratiosTo('Intl.Segmenter')), 'built-in segmenter'],
+    ['vs unicode-segmentation', geomean(ratiosTo('unicode-rs/unicode-segmentation (wasm)')), 'Rust, WASM binding'],
+    ['vs fastest JS alternative', geomean(fastestAltRatios), 'best of graphemer, grapheme-splitter, @formatjs'],
+  ];
+  for (const [label, value, note] of tiles) {
+    if (value == null) continue;
+    const tile = el('div', { class: 'kpi' });
+    tile.append(el('div', { class: 'label' }, label));
+    tile.append(el('div', { class: 'value' }, fmt.ratio(value) + ' faster'));
+    tile.append(el('div', { class: 'note' }, 'geometric mean across workloads · ' + note));
+    host.append(tile);
+  }
+  const winTile = el('div', { class: 'kpi' });
+  winTile.append(el('div', { class: 'label' }, 'Fastest implementation in'));
+  winTile.append(el('div', { class: 'value' }, wins + ' / ' + total));
+  winTile.append(el('div', { class: 'note' }, 'workloads on this platform'));
+  host.append(winTile);
+}
+
+// ---- speedup summary table ----
+function renderSpeedupTable(platform) {
+  const host = document.getElementById('speedup-table');
+  host.replaceChildren();
+  const scen = platform.latest.scenarios;
+  const others = DATA.libraries.filter(l => l !== SUBJECT);
+
+  const table = el('table', { class: 'data' });
+  const thead = el('thead');
+  const hr = el('tr');
+  hr.append(el('th', {}, 'Workload'));
+  hr.append(el('th', {}, 'unicode-segmenter'));
+  for (const lib of others) hr.append(el('th', {}, DATA.shortNames[lib]));
+  thead.append(hr);
+  const tbody = el('tbody');
+  for (const s of DATA.scenarios) {
+    const d = scen[s];
+    if (!d || d[SUBJECT] == null) continue;
+    const tr = el('tr');
+    tr.append(el('td', {}, s));
+    tr.append(el('td', { class: 'subject' }, fmt.time(d[SUBJECT])));
+    for (const lib of others) {
+      tr.append(el('td', {}, d[lib] == null ? '—' : fmt.ratio(d[lib] / d[SUBJECT]) + ' slower'));
     }
-  </script>
+    tbody.append(tr);
+  }
+  table.append(thead, tbody);
+  host.append(table);
+}
+
+// ---- trend line chart ----
+const hiddenScenarios = new Set();
+
+function renderTrendLegend() {
+  const host = document.getElementById('trend-legend');
+  host.replaceChildren();
+  DATA.scenarios.forEach((s, i) => {
+    const b = el('button', { type: 'button', 'aria-pressed': String(!hiddenScenarios.has(s)) });
+    const key = el('span', { class: 'key' });
+    key.style.borderTopColor = 'var(' + SERIES_VARS[i] + ')';
+    b.append(key, document.createTextNode(s));
+    b.addEventListener('click', () => {
+      if (hiddenScenarios.has(s)) hiddenScenarios.delete(s);
+      else hiddenScenarios.add(s);
+      b.setAttribute('aria-pressed', String(!hiddenScenarios.has(s)));
+      renderTrend(currentPlatform());
+    });
+    host.append(b);
+  });
+}
+
+function renderTrend(platform) {
+  const host = document.getElementById('trend-chart');
+  host.replaceChildren();
+  const points = platform.history;
+  document.getElementById('trend-title').textContent =
+    'Performance history — ' + platform.label + ' (' + points.length + ' record' + (points.length === 1 ? '' : 's') + ')';
+
+  const W = 960, H = 340;
+  const m = { top: 12, right: 48, bottom: 34, left: 64 };
+  const plotW = W - m.left - m.right, plotH = H - m.top - m.bottom;
+
+  const dates = points.map(p => p.date);
+  const xs = dates.map(d => new Date(d + 'T00:00:00Z').getTime());
+  const xMin = Math.min(...xs), xMax = Math.max(...xs);
+  const xPos = t => xs.length === 1
+    ? m.left + plotW / 2
+    : m.left + ((t - xMin) / (xMax - xMin)) * plotW;
+
+  const visible = DATA.scenarios.filter(s => !hiddenScenarios.has(s));
+  const allOps = points.flatMap(p => visible.map(s => p.scenarios[s]).filter(t => t != null).map(t => 1e6 / t));
+  if (!allOps.length) {
+    host.append(el('p', { class: 'section-note' }, 'No visible series — enable a workload in the legend.'));
+    return;
+  }
+  const maxOps = Math.max(...allOps);
+  const yPos = ops => m.top + plotH - (ops / maxOps) * plotH;
+
+  const svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'group' });
+  svg.append(svgEl('title', {}, 'unicode-segmenter throughput per record, ' + platform.label));
+
+  // horizontal gridlines + y ticks
+  for (const t of ticks(maxOps, 4)) {
+    const gy = yPos(t);
+    svg.append(svgEl('line', {
+      x1: m.left, y1: gy, x2: W - m.right, y2: gy,
+      stroke: t === 0 ? 'var(--axis)' : 'var(--grid)', 'stroke-width': 1,
+    }));
+    svg.append(svgEl('text', {
+      x: m.left - 8, y: gy + 3.5, 'text-anchor': 'end',
+      'font-size': 10.5, fill: 'var(--text-muted)', 'font-variant-numeric': 'tabular-nums',
+    }, fmt.axisOps(t) + (t === 0 ? ' ops/s' : '')));
+  }
+  // x tick labels (dates, dedup by position)
+  const seenX = new Set();
+  points.forEach((p, i) => {
+    const px = Math.round(xPos(xs[i]));
+    if (seenX.has(px)) return;
+    seenX.add(px);
+    svg.append(svgEl('text', {
+      x: px, y: H - 10, 'text-anchor': 'middle',
+      'font-size': 10.5, fill: 'var(--text-muted)', 'font-variant-numeric': 'tabular-nums',
+    }, p.date));
+  });
+
+  // series lines + markers (2px lines, >=8px markers with surface ring)
+  visible.forEach(s => {
+    const idx = DATA.scenarios.indexOf(s);
+    const color = 'var(' + SERIES_VARS[idx] + ')';
+    const coords = points
+      .map((p, i) => p.scenarios[s] == null ? null : [xPos(xs[i]), yPos(1e6 / p.scenarios[s])])
+      .filter(Boolean);
+    if (coords.length > 1) {
+      svg.append(svgEl('path', {
+        d: 'M' + coords.map(c => c[0].toFixed(1) + ' ' + c[1].toFixed(1)).join(' L'),
+        fill: 'none', stroke: color, 'stroke-width': 2,
+        'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+      }));
+    }
+    for (const [cx, cy] of coords) {
+      svg.append(svgEl('circle', {
+        cx, cy, r: 4.5, fill: color,
+        stroke: 'var(--surface-1)', 'stroke-width': 2,
+      }));
+    }
+  });
+
+  // crosshair + shared tooltip
+  const hair = svgEl('line', {
+    y1: m.top, y2: m.top + plotH,
+    stroke: 'var(--axis)', 'stroke-width': 1, visibility: 'hidden',
+  });
+  svg.append(hair);
+  const overlay = svgEl('rect', {
+    x: m.left, y: m.top, width: plotW, height: plotH, fill: 'transparent',
+  });
+  overlay.addEventListener('pointermove', e => {
+    const rect = svg.getBoundingClientRect();
+    const mx = ((e.clientX - rect.left) / rect.width) * W;
+    let nearest = 0, best = Infinity;
+    xs.forEach((t, i) => {
+      const d = Math.abs(xPos(t) - mx);
+      if (d < best) { best = d; nearest = i; }
+    });
+    const p = points[nearest];
+    const px = xPos(xs[nearest]);
+    hair.setAttribute('x1', px);
+    hair.setAttribute('x2', px);
+    hair.setAttribute('visibility', 'visible');
+    showTooltip(e.clientX, e.clientY, root => {
+      root.append(el('div', { class: 't-title' }, p.date + ' · ' + p.runtime));
+      for (const s of visible) {
+        const t = p.scenarios[s];
+        if (t == null) continue;
+        const row = el('div', { class: 't-row' });
+        const key = el('span', { class: 't-key' });
+        key.style.borderTopColor = getComputedStyle(document.documentElement)
+          .getPropertyValue(SERIES_VARS[DATA.scenarios.indexOf(s)]);
+        row.append(key, el('span', { class: 't-val' }, fmt.ops(t)));
+        row.append(el('span', { class: 't-lib' }, s));
+        root.append(row);
+      }
+    });
+  });
+  overlay.addEventListener('pointerleave', () => {
+    hair.setAttribute('visibility', 'hidden');
+    hideTooltip();
+  });
+  svg.append(overlay);
+  host.append(svg);
+
+  renderTrendTables(platform);
+}
+
+function renderTrendTables(platform) {
+  const points = platform.history;
+
+  // table twin: date x scenario
+  const host = document.getElementById('trend-table');
+  host.replaceChildren();
+  const table = el('table', { class: 'data' });
+  const thead = el('thead');
+  const hr = el('tr');
+  hr.append(el('th', {}, 'Record'), el('th', {}, 'Runtime'));
+  for (const s of DATA.scenarios) hr.append(el('th', {}, s));
+  thead.append(hr);
+  const tbody = el('tbody');
+  for (const p of points) {
+    const tr = el('tr');
+    tr.append(el('td', {}, p.date), el('td', {}, p.runtime));
+    for (const s of DATA.scenarios) {
+      tr.append(el('td', {}, p.scenarios[s] == null ? '—' : fmt.time(p.scenarios[s])));
+    }
+    tbody.append(tr);
+  }
+  table.append(thead, tbody);
+  host.append(table);
+
+  // first vs latest delta
+  const deltaCard = document.getElementById('trend-delta-card');
+  const deltaHost = document.getElementById('trend-delta');
+  deltaHost.replaceChildren();
+  if (points.length < 2) {
+    deltaCard.hidden = true;
+    return;
+  }
+  deltaCard.hidden = false;
+  const first = points[0], last = points[points.length - 1];
+  const dtable = el('table', { class: 'data' });
+  const dthead = el('thead');
+  const dhr = el('tr');
+  ['Workload', first.date + ' (' + first.runtime + ')', last.date + ' (' + last.runtime + ')', 'Change'].forEach(h => dhr.append(el('th', {}, h)));
+  dthead.append(dhr);
+  const dtbody = el('tbody');
+  for (const s of DATA.scenarios) {
+    const a = first.scenarios[s], b = last.scenarios[s];
+    if (a == null || b == null) continue;
+    const change = (a - b) / a * 100;
+    const tr = el('tr');
+    tr.append(el('td', {}, s));
+    tr.append(el('td', {}, fmt.time(a)));
+    tr.append(el('td', {}, fmt.time(b)));
+    tr.append(el('td', { class: change >= 0 ? 'up' : 'down' },
+      (change >= 0 ? '↑ ' : '↓ ') + Math.abs(change).toFixed(1) + '% ' + (change >= 0 ? 'faster' : 'slower')));
+    dtbody.append(tr);
+  }
+  dtable.append(dthead, dtbody);
+  deltaHost.append(dtable);
+}
+
+// ---- platform wiring ----
+const select = document.getElementById('platform');
+DATA.platforms.forEach((p, i) => {
+  select.append(el('option', { value: String(i) }, p.label));
+});
+function currentPlatform() {
+  return DATA.platforms[Number(select.value) || 0];
+}
+function renderAll() {
+  const platform = currentPlatform();
+  document.getElementById('platform-meta').textContent =
+    'latest record: ' + platform.latest.date + ' · ' + platform.latest.runtime;
+  renderKpis(platform);
+
+  const grid = document.getElementById('scenario-grid');
+  grid.replaceChildren();
+  for (const s of DATA.scenarios) {
+    const d = platform.latest.scenarios[s];
+    if (d && Object.keys(d).length) grid.append(renderScenarioCard(s, d));
+  }
+  renderSpeedupTable(platform);
+  renderTrend(platform);
+}
+select.addEventListener('change', renderAll);
+
+// trend view toggle
+makeToggle(
+  document.querySelector('.view-toggle[data-for="trend"]'),
+  document.getElementById('trend-chart'),
+  document.getElementById('trend-table'),
+);
+
+renderTrendLegend();
+renderAll();
+</script>
 </body>
 </html>`;
-
-  return html;
 }
 
 // Main
-async function main() {
-  const files = await readdir(__dirname);
-  const txtFiles = files.filter(f => f.endsWith('.txt')).sort();
+const files = await readdir(__dirname);
+const txtFiles = files.filter(f => f.endsWith('.txt')).sort();
 
-  console.log(`Found ${txtFiles.length} benchmark records\n`);
+const allResults = [];
+for (const file of txtFiles) {
+  allResults.push(await parseBenchmarkFile(join(__dirname, file)));
+}
+allResults.sort((a, b) => a.date.localeCompare(b.date));
 
-  const allResults = [];
+const model = buildModel(allResults);
 
-  for (const file of txtFiles) {
-    const filePath = join(__dirname, file);
-    const result = await parseBenchmarkFile(filePath);
-    allResults.push(result);
+// compact console summary: latest record per platform
+console.log(`${txtFiles.length} records, ${model.platforms.length} platforms\n`);
+for (const platform of model.platforms) {
+  console.log(`${platform.label} — ${platform.latest.date} (${platform.latest.runtime})`);
+  const rows = [];
+  for (const scenario of SCENARIOS) {
+    const d = platform.latest.scenarios[scenario];
+    if (!d || d[SUBJECT] == null) continue;
+    const vsIntl = d['Intl.Segmenter'] != null ? (d['Intl.Segmenter'] / d[SUBJECT]).toFixed(2) + 'x' : '—';
+    rows.push({
+      workload: scenario,
+      'unicode-segmenter': formatTime(d[SUBJECT]),
+      'vs Intl': vsIntl,
+    });
   }
-
-  // Sort by date
-  allResults.sort((a, b) => a.date.localeCompare(b.date));
-
-  // Print summary for latest results per platform
-  console.log('='.repeat(80));
-  console.log('LATEST BENCHMARK RESULTS');
-  console.log('='.repeat(80));
-
-  const latestByPlatform = new Map();
-  for (const result of [...allResults].reverse()) {
-    const key = `${result.cpu}-${result.runtime.split('_')[0]}`;
-    if (!latestByPlatform.has(key)) {
-      latestByPlatform.set(key, result);
-    }
-  }
-
-  for (const [platform, result] of latestByPlatform) {
-    console.log(`\n${'-'.repeat(80)}`);
-    console.log(`Platform: ${formatCpu(result.cpu)} | Runtime: ${formatRuntime(result.runtime)}`);
-    console.log(`Date: ${result.date}`);
-    console.log('-'.repeat(80));
-
-    for (const scenario of SCENARIOS) {
-      const data = result.scenarios[scenario];
-      if (!data || Object.keys(data).length === 0) continue;
-
-      console.log(`\n### ${scenario}\n`);
-      console.log(generateBarChart(data));
-
-      const baseTime = data['unicode-segmenter/grapheme'];
-      if (baseTime) {
-        console.log('\nSpeedup:');
-        for (const [lib, time] of Object.entries(data)) {
-          if (lib !== 'unicode-segmenter/grapheme' && time != null) {
-            const speedup = (time / baseTime).toFixed(2);
-            console.log(`  ${SHORT_NAMES[lib]}: ${speedup}x slower`);
-          }
-        }
-      }
-    }
-  }
-
-  // Generate HTML report
-  const html = generateHTML(allResults);
-  const htmlPath = join(__dirname, 'report.generated.html');
-  await import('node:fs/promises').then(fs => fs.writeFile(htmlPath, html));
-  console.log(`\n${'='.repeat(80)}`);
-  console.log(`HTML report generated: ${htmlPath}`);
-
-  // Print trends over time
-  console.log(`\n${'='.repeat(80)}`);
-  console.log('PERFORMANCE TRENDS OVER TIME');
-  console.log('='.repeat(80));
-
-  // Group by cpu+runtime for trend analysis
-  const trends = {};
-  for (const result of allResults) {
-    const key = `${result.cpu}-${result.runtime.split('_')[0]}`;
-    if (!trends[key]) trends[key] = [];
-    trends[key].push(result);
-  }
-
-  for (const [platform, results] of Object.entries(trends)) {
-    if (results.length < 2) continue;
-
-    console.log(`\n${platform}:`);
-    const first = results[0];
-    const last = results[results.length - 1];
-
-    for (const scenario of SCENARIOS) {
-      const firstData = first.scenarios[scenario];
-      const lastData = last.scenarios[scenario];
-      if (!firstData || !lastData) continue;
-
-      const firstTime = firstData['unicode-segmenter/grapheme'];
-      const lastTime = lastData['unicode-segmenter/grapheme'];
-      if (!firstTime || !lastTime) continue;
-
-      const improvement = ((firstTime - lastTime) / firstTime * 100).toFixed(1);
-      const direction = improvement > 0 ? '↑' : improvement < 0 ? '↓' : '→';
-      console.log(`  ${scenario}: ${formatTime(firstTime)} → ${formatTime(lastTime)} (${direction} ${Math.abs(improvement)}%)`);
-    }
-  }
+  console.table(rows);
 }
 
-main().catch(console.error);
+const htmlPath = join(__dirname, 'report.generated.html');
+await writeFile(htmlPath, generateHTML(model));
+console.log(`HTML report generated: ${htmlPath}`);
