@@ -16,7 +16,7 @@ A lightweight implementation of the [Unicode Text Segmentation (UAX \#29)](https
 
 - **Small bundle size**: It effectively compresses the Unicode data and provides a bundler-friendly format.
 
-- **Extremely efficient**: It's carefully optimized for runtime performance, making it the fastest one in the ecosystem—outperforming even the built-in `Intl.Segmenter`.
+- **Extremely efficient**: It's carefully optimized for runtime performance, making it the fastest one in the ecosystem—outperforming even the built-in `Intl.Segmenter`. Its flat lookup tables also keep the memory footprint far smaller than other libraries.
 
 - **TypeScript**: It's fully type-checked, and provides type definitions and JSDoc.
 
@@ -238,20 +238,37 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 * The installation size contains _compressed_ assets.
 
+#### Memory Stats
+
+Retained memory per library after segmenting the benchmark corpus, measured by `yarn memory-stats:grapheme` in isolated Node.js processes (median of 5, GC-stabilized deltas).
+
+
+| Name                         | JS heap | External* |
+|------------------------------|--------:|----------:|
+| `unicode-segmenter/grapheme` | 206 kB  |     42 kB |
+| `graphemer`                  | 2.32 MB |         - |
+| `grapheme-splitter`          | 570 kB  |         - |
+| `@formatjs/intl-segmenter`   | 1.95 MB |         - |
+| `unicode-segmentation`*      | 214 kB  |         - |
+| `Intl.Segmenter`*            | 86.5 kB |         - |
+
+* "External" is the extra ArrayBuffer memory relative to the ~40 kB runtime baseline shared by every row; `unicode-segmenter` keeps its lookup tables in typed arrays, which live there instead of the JS heap.
+* `unicode-segmentation`'s WASM linear memory and `Intl.Segmenter`'s ICU data are allocated by native code and invisible to both columns.
+
 #### Runtime Performance
 
 Here is a brief explanation, and you can see [archived benchmark results](benchmark/grapheme/_records).
 
 **Performance in Node.js/Bun/Deno**: `unicode-segmenter/grapheme` has best-in-class performance.
-- 8\~35x faster than other JavaScript libraries.
-- 3\~5x faster than WASM binding of the Rust's [unicode-segmentation].
+- 10\~55x faster than other JavaScript libraries.
+- 4\~9x faster than WASM binding of the Rust's [unicode-segmentation].
 - 2\~3x faster than built-in [`Intl.Segmenter`].
 
 **Performance in Browsers**: The performance in browser environments varies greatly due to differences in browser engines, which makes benchmarking inconsistent, but:
 - Still significantly faster than other JavaScript libraries.
 - Generally outperforms the built-in in the most browser environments, except the Firefox.
 
-**Performance in React Native**: `unicode-segmenter/grapheme` is still faster than alternatives when compiled to Hermes bytecode. It's 3\~8x faster than `graphemer` and 20\~26x faster than `grapheme-splitter`, with the performance gap increasing with input size.
+**Performance in React Native**: `unicode-segmenter/grapheme` is still faster than alternatives when compiled to Hermes bytecode. It's \~4x faster than `graphemer` and \~38x faster than `grapheme-splitter`.
 
 **Performance in QuickJS**: `unicode-segmenter/grapheme` is the only usable library in terms of performance.
 
