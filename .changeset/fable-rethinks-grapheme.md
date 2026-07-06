@@ -4,9 +4,9 @@
 
 Rewrite the grapheme segmenter with flat lookup tables and pair-rule dispatch.
 
-- Bundle: −24% minified, −29% min+gzip, −20% min+brotli
-- Runtime: 1.2–1.5x faster on V8, 1.2–1.3x faster on Hermes
-- Memory: −34% retained heap, no retained per-range JS objects
+- Bundle: −31% minified, −34% min+gzip, −26% min+brotli, −10% Hermes bytecode
+- Runtime: fastest in the ecosystem on every benchmark case, ~1.1x faster on Hermes
+- Memory: −44% retained heap, no retained per-range JS objects
 
 Also fixes several segmentation bugs where results diverged from `Intl.Segmenter`:
 
@@ -14,6 +14,5 @@ Also fixes several segmentation bugs where results diverged from `Intl.Segmenter
 - GB9c: `InCB=None` characters (matras, ZWNJ) did not reset the conjunct sequence; consonants after a Prepend never started one
 - Unassigned `U+D7FC..U+D7FF` were treated as Hangul `T`
 
-The public API is unchanged, but note that `graphemeSegments()` now returns a plain
-iterator object instead of a generator, and the internal `_incb_data` module is
-removed (its data is folded into the grapheme table).
+The public API is unchanged. The internal `_incb_data` module is removed
+(its data is folded into the grapheme table).

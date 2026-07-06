@@ -203,122 +203,6 @@ function nextState(st, c, cp) {
 }
 
 /**
- * @implements {Iterator<GraphemeSegmentOutput, undefined>}
- */
-class GraphemeSegmentIterator {
-  /**
-   * @param {string} input
-   */
-  constructor(input) {
-    let len = input.length;
-    let cp = 0, c = 0, st = 0, cursor = 0;
-    if (len) {
-      cp = input.charCodeAt(0);
-      cursor = 1;
-      if ((cp & 0xFC00) === 0xD800 && len > 1) {
-        let trail = input.charCodeAt(1);
-        if ((trail & 0xFC00) === 0xDC00) {
-          cp = (cp << 10) + trail - 0x35FDC00;
-          cursor = 2;
-        }
-      }
-      c = cat(cp);
-      if ((0xC418 >> c) & 1) st = nextState(0, c, cp);
-    }
-    /** @type {string} */
-    this._str = input;
-    /** @type {boolean} */
-    this._done = len === 0;
-    /** @type {number} Cursor position right after the last consumed code point */
-    this._cursor = cursor;
-    /** @type {number} Category of the last consumed code point */
-    this._catBefore = c;
-    /** @type {number} Start index of the next segment */
-    this._index = 0;
-    /** @type {number} Head code point of the next segment */
-    this._hd = cp;
-    /** @type {number} Category of the head */
-    this._catBegin = c;
-    /** @type {number} Packed sequence state */
-    this._st = st;
-  }
-
-  [Symbol.iterator]() {
-    return this;
-  }
-
-  /**
-   * @return {IteratorResult<GraphemeSegmentOutput, undefined>}
-   */
-  next() {
-    if (this._done) return { value: undefined, done: true };
-    let input = this._str,
-      len = input.length,
-      cursor = this._cursor,
-      catBefore = this._catBefore,
-      st = this._st;
-
-    while (cursor < len) {
-      let cp = input.charCodeAt(cursor), wide = 1;
-      if ((cp & 0xFC00) === 0xD800 && cursor + 1 < len) {
-        let trail = input.charCodeAt(cursor + 1);
-        if ((trail & 0xFC00) === 0xDC00) {
-          cp = (cp << 10) + trail - 0x35FDC00;
-          wide = 2;
-        }
-      }
-      let catAfter = cat(cp);
-      let d = PAIR[catBefore << 4 | catAfter];
-      let boundary;
-      if (d === 0) boundary = true;
-      else if (d === 1) boundary = false;
-      else if (d === 2) boundary = !(st & 1);
-      else if (d === 3) boundary = !(st & 4);
-      else boundary = (st & 24) !== 16;
-
-      st = (0xC418 >> catAfter) & 1 && (st !== 0 || catAfter !== 3)
-        ? nextState(st, catAfter, cp)
-        : 0;
-
-      if (boundary) {
-        let index = this._index, catBegin = this._catBegin;
-        let value = {
-          segment: input.slice(index, cursor),
-          index,
-          input,
-          _hd: this._hd,
-          _catBegin: /** @type {GraphemeCategoryNum} */ (catBegin === 15 ? 0 : catBegin),
-          _catEnd: /** @type {GraphemeCategoryNum} */ (catBefore === 15 ? 0 : catBefore),
-        };
-        this._cursor = cursor + wide;
-        this._catBefore = catAfter;
-        this._index = cursor;
-        this._hd = cp;
-        this._catBegin = catAfter;
-        this._st = st;
-        return { value, done: false };
-      }
-      cursor += wide;
-      catBefore = catAfter;
-    }
-
-    this._done = true;
-    let index = this._index, catBegin = this._catBegin;
-    return {
-      value: {
-        segment: input.slice(index),
-        index,
-        input,
-        _hd: this._hd,
-        _catBegin: /** @type {GraphemeCategoryNum} */ (catBegin === 15 ? 0 : catBegin),
-        _catEnd: /** @type {GraphemeCategoryNum} */ (catBefore === 15 ? 0 : catBefore),
-      },
-      done: false,
-    };
-  }
-}
-
-/**
  * Unicode segmentation by extended grapheme rules.
  *
  * This is fully compatible with the {@link Intl.Segmenter.segment} API
@@ -327,8 +211,82 @@ class GraphemeSegmentIterator {
  * @param {string} input
  * @return {GraphemeSegmenter} iterator for grapheme cluster segments
  */
-export function graphemeSegments(input) {
-  return /** @type {GraphemeSegmenter} */ (new GraphemeSegmentIterator(input));
+export function* graphemeSegments(input) {
+  let len = input.length;
+  if (len === 0) return;
+
+  let cp = input.charCodeAt(0), cursor = 1;
+  if ((cp & 0xFC00) === 0xD800 && len > 1) {
+    let trail = input.charCodeAt(1);
+    if ((trail & 0xFC00) === 0xDC00) {
+      cp = (cp << 10) + trail - 0x35FDC00;
+      cursor = 2;
+    }
+  }
+
+  /** Category of the last consumed code point */
+  let catBefore = cat(cp);
+
+  /** Packed sequence state */
+  let st = (0xC418 >> catBefore) & 1 ? nextState(0, catBefore, cp) : 0;
+
+  /** Start index of the current segment */
+  let index = 0;
+
+  /** Head code point of the current segment */
+  let hd = cp;
+
+  /** Category of the head */
+  let catBegin = catBefore;
+
+  while (cursor < len) {
+    cp = input.charCodeAt(cursor);
+    let wide = 1;
+    if ((cp & 0xFC00) === 0xD800 && cursor + 1 < len) {
+      let trail = input.charCodeAt(cursor + 1);
+      if ((trail & 0xFC00) === 0xDC00) {
+        cp = (cp << 10) + trail - 0x35FDC00;
+        wide = 2;
+      }
+    }
+    let catAfter = cat(cp);
+    let d = PAIR[catBefore << 4 | catAfter];
+    let boundary;
+    if (d === 0) boundary = true;
+    else if (d === 1) boundary = false;
+    else if (d === 2) boundary = !(st & 1);
+    else if (d === 3) boundary = !(st & 4);
+    else boundary = (st & 24) !== 16;
+
+    st = (0xC418 >> catAfter) & 1 && (st !== 0 || catAfter !== 3)
+      ? nextState(st, catAfter, cp)
+      : 0;
+
+    if (boundary) {
+      yield {
+        segment: input.slice(index, cursor),
+        index,
+        input,
+        _hd: hd,
+        _catBegin: /** @type {GraphemeCategoryNum} */ (catBegin === 15 ? 0 : catBegin),
+        _catEnd: /** @type {GraphemeCategoryNum} */ (catBefore === 15 ? 0 : catBefore),
+      };
+      index = cursor;
+      hd = cp;
+      catBegin = catAfter;
+    }
+    cursor += wide;
+    catBefore = catAfter;
+  }
+
+  yield {
+    segment: input.slice(index),
+    index,
+    input,
+    _hd: hd,
+    _catBegin: /** @type {GraphemeCategoryNum} */ (catBegin === 15 ? 0 : catBegin),
+    _catEnd: /** @type {GraphemeCategoryNum} */ (catBefore === 15 ? 0 : catBefore),
+  };
 }
 
 /**
@@ -346,7 +304,7 @@ export function graphemeSegments(input) {
  */
 export function countGraphemes(text) {
   let count = 0;
-  for (let _ of new GraphemeSegmentIterator(text)) count += 1;
+  for (let _ of graphemeSegments(text)) count += 1;
   return count;
 }
 
@@ -369,7 +327,7 @@ export {
  * [...splitGraphemes('abc')] // => ['a', 'b', 'c']
  */
 export function* splitGraphemes(text) {
-  for (let s of new GraphemeSegmentIterator(text)) yield s.segment;
+  for (let s of graphemeSegments(text)) yield s.segment;
 }
 
 // Keep one live segmenter and its result reachable so their hidden classes
@@ -380,7 +338,7 @@ export function* splitGraphemes(text) {
 // The instances are stashed on an always-retained module object, since
 // unreferenced module-scope bindings do not survive module evaluation.
 {
-  let keep = new GraphemeSegmentIterator('_');
+  let keep = graphemeSegments('_');
   // @ts-ignore intended expando
   PAIR._keep = [keep, keep.next()];
 }

@@ -215,7 +215,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) | Size (min+zstd) |
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|----------------:|
-| `unicode-segmenter/grapheme` |   17.0.0 |   ✔️ |    10,371 |      5,911 |           2,765 |         2,481 |           2,822 |
+| `unicode-segmenter/grapheme` |   17.0.0 |   ✔️ |     9,085 |      5,385 |           2,551 |         2,313 |           2,602 |
 | `graphemer`                  |   15.0.0 |   ✖️ ️|   410,435 |     95,104 |          15,752 |        10,660 |          15,911 |
 | `grapheme-splittetr`         |   10.0.0 |   ✖️ |   122,254 |     23,682 |           7,852 |         4,802 |           6,753 |
 | `@formatjs/intl-segmenter`*  |   17.0.0 |   ✖️ |   268,301 |    176,759 |          45,988 |        31,701 |          45,370 |
@@ -231,7 +231,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Bytecode size | Bytecode size (gzip)* |
 |------------------------------|--------------:|----------------------:|
-| `unicode-segmenter/grapheme` |        22,886 |                12,336 |
+| `unicode-segmenter/grapheme` |        19,315 |                10,704 |
 | `graphemer`                  |       134,085 |                31,770 |
 | `grapheme-splitter`          |        63,942 |                19,165 |
 | `@formatjs/intl-segmenter`   |       329,547 |               136,751 |
@@ -245,7 +245,7 @@ Retained memory per library after segmenting the benchmark corpus, measured by `
 
 | Name                         | JS heap | External* |
 |------------------------------|--------:|----------:|
-| `unicode-segmenter/grapheme` | 206 kB  |     42 kB |
+| `unicode-segmenter/grapheme` | 209 kB  |     42 kB |
 | `graphemer`                  | 2.32 MB |         - |
 | `grapheme-splitter`          | 570 kB  |         - |
 | `@formatjs/intl-segmenter`   | 1.95 MB |         - |
@@ -260,15 +260,15 @@ Retained memory per library after segmenting the benchmark corpus, measured by `
 Here is a brief explanation, and you can see [archived benchmark results](benchmark/grapheme/_records).
 
 **Performance in Node.js/Bun/Deno**: `unicode-segmenter/grapheme` has best-in-class performance.
-- 10\~55x faster than other JavaScript libraries.
-- 4\~9x faster than WASM binding of the Rust's [unicode-segmentation].
-- 2\~3x faster than built-in [`Intl.Segmenter`].
+- 8\~45x faster than other JavaScript libraries.
+- 3.5\~7x faster than WASM binding of the Rust's [unicode-segmentation].
+- 1.5\~2.5x faster than built-in [`Intl.Segmenter`].
 
 **Performance in Browsers**: The performance in browser environments varies greatly due to differences in browser engines, which makes benchmarking inconsistent, but:
 - Still significantly faster than other JavaScript libraries.
 - Generally outperforms the built-in in the most browser environments, except the Firefox.
 
-**Performance in React Native**: `unicode-segmenter/grapheme` is still faster than alternatives when compiled to Hermes bytecode. It's \~4x faster than `graphemer` and \~38x faster than `grapheme-splitter`.
+**Performance in React Native**: `unicode-segmenter/grapheme` is still faster than alternatives when compiled to Hermes bytecode. It's \~4x faster than `graphemer` and \~34x faster than `grapheme-splitter`.
 
 **Performance in QuickJS**: `unicode-segmenter/grapheme` is the only usable library in terms of performance.
 
