@@ -14,14 +14,17 @@
  *
  * Encoding for array of {@link UnicodeRange}, items separated by comma.
  *
- * Each {@link UnicodeDataRow} packed as a base36 integer:
+ * Each {@link UnicodeDataRow} packed as a pair of base36 integers:
  *
+ * gap      = from - (previous to) - 1
  * padding  = to - from
- * encoding = base36(from) + ',' + base36(padding)
+ * encoding = base36(gap) + ',' + base36(padding)
  *
  * Notes:
+ * - Ranges are sorted and never overlap, so the delta-encoded gap is
+ *   always non-negative, and mostly a single character.
+ * - Zero encodes as an empty string.
  * - base36 can hold surprisingly large numbers in a few characters.
- * - The biggest codepoint is 0xE01F0 (918,000) at this point
  * - The max value of a category is 23; https://www.unicode.org/reports/tr29/tr29-45.html#Table_Word_Break_Property_Values
  * - The longest range is 42,720; CJK UNIFIED IDEOGRAPH-20000..CJK UNIFIED IDEOGRAPH-2A6DF
  */
@@ -35,11 +38,12 @@
 export function decodeUnicodeData(data, cats = '') {
   let buf = /** @type {Array<CategorizedUnicodeRange<T>>} */([])
     , nums = data.split(',').map(s => s ? parseInt(s, 36) : 0)
-    , n = 0;
+    , n = 0
+    , p = -1;
   for (let i = 0; i < nums.length; i++)
     i % 2
-      ? buf.push([n, n + nums[i], /** @type {T} */ (cats ? parseInt(cats[i >> 1], 36) : 0)])
-      : n = nums[i];
+      ? buf.push([n, p = n + nums[i], /** @type {T} */ (cats ? parseInt(cats[i >> 1], 36) : 0)])
+      : n = p + 1 + nums[i];
   return buf;
 }
 

@@ -17,7 +17,7 @@ import { decodeUnicodeData } from './core.js';
  */
 export const emoji_presentation_ranges = decodeUnicodeData(
   /** @type {UnicodeDataEncoding} */
-  ('6xm,1,73d,3,73k,,73n,,7i5,1,7is,1,7k8,b,7lr,,7mb,,7mp,,7my,1,7nh,1,7no,1,7ny,,7o4,,7oq,,7oy,1,7p1,,7p6,,7p9,,7ph,,7pm,1,7qg,,7rg,,7ri,,7rn,2,7rr,,7th,2,7u8,,7un,,8ij,1,8k0,,8k5,,2pz8,,2q4v,,2qa6,,2qa9,9,2qcm,p,2qdd,,2qe2,,2qen,,2qeq,4,2qew,2,2qfk,1,2qkg,w,2qlp,8,2qlz,1x,2qny,l,2qow,16,2qq7,4,2qqo,g,2qr8,,2qrc,1y,2qtc,,2qte,56,2qyn,1q,2r0r,3,2r0w,n,2r22,,2r2t,1,2r38,,2r5n,2c,2r9c,1x,2rbg,,2rbk,2,2rbp,3,2rbw,3,2rcb,1,2rck,8,2rj4,b,2rjk,,2rrg,1a,2rss,9,2rt3,54,2s1c,c,2s1s,a,2s26,1k,2s3s,,2s3x,f,2s4f,b,2s4v,9')
+  ('6xm,1,5p,3,3,,2,,eh,1,l,1,1e,b,17,,j,,d,,8,1,h,1,5,1,8,,5,,l,,7,1,1,,4,,2,,7,,4,1,s,,z,,1,,4,2,1,,1p,2,o,,e,,nv,1,1f,,4,,2hf2,,5m,,5a,,2,9,23,p,1,,o,,k,,2,4,1,2,l,1,4u,w,c,8,1,1x,1,l,c,16,4,4,c,g,3,,3,1y,1,,1,56,2,1q,d,3,1,n,i,,q,1,d,,2e,2c,1c,1x,6,,3,2,2,3,3,3,b,1,7,8,6b,b,4,,7v,1a,1,9,1,54,34,c,3,a,3,1k,1,,4,f,2,b,4,9')
 );
 
 /**
@@ -27,5 +27,5 @@ export const emoji_presentation_ranges = decodeUnicodeData(
  */
 export const extended_pictographic_ranges = decodeUnicodeData(
   /** @type {UnicodeDataEncoding} */
-  ('4p,,4u,,6d8,,6dl,,6jm,,6k9,,6ms,5,6nd,1,6xm,1,6y0,,72n,,73d,a,73s,2,79e,,7fu,1,7g6,,7gg,,7i3,3,7i8,4,7im,,7ip,,7is,1,7iw,,7j1,,7j4,,7j6,1,7ja,,7je,,7ji,1,7js,2,7k0,,7k2,,7k8,b,7kv,1,7kz,,7l1,1,7l4,,7ln,,7lq,1,7ma,5,7mh,,7mj,1,7mo,1,7mv,,7my,1,7n4,1,7nh,1,7no,1,7ns,,7ny,1,7o1,,7o3,1,7op,1,7ow,5,7p3,3,7p9,,7pe,,7ph,,7pk,5,7pr,,7pu,,7pw,,7py,,7q5,,7q9,,7qg,,7qr,1,7r8,,7rb,,7rg,,7ri,,7rn,2,7rr,,7s3,1,7th,2,7tt,,7u8,,7un,,850,1,8hx,2,8ij,1,8k0,,8k5,,9io,,9j1,,9zr,,9zt,,2pz8,,2q0c,3,2q38,b,2q3z,1,2q4g,,2q4v,1,2q5y,9,2q9c,1,2q9q,1,2qa6,,2qa9,9,2qb2,1j,2qdd,e,2qe2,,2qen,,2qeq,8,2qf0,3,2qfd,m,2qg6,57,2qlg,33,2qom,1,2qop,2,2qou,2a,2qr7,2,2qrb,3,2qrk,71,2qyn,1q,2r0p,5,2r0w,n,2r1r,1,2r1v,7,2r2f,,2r2i,3,2r2o,,2r2t,1,2r38,1,2r3c,,2r3l,1,2r3w,,2r42,2,2r4h,2,2r4s,2,2r4x,,2r4z,,2r54,,2r5b,,2r5f,,2r5m,2d,2r9c,1x,2rbf,7,2rbp,g,2rc9,,2rcb,5,2rcj,c,2riy,11,2rkc,3,2rm0,7,2rmi,5,2rns,7,2rou,1,2rp8,3,2rpe,d,2rq1,12,2rrg,1a,2rss,9,2rt3,54,2s0o,7,2s1a,41,2scg,sd')
+  ('4p,,4,,68d,,c,,60,,m,,2i,5,f,1,a7,1,c,,4m,,p,a,4,2,5j,,6f,1,a,,9,,1m,3,1,4,9,,2,,2,1,2,,4,,2,,1,1,2,,3,,3,1,8,2,5,,1,,5,b,b,1,2,,1,1,1,,i,,2,1,i,5,1,,1,1,3,1,5,,2,1,4,1,b,1,5,1,2,,5,1,1,,1,1,k,1,5,5,1,3,2,,4,,2,,2,5,1,,2,,1,,1,,6,,3,,6,,a,1,f,,2,,4,,1,,4,2,1,,b,1,1c,2,9,,e,,e,,ac,1,cv,2,j,1,1f,,4,,yi,,c,,gp,,1,,2fze,,13,3,2s,b,f,1,f,,e,1,11,9,34,1,c,1,e,,2,9,j,1j,r,e,a,,k,,2,8,1,3,9,m,6,57,2,33,2,1,1,2,2,2a,2,2,1,3,5,71,1,1q,b,5,1,n,7,1,2,7,c,,2,3,2,,4,1,d,1,2,,8,1,9,,5,2,c,2,8,2,2,,1,,4,,6,,3,,6,2d,1c,1x,5,7,2,g,3,,1,5,2,c,62,11,c,3,1k,7,a,5,14,7,u,1,c,3,2,d,9,12,c,1a,1,9,1,54,2g,7,e,41,74,sd')
 );

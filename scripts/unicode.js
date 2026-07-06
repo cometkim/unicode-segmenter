@@ -429,14 +429,17 @@ let printTableRaw = (f, name, table, format) => {
 };
 
 /**
- * @param {WriteStream} f 
- * @param {CategorizedUnicodeRange[]} breakTable 
- * @param {string[]} breakCats 
- * @param {string} name 
- * @returns 
+ * @param {WriteStream} f
+ * @param {CategorizedUnicodeRange[]} breakTable
+ * @param {string[]} breakCats
+ * @param {string} name
+ * @param {string[]} [extraCats=[]] internal categories appended after the public ones
+ * @returns
  */
-let printBreakModule = (f, breakTable, breakCats, name) => {
+let printBreakModule = (f, breakTable, breakCats, name, extraCats = []) => {
   let cats = ['Any', ...breakCats.toSorted()];
+  let allCats = [...cats, ...extraCats];
+  assert.ok(allCats.length <= 16, 'categories must fit in 4 bits');
 
   let capitalName = capitalize(name);
   let typeName = `${capitalName}Category`;
@@ -446,8 +449,6 @@ let printBreakModule = (f, breakTable, breakCats, name) => {
 
   f.write(preamble);
   f.write(`
-import { decodeUnicodeData } from './core.js';
-
 /**
  * @typedef {import('./core.js').UnicodeDataEncoding} UnicodeDataEncoding
  */
@@ -457,8 +458,10 @@ import { decodeUnicodeData } from './core.js';
   );
   /** @type {Record<string, number>} */
   let inversed = {};
-  cats.forEach((cat, idx) => {
+  allCats.forEach((cat, idx) => {
     inversed[cat] = idx;
+  });
+  cats.forEach((cat, idx) => {
     f.write(` * @typedef {${idx}} ${typeName[0]}C_${cat}\n`);
   });
 
@@ -505,17 +508,67 @@ export const ${typeName} = {
   }
   f.write('};\n');
 
+  let extraNote = extraCats.length
+    ? `\n * Internal categories (never exposed through the public API):\n${extraCats.map(cat => ` *   - ${inversed[cat]}: ${cat}`).join('\n')}\n *`
+    : ' *';
   f.write(`
 /**
- * @type {${rangeTypeName}[]}
+ * Encoded \`${capitalName}_Cluster_Break\` property ranges.
+ *${extraNote}
+ * @type {UnicodeDataEncoding}
  */
-export const ${name}_ranges = decodeUnicodeData(
-  /** @type {UnicodeDataEncoding} */
-  ('${encodeUnicodeData(breakTable.map(row => [row[0], row[1], 0]))}'),
-  '${breakTable.map(row => inversed[row[2]].toString(36)).join('')}',
+export const ${name}_data = /** @type {UnicodeDataEncoding} */ (
+  '${encodeUnicodeData(breakTable.map(row => [row[0], row[1], 0]))}'
 );
+
+/**
+ * Category of each range in {@link ${name}_data}, base36 digit per range.
+ */
+export const ${name}_cats = '${breakTable.map(row => inversed[row[2]].toString(36)).join('')}';
 `,
   );
+};
+
+/**
+ * UAX #29 pair-wise rules for extended grapheme cluster boundaries,
+ * evaluated into a 16x16 decision table indexed by
+ * `catBefore << 4 | catAfter`.
+ *
+ * - 0: boundary (GB999 and friends)
+ * - 1: no boundary
+ * - 2: GB12/GB13, no boundary iff odd run of RI precedes
+ * - 3: GB11, no boundary iff the ZWJ was preceded by ExtPic Extend*
+ * - 4: GB9c, no boundary iff InCB Consonant [Extend Linker]* Linker [Extend Linker]* precedes
+ *
+ * Category numbers follow the emitted `GraphemeCategory` enum:
+ * 0 Any, 1 CR, 2 Control, 3 Extend, 4 Extended_Pictographic, 5 L, 6 LF,
+ * 7 LV, 8 LVT, 9 Prepend, 10 Regional_Indicator, 11 SpacingMark, 12 T,
+ * 13 V, 14 ZWJ, and the internal 15 InCB_Consonant.
+ *
+ * @see https://www.unicode.org/reports/tr29/tr29-45.html#Grapheme_Cluster_Boundary_Rules
+ *
+ * @return {string} 256 digits
+ */
+let buildGraphemePairTable = () => {
+  let out = '';
+  for (let b = 0; b < 16; b++) {
+    for (let a = 0; a < 16; a++) {
+      // InCB=Consonant (15) has the same GCB semantics as Any (0)
+      let B = b === 15 ? 0 : b, A = a === 15 ? 0 : a, v = 0;
+      if (B === 1) v = A === 6 ? 1 : 0;                                          // GB3: CR × LF, GB4: CR ÷
+      else if (B === 2 || B === 6 || A === 1 || A === 2 || A === 6) v = 0;       // GB4: (Control | LF) ÷, GB5: ÷ (Control | CR | LF)
+      else if (A === 3 || A === 14 || A === 11) v = 1;                           // GB9: × (Extend | ZWJ), GB9a: × SpacingMark
+      else if (B === 9) v = 1;                                                   // GB9b: Prepend ×
+      else if (B === 5) v = (A === 5 || A === 7 || A === 8 || A === 13) ? 1 : 0; // GB6: L × (L | V | LV | LVT)
+      else if (B === 7 || B === 13) v = (A === 13 || A === 12) ? 1 : 0;          // GB7: (LV | V) × (V | T)
+      else if (B === 8 || B === 12) v = A === 12 ? 1 : 0;                        // GB8: (LVT | T) × T
+      else if (B === 14 && A === 4) v = 3;                                       // GB11: ExtPic Extend* ZWJ × ExtPic
+      else if (B === 10 && A === 10) v = 2;                                      // GB12, GB13: RI × RI
+      if (v === 0 && (B === 3 || B === 14) && a === 15) v = 4;                   // GB9c: InCB=C [E L]* L [E L]* × InCB=C
+      out += v;
+    }
+  }
+  return out;
 };
 
 /**
@@ -802,6 +855,14 @@ graphemeCats['Control'] = groupCat(Array.from(
 
 let emojiProps = parseProperties(emojiData, ['Extended_Pictographic']);
 
+// `InCB=Consonant` is folded into the grapheme table as an internal
+// category so that the runtime can resolve GB9c without a second lookup.
+// It never overlaps other GCB/ExtPic ranges as they all are `GCB=Any`.
+let incbProps = parseProperties(
+  await fetchData('DerivedCoreProperties.txt'),
+  ['InCB=Consonant'],
+);
+
 /** @type {CategorizedUnicodeRange[]} */
 let graphemeTable = [];
 for (let [cat, ranges] of Object.entries(graphemeCats)) {
@@ -814,12 +875,15 @@ for (let [cat, ranges] of Object.entries(emojiProps)) {
     graphemeTable.push([from, to, cat]);
   }
 }
+for (let [from, to] of incbProps['Consonant']) {
+  graphemeTable.push([from, to, 'InCB_Consonant']);
+}
 graphemeTable.sort((a, b) => a[0] - b[0]);
 
 let last = -1;
 for (let chars of graphemeTable) {
   if (chars[0] <= last) {
-    throw new Error('Grapheme tables and Extended_Pictographic values overlap; need to store these separately!');
+    throw new Error('Grapheme tables, Extended_Pictographic, and InCB=Consonant values overlap; need to store these separately!');
   }
   last = chars[1];
 }
@@ -862,17 +926,110 @@ let graphemeTableOptimized = graphemeTable.filter(([from, to, cat]) => {
   if (from >= 0xE000 && to < 0xFE00) {
     return false;
   }
+  // Variation Selectors: 0xFE00-0xFE0F (inlined in cat())
+  if (from >= 0xFE00 && to <= 0xFE0F) {
+    return false;
+  }
+  // Tags and Variation Selectors Supplement: 0xE0000-0xE0FFF (inlined in cat())
+  if (from >= 0xE0000 && to <= 0xE0FFF) {
+    return false;
+  }
   return true;
 });
 
+{
+  // Verify the fast paths inlined in the runtime `cat()` against the raw table,
+  // so a future Unicode update cannot silently break those assumptions.
+  let catAt = (/** @type {number} */ cp) => {
+    for (let [from, to, cat] of graphemeTable) {
+      if (cp < from) break;
+      if (cp <= to) return cat;
+    }
+    return 'Any';
+  };
+  /** @type {(cp: number) => string} */
+  let inlined = cp => {
+    // CJK: 0x3000-0x9FFF
+    if (cp >= 0x3000 && cp < 0xA000) {
+      if (cp < 0x3030) return cp >= 0x302A ? 'Extend' : 'Any';
+      if (cp < 0x309B) {
+        if (cp === 0x3030 || cp === 0x303D) return 'Extended_Pictographic';
+        return cp >= 0x3099 ? 'Extend' : 'Any';
+      }
+      return (cp === 0x3297 || cp === 0x3299) ? 'Extended_Pictographic' : 'Any';
+    }
+    // Hangul syllables
+    if (cp >= 0xAC00 && cp <= 0xD7A3) return (cp - 0xAC00) % 28 ? 'LVT' : 'LV';
+    // Hangul Jamo Extended-B + surrogates as Any
+    if (cp >= 0xD7A4 && cp < 0xE000) {
+      if (cp <= 0xD7C6) return cp >= 0xD7B0 ? 'V' : 'Any';
+      return (cp >= 0xD7CB && cp <= 0xD7FB) ? 'T' : 'Any';
+    }
+    // Private use
+    if (cp >= 0xE000 && cp < 0xFE00) return cp === 0xFB1E ? 'Extend' : 'Any';
+    // Variation selectors
+    if (cp >= 0xFE00 && cp < 0xFE10) return 'Extend';
+    // Tags and variation selectors supplement
+    if (cp >= 0xE0000) {
+      if (cp > 0xE0FFF) return 'Any';
+      return ((cp >= 0xE0020 && cp < 0xE0080) || (cp >= 0xE0100 && cp < 0xE01F0))
+        ? 'Extend'
+        : 'Control';
+    }
+    throw new Error(`no inlined fast path covers ${cp.toString(16)}`);
+  };
+  for (let [lo, hi] of [
+    [0x3000, 0x9FFF],
+    [0xAC00, 0xFE0F],
+    [0xE0000, 0xE1000],
+  ]) {
+    for (let cp = lo; cp <= hi; cp++) {
+      assert.equal(
+        inlined(cp),
+        catAt(cp),
+        `inlined fast path mismatches data at ${cp.toString(16)}`,
+      );
+    }
+  }
+  assert.ok(
+    graphemeTable.every(([from]) => from <= 0xE0FFF),
+    'cat() assumes no categorized ranges beyond 0xE0FFF',
+  );
+  // The runtime allocates fixed 320-entry buffers for the binary-search tail
+  let tailCount = graphemeTableOptimized
+    .filter(([from, to]) => to >= 0xFE10 && !(from >= 0x1F000 && to <= 0x1FAFF))
+    .length;
+  assert.ok(tailCount <= 320, `binary-search tail (${tailCount}) exceeds runtime buffer`);
+}
+
 await emitSrc(
   '_grapheme_data.js',
-  async f => printBreakModule(
-    f,
-    graphemeTableOptimized,
-    Object.keys(graphemeCats).concat(['Extended_Pictographic']),
-    'grapheme',
-  ),
+  async f => {
+    printBreakModule(
+      f,
+      graphemeTableOptimized,
+      Object.keys(graphemeCats).concat(['Extended_Pictographic']),
+      'grapheme',
+      ['InCB_Consonant'],
+    );
+    f.write(`
+/**
+ * UAX #29 pair-wise rules for extended grapheme cluster boundaries,
+ * evaluated into a 16x16 decision table indexed by
+ * \`catBefore << 4 | catAfter\`.
+ *
+ * - 0: boundary (GB999 and friends)
+ * - 1: no boundary
+ * - 2: GB12/GB13, no boundary iff odd run of RI precedes
+ * - 3: GB11, no boundary iff the ZWJ was preceded by ExtPic Extend*
+ * - 4: GB9c, no boundary iff InCB Consonant [Extend Linker]* Linker [Extend Linker]* precedes
+ *
+ * See \`buildGraphemePairTable\` in scripts/unicode.js for the rules.
+ */
+export const grapheme_pairs = '${buildGraphemePairTable()}';
+`,
+    );
+  },
 );
 
 // emitSrc(
