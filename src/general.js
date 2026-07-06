@@ -1,11 +1,15 @@
 // @ts-check
 
-import { findUnicodeRangeIndex } from './core.js';
+import { findUnicodeRangeCategory } from './core.js';
 import {
-  letter_ranges,
-  alphabetic_ranges,
-  numeric_ranges,
+  letter_table,
+  alphabetic_table,
+  numeric_table,
 } from './_general_data.js';
+
+const [LETTER_S, LETTER_E] = letter_table;
+const [ALPHABETIC_S, ALPHABETIC_E] = alphabetic_table;
+const [NUMERIC_S, NUMERIC_E] = numeric_table;
 
 /**
  * Check if the given code point is included in Unicode \\p{L} general property
@@ -14,7 +18,7 @@ import {
  * @return boolean
  */
 export function isLetter(cp) {
-  return findUnicodeRangeIndex(cp, letter_ranges) >= 0;
+  return findUnicodeRangeCategory(cp, LETTER_S, LETTER_E) !== 0;
 }
 
 /**
@@ -24,17 +28,17 @@ export function isLetter(cp) {
  * @return boolean
  */
 export function isAlphabetic(cp) {
-  return findUnicodeRangeIndex(cp, alphabetic_ranges) >= 0;
+  return findUnicodeRangeCategory(cp, ALPHABETIC_S, ALPHABETIC_E) !== 0;
 }
 
 /**
  * Check if the given code point is included in Unicode \\p{N} general property
  *
  * @param {number} cp
- * @return boolean true if 
+ * @return boolean true if
  */
 export function isNumeric(cp) {
-  return findUnicodeRangeIndex(cp, numeric_ranges) >= 0;
+  return findUnicodeRangeCategory(cp, NUMERIC_S, NUMERIC_E) !== 0;
 }
 
 /**

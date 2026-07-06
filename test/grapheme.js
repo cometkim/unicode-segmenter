@@ -309,6 +309,23 @@ test('counterexamples', async t => {
     ' ଶ୍ୟା',
     'ക് വ',
     'à‍❤',
+    // GB11: ZWJ must be followed by Extended_Pictographic, and preceded by
+    // Extended_Pictographic + Extend* within the same sequence
+    '👍‍a',
+    '👍‍‍☀',
+    '👍ः‍☀',
+    '👩‍👩‍a',
+    '۝👍‍☀',
+    '㊗‍𪨥',
+    // GB9c: InCB=None (e.g. SpacingMark, ZWNJ) resets the conjunct sequence
+    'का्क',
+    'क‌्क',
+    'कﾞ्क',
+    'ൎക്ക',
+    // Hangul Jamo Extended-B boundaries; U+D7FC..U+D7FF are unassigned
+    '가퟼',
+    'ퟻ퟼',
+    '힣퟿',
   ];
 
   for (let counter of counterExamples) {

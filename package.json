@@ -85,8 +85,7 @@
     "/*.js",
     "/*.cjs",
     "/*.d.ts",
-    "/*.d.cts",
-    "/licenses"
+    "/*.d.cts"
   ],
   "scripts": {
     "prepack": "yarn clean && yarn build",
@@ -98,6 +97,7 @@
     "bundle-stats:general": "node benchmark/general/bundle-stats.js",
     "bundle-stats:grapheme": "node benchmark/grapheme/bundle-stats.js",
     "bundle-stats:grapheme:hermes": "node benchmark/grapheme/bundle-stats-hermes.js",
+    "memory-stats:grapheme": "node benchmark/grapheme/memory-stats.js",
     "perf:emoji": "node --expose-gc benchmark/emoji/perf.js",
     "perf:general": "node --expose-gc benchmark/general/perf.js",
     "perf:grapheme": "node --expose-gc benchmark/grapheme/perf.js",

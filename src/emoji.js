@@ -1,10 +1,13 @@
 // @ts-check
 
-import { findUnicodeRangeIndex } from './core.js';
+import { findUnicodeRangeCategory } from './core.js';
 import {
-  emoji_presentation_ranges,
-  extended_pictographic_ranges,
+  emoji_presentation_table,
+  extended_pictographic_table,
 } from './_emoji_data.js';
+
+const [EMOJI_PRESENTATION_S, EMOJI_PRESENTATION_E] = emoji_presentation_table;
+const [EXTENDED_PICTOGRAPHIC_S, EXTENDED_PICTOGRAPHIC_E] = extended_pictographic_table;
 
 /**
  * An alias to {@link isExtendedPictographic}
@@ -25,7 +28,7 @@ export function isEmoji(cp) {
  * @return boolean
  */
 export function isEmojiPresentation(cp) {
-  return findUnicodeRangeIndex(cp, emoji_presentation_ranges) >= 0;
+  return findUnicodeRangeCategory(cp, EMOJI_PRESENTATION_S, EMOJI_PRESENTATION_E) !== 0;
 }
 
 /**
@@ -35,5 +38,5 @@ export function isEmojiPresentation(cp) {
  * @return boolean
  */
 export function isExtendedPictographic(cp) {
-  return findUnicodeRangeIndex(cp, extended_pictographic_ranges) >= 0;
+  return findUnicodeRangeCategory(cp, EXTENDED_PICTOGRAPHIC_S, EXTENDED_PICTOGRAPHIC_E) !== 0;
 }
