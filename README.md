@@ -261,9 +261,9 @@ Retained memory per library after segmenting the benchmark corpus, measured by `
 Here is a brief explanation, and you can see [archived benchmark results](benchmark/grapheme/_records).
 
 **Performance in Node.js/Bun/Deno**: `unicode-segmenter/grapheme` has best-in-class performance.
-- 8\~45x faster than other JavaScript libraries.
-- 3.5\~7x faster than WASM binding of the Rust's [unicode-segmentation].
-- 1.5\~2.5x faster than built-in [`Intl.Segmenter`].
+- 5\~48x faster than other JavaScript libraries.
+- 3.5\~8x faster than WASM binding of the Rust's [unicode-segmentation].
+- 1.3\~2.5x faster than built-in [`Intl.Segmenter`].
 
 **Performance in Browsers**: The performance in browser environments varies greatly due to differences in browser engines, which makes benchmarking inconsistent, but:
 - Still significantly faster than other JavaScript libraries.
