@@ -187,7 +187,7 @@ import {
 `unicode-segmenter` uses only fundamental features of ES2015, making it compatible with most browsers.
 
 To ensure compatibility, the runtime should support:
-- [`String.prototype.codePointAt()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/codePointAt)
+- [Typed arrays](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Typed_arrays)
 - [Generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator)
 - [Modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 
@@ -215,7 +215,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) | Size (min+zstd) |
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|----------------:|
-| `unicode-segmenter/grapheme` |   17.0.0 |   ✔️ |     9,085 |      5,385 |           2,551 |         2,313 |           2,602 |
+| `unicode-segmenter/grapheme` |   17.0.0 |   ✔️ |     9,267 |      5,372 |           2,572 |         2,322 |           2,620 |
 | `graphemer`                  |   15.0.0 |   ✖️ ️|   410,435 |     95,104 |          15,752 |        10,660 |          15,911 |
 | `grapheme-splittetr`         |   10.0.0 |   ✖️ |   122,254 |     23,682 |           7,852 |         4,802 |           6,753 |
 | `@formatjs/intl-segmenter`*  |   17.0.0 |   ✖️ |   268,301 |    176,759 |          45,988 |        31,701 |          45,370 |
@@ -231,7 +231,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Bytecode size | Bytecode size (gzip)* |
 |------------------------------|--------------:|----------------------:|
-| `unicode-segmenter/grapheme` |        19,315 |                10,704 |
+| `unicode-segmenter/grapheme` |        19,588 |                10,850 |
 | `graphemer`                  |       134,085 |                31,770 |
 | `grapheme-splitter`          |        63,942 |                19,165 |
 | `@formatjs/intl-segmenter`   |       329,547 |               136,751 |

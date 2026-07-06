@@ -43,10 +43,6 @@
  */
 
 /**
- * @typedef {import('./core.js').CategorizedUnicodeRange<GraphemeCategoryNum>} GraphemeCategoryRange
- */
-
-/**
  * @typedef {(
  *   | 'Any'
  *   | 'CR'

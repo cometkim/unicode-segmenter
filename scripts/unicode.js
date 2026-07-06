@@ -445,7 +445,6 @@ let printBreakModule = (f, breakTable, breakCats, name, extraCats = []) => {
   let typeName = `${capitalName}Category`;
   let keyTypeName = `${typeName}Key`;
   let numTypeName = `${typeName}Num`;
-  let rangeTypeName = `${typeName}Range`;
 
   f.write(preamble);
   f.write(`
@@ -471,13 +470,6 @@ let printBreakModule = (f, breakTable, breakCats, name, extraCats = []) => {
   }
   f.write(` * )} ${numTypeName}\n`);
   f.write(' */\n');
-
-  f.write(`
-/**
- * @typedef {import('./core.js').CategorizedUnicodeRange<${numTypeName}>} ${rangeTypeName}
- */
-`,
-  );
 
   f.write(`
 /**
