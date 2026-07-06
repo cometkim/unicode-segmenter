@@ -3,7 +3,6 @@
 /**
  * @import {
  *   UnicodeDataEncoding,
- *   UnicodeRange,
  *   CategorizedUnicodeRange,
  * } from '#src/core.js';
  */
