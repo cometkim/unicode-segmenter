@@ -19,6 +19,12 @@ import { GraphemeCategory, grapheme_data, grapheme_cats, grapheme_pairs } from '
 
 export { GraphemeCategory };
 
+// Repeated bounds are `let` bindings on purpose; minifiers inline
+// `const` numbers into every use site, but keep `let` shared.
+let BMP_MAX = 0xFFFF;
+let T1_MIN = 0xA000;
+let T2_MIN = 0x1F000;
+
 // Direct category lookup tables for the hot Unicode regions, and a flat
 // binary-search tail for everything rare.
 //
@@ -48,21 +54,21 @@ let TAIL_E;
   let fill = (
     /** @type {Uint8Array} */ t,
     /** @type {number} */ lo,
-    /** @type {number} */ hi,
     /** @type {number} */ from,
     /** @type {number} */ to,
     /** @type {number} */ cat,
   ) => {
+    let hi = lo + t.length - 1;
     for (let cp = from < lo ? lo : from, top = to > hi ? hi : to; cp <= top; cp++) {
       t[cp - lo] = cat;
     }
   };
   let starts = new Uint32Array(320), ends = new Uint32Array(320), n = 0;
   for (let [from, to, cat] of decodeUnicodeData(grapheme_data, grapheme_cats)) {
-    fill(T0, 0, 0x2FFF, from, to, cat);
-    fill(T1, 0xA000, 0xABFF, from, to, cat);
-    fill(T2, 0x1F000, 0x1FAFF, from, to, cat);
-    if (to >= 0xFE10 && !(from >= 0x1F000 && to <= 0x1FAFF)) {
+    fill(T0, 0, from, to, cat);
+    fill(T1, T1_MIN, from, to, cat);
+    fill(T2, T2_MIN, from, to, cat);
+    if (to >= 0xFE10 && !(from >= T2_MIN && to <= 0x1FAFF)) {
       starts[n] = from;
       ends[n++] = to << 5 | cat;
     }
@@ -82,7 +88,7 @@ let TAIL_E;
 function cat(cp) {
   if (cp < 0x3000) return T0[cp];
   // CJK: 0x3000-0x9FFF
-  if (cp < 0xA000) {
+  if (cp < T1_MIN) {
     if (cp < 0x3030) return cp >= 0x302A ? 3 : 0;
     if (cp < 0x309B) {
       if (cp === 0x3030 || cp === 0x303D) return 4;
@@ -90,7 +96,7 @@ function cat(cp) {
     }
     return (cp === 0x3297 || cp === 0x3299) ? 4 : 0;
   }
-  if (cp < 0xAC00) return T1[cp - 0xA000];
+  if (cp < 0xAC00) return T1[cp - T1_MIN];
   // Hangul syllables: 0xAC00-0xD7A3, LV at every 28th
   if (cp < 0xD7A4) return (cp - 0xAC00) % 28 ? 8 : 7;
   // Hangul Jamo Extended-B, unassigned and surrogates as Any
@@ -103,7 +109,7 @@ function cat(cp) {
   // Variation selectors
   if (cp < 0xFE10) return 3;
   // Emoji: 0x1F000-0x1FAFF
-  if (cp >= 0x1F000 && cp < 0x1FB00) return T2[cp - 0x1F000];
+  if (cp >= T2_MIN && cp < 0x1FB00) return T2[cp - T2_MIN];
   // Tags and variation selectors supplement: 0xE0000-0xE0FFF
   if (cp >= 0xE0000) {
     if (cp > 0xE0FFF) return 0;
@@ -211,14 +217,8 @@ export function* graphemeSegments(input) {
   let len = input.length;
   if (len === 0) return;
 
-  let cp = input.charCodeAt(0), cursor = 1;
-  if ((cp & 0xFC00) === 0xD800 && len > 1) {
-    let trail = input.charCodeAt(1);
-    if ((trail & 0xFC00) === 0xDC00) {
-      cp = (cp << 10) + trail - 0x35FDC00;
-      cursor = 2;
-    }
-  }
+  let cp = /** @type {number} */ (input.codePointAt(0));
+  let cursor = cp > BMP_MAX ? 2 : 1;
 
   /** Category of the last consumed code point */
   let catBefore = cat(cp);
@@ -236,15 +236,8 @@ export function* graphemeSegments(input) {
   let catBegin = catBefore;
 
   while (cursor < len) {
-    cp = input.charCodeAt(cursor);
-    let wide = 1;
-    if ((cp & 0xFC00) === 0xD800 && cursor + 1 < len) {
-      let trail = input.charCodeAt(cursor + 1);
-      if ((trail & 0xFC00) === 0xDC00) {
-        cp = (cp << 10) + trail - 0x35FDC00;
-        wide = 2;
-      }
-    }
+    cp = /** @type {number} */ (input.codePointAt(cursor));
+    let wide = cp > BMP_MAX ? 2 : 1;
     let catAfter = cat(cp);
     let d = PAIR[catBefore << 4 | catAfter];
     let boundary;
