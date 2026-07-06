@@ -331,46 +331,6 @@ class GraphemeSegmentIterator {
       done: false,
     };
   }
-
-  /**
-   * Count the remaining boundaries without materializing segments.
-   *
-   * @return {number}
-   */
-  _count() {
-    let input = this._str,
-      len = input.length,
-      cursor = this._cursor,
-      catBefore = this._catBefore,
-      st = this._st,
-      count = 1;
-
-    while (cursor < len) {
-      let cp = input.charCodeAt(cursor), wide = 1;
-      if ((cp & 0xFC00) === 0xD800 && cursor + 1 < len) {
-        let trail = input.charCodeAt(cursor + 1);
-        if ((trail & 0xFC00) === 0xDC00) {
-          cp = (cp << 10) + trail - 0x35FDC00;
-          wide = 2;
-        }
-      }
-      let catAfter = cat(cp);
-      let d = PAIR[catBefore << 4 | catAfter];
-      if (d === 0
-        || (d !== 1
-          && (d === 2 ? !(st & 1)
-            : d === 3 ? !(st & 4)
-            : (st & 24) !== 16))) count++;
-
-      st = (0xC418 >> catAfter) & 1 && (st !== 0 || catAfter !== 3)
-        ? nextState(st, catAfter, cp)
-        : 0;
-
-      cursor += wide;
-      catBefore = catAfter;
-    }
-    return count;
-  }
 }
 
 /**
@@ -389,12 +349,20 @@ export function graphemeSegments(input) {
 /**
  * Count number of extended grapheme clusters in given text.
  *
+ * NOTE:
+ *
+ * This function is a small wrapper around {@link graphemeSegments}.
+ *
+ * If you call it more than once at a time, consider memoization
+ * or use {@link graphemeSegments} or {@link splitGraphemes} once instead
+ *
  * @param {string} text
  * @return {number} count of grapheme clusters
  */
 export function countGraphemes(text) {
-  let iter = new GraphemeSegmentIterator(text);
-  return iter._done ? 0 : iter._count();
+  let count = 0;
+  for (let _ of new GraphemeSegmentIterator(text)) count += 1;
+  return count;
 }
 
 export {

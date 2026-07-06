@@ -9,6 +9,27 @@
  */
 
 /**
+ * Variable-length quantity in the base36 alphabet;
+ * 4 payload bits and a continuation bit per character, no separators.
+ *
+ * Every character stays within `[0-9a-v]`, so the decoder is a native
+ * `parseInt(char, 36)` and the data shares its character class with
+ * the other encoded strings for better compression.
+ *
+ * @param {number} n non-negative integer
+ * @return {string}
+ */
+function vlq(n) {
+  let out = '';
+  do {
+    let digit = n & 15;
+    n >>>= 4;
+    out += (digit | (n ? 16 : 0)).toString(36);
+  } while (n);
+  return out;
+}
+
+/**
  * Ranges are sorted and never overlap, so the start of each range is
  * delta-encoded from the end of the previous one; small gap values
  * compress much better than absolute code points.
@@ -17,16 +38,11 @@
  * @returns {UnicodeDataEncoding}
  */
 export function encodeUnicodeData(ranges) {
-  /** @type {number[]} */
-  let buf = [];
+  let out = '';
   let prev = -1;
   for (let [from, to] of ranges) {
-    let gap = from - prev - 1;
-    let pad = to - from;
-    buf.push(gap, pad);
+    out += vlq(from - prev - 1) + vlq(to - from);
     prev = to;
   }
-  return /** @type {UnicodeDataEncoding} */ (
-    buf.map(x => x ? x.toString(36) : '').join(',')
-  );
+  return /** @type {UnicodeDataEncoding} */ (out);
 }

@@ -17,5 +17,5 @@ import { decodeUnicodeData } from './core.js';
  */
 export const consonant_ranges = decodeUnicodeData(
   /** @type {UnicodeDataEncoding} */
-  ('1sl,10,u,7,o,7,l,j,1,6,1,,3,3,y,1,1,,g,1,4j,j,1,6,1,1,1,4,1r,,r,j,1,6,1,1,1,4,y,1,1,,h,,4j,j,1,f,u,2,56,11,jp,16,k,,g,5,4,3,3,,3,1,7,2,4,c,c,,1dd,1f,h8,1g,52,1,6,w,h,7,1i,t,d,1,b,2,s0b,2,3,z,19,4,2,8,a,4,2p,f,1,2,6,,3,1,2o,a,5x,q,ilh,,f,3,1,2,1,s,1cd,z,t,,2,,fs,9,1,,2,,1,11,11m,6,2,,2,7,1,1,1,n,5s,,a,13,t,,b,13,w0,c,1,x')
+  ('lh9k2u17o17l1j1161033i2110g11jaj1161114v30r1j1161114i2110h10jaj11fu12qbl2ls2q2k10g15433031724cc0hv6j3sm2k3mb16g2h17m3t1d1b2rst823j2t2428a4h6f126031g6aldq1liu50f3121s1ts6j2t1020oj2910201l2qk562027111n1gd0an2t10bn2go4c1h2')
 );
