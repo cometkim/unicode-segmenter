@@ -209,11 +209,9 @@ function nextState(st, c, cp) {
     // ZWJ; captures the picto bit, advances InCB run
     case 14:
       return (st & 2) << 1 | (st & 24);
-    // InCB=Consonant
-    case 15:
-      return 8;
+    // InCB=Consonant (15); callers never pass other categories
     default:
-      return 0;
+      return 8;
   }
 }
 
@@ -385,4 +383,17 @@ export {
  */
 export function* splitGraphemes(text) {
   for (let s of new GraphemeSegmentIterator(text)) yield s.segment;
+}
+
+// Keep one live segmenter and its result reachable so their hidden classes
+// stay strongly referenced. Otherwise a major GC while no segmenter is
+// alive clears the maps embedded weakly in JIT-optimized code, and the
+// next run pays deoptimization and re-learning costs.
+//
+// The instances are stashed on an always-retained module object, since
+// unreferenced module-scope bindings do not survive module evaluation.
+{
+  let keep = new GraphemeSegmentIterator('_');
+  // @ts-ignore intended expando
+  PAIR._keep = [keep, keep.next()];
 }
