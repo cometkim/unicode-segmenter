@@ -572,37 +572,7 @@ let buildGraphemePairTable = () => {
 };
 
 /**
- * @param {WriteStream} f 
- */
-let printIncbModule = async f => {
-  let ucd = await fetchData('DerivedCoreProperties.txt');
-  let props = parseProperties(ucd, ['InCB=Consonant']);
-  let table = props['Consonant'];
-
-  f.write(preamble);
-  f.write(`
-import { decodeUnicodeData } from './core.js';
-
-/**
- * @typedef {import('./core.js').UnicodeRange} UnicodeRange
- * @typedef {import('./core.js').UnicodeDataEncoding} UnicodeDataEncoding
- */
-
-/**
- * The Unicode \`Indic_Conjunct_Break=Consonant\` derived property table
- *
- * @type {UnicodeRange[]}
- */
-export const consonant_ranges = decodeUnicodeData(
-  /** @type {UnicodeDataEncoding} */
-  ('${encodeUnicodeData(table)}')
-);
-`,
-  );
-};
-
-/**
- * @param {WriteStream} f 
+ * @param {WriteStream} f
  */
 let printGeneralModule = async f => {
   let [
@@ -1051,11 +1021,6 @@ export const grapheme_pairs = '${buildGraphemePairTable()}';
 //     'sentence',
 //   ),
 // );
-
-await emitSrc(
-  '_incb_data.js',
-  printIncbModule,
-);
 
 await emitSrc(
   '_general_data.js',
