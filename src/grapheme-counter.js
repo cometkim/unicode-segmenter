@@ -1,6 +1,6 @@
 // @ts-check
 
-import { PAIR, cat, nextState } from './grapheme-core.js';
+import { BND, cat, nextState } from './grapheme-core.js';
 
 /**
  * Count number of extended grapheme clusters in given text.
@@ -35,20 +35,12 @@ export function countGraphemes(text) {
   while (cursor < len) {
     cp = /** @type {number} */ (text.codePointAt(cursor));
     let catAfter = cat(cp);
-    let d = PAIR[catBefore << 4 | catAfter];
-
-    let boundary;
-    if (d === 0) boundary = true;
-    else if (d === 1) boundary = false;
-    else if (d === 2) boundary = !(st & 1);
-    else if (d === 3) boundary = !(st & 4);
-    else boundary = (st & 24) !== 16;
-
-    st = nextState(st, catAfter, cp);
+    let boundary = BND[(catBefore << 4 | catAfter) << 5 | st];
 
     if (boundary) count += 1;
     cursor += cp > 0xFFFF ? 2 : 1;
     catBefore = catAfter;
+    st = nextState(st, catAfter, cp);
   }
 
   return count;

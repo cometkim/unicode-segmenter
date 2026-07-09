@@ -1,6 +1,6 @@
 // @ts-check
 
-import { PAIR, cat, nextState } from './grapheme-core.js';
+import { BND, cat, nextState } from './grapheme-core.js';
 import { GraphemeCategory } from './_grapheme_data.js';
 
 /**
@@ -53,16 +53,7 @@ export function* graphemeSegments(input) {
   while (cursor < len) {
     cp = /** @type {number} */ (input.codePointAt(cursor));
     let catAfter = cat(cp);
-    let d = PAIR[catBefore << 4 | catAfter];
-
-    let boundary;
-    if (d === 0) boundary = true;
-    else if (d === 1) boundary = false;
-    else if (d === 2) boundary = !(st & 1);
-    else if (d === 3) boundary = !(st & 4);
-    else boundary = (st & 24) !== 16;
-
-    st = nextState(st, catAfter, cp);
+    let boundary = BND[(catBefore << 4 | catAfter) << 5 | st];
 
     if (boundary) {
       yield {
@@ -79,6 +70,7 @@ export function* graphemeSegments(input) {
     }
     cursor += cp > 0xFFFF ? 2 : 1;
     catBefore = catAfter;
+    st = nextState(st, catAfter, cp);
   }
 
   yield {
@@ -145,5 +137,5 @@ export function* splitGraphemes(text) {
 {
   let keep = graphemeSegments('_');
   // @ts-ignore intended expando
-  PAIR._keep = [keep, keep.next()];
+  BND._keep = [keep, keep.next()];
 }
