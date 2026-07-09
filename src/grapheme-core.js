@@ -165,8 +165,43 @@ function isLinker(cp) {
 // (resetting state to 0) unless the category can arm or keep state;
 // see the `0xC418` masks (categories 3, 4, 10, 14, and 15) on call sites.
 
+// Next-state table for the four cp-independent transitions
+// (Extended_Pictographic, Regional_Indicator, ZWJ, InCB=Consonant).
+// Index: `NEXT[(cat << 5) | st]`; only rows for cats 4, 10, 14, 15 are populated.
+// Extend (cat 3) is cp-dependent (ZWNJ vs `isLinker`)
+// and is handled by `nextExtend` directly.
+const NEXT = new Uint8Array(16 << 5);
+for (let st = 0; st < 32; st++) {
+  NEXT[(4 << 5)  | st] = 2;                          // Extended_Pictographic
+  NEXT[(10 << 5) | st] = (st & 1) ^ 1;               // Regional_Indicator
+  NEXT[(14 << 5) | st] = (st & 2) << 1 | (st & 24);  // ZWJ
+  NEXT[(15 << 5) | st] = 8;                          // InCB=Consonant
+}
+
+/**
+ * State transition on consuming an Extend code point (category 3).
+ * The cp-dependent ZWNJ / `isLinker` branches; the cp-independent
+ * transitions live in {@link NEXT}.
+ *
+ * @param {number} st packed state
+ * @param {number} cp the consumed Extend code point
+ * @return {number} next packed state
+ */
+function nextExtend(st, cp) {
+  if (st & 24) {
+    if (cp === 0x200C) return st & 6;  // ZWNJ has InCB=None
+    if ((st & 24) === 16 || isLinker(cp)) return (st & 6) | 16;
+    return (st & 6) | 8;
+  }
+  return st & 6;
+}
+
 /**
  * State transition on consuming a code point.
+ *
+ * Extend (cat 3) is cp-dependent and goes through {@link nextExtend};
+ * other stateful categories use the {@link NEXT} table;
+ * everything else resets to 0.
  *
  * @param {number} st packed state
  * @param {number} c category of the consumed code point
@@ -174,26 +209,7 @@ function isLinker(cp) {
  * @return {number} next packed state
  */
 export function nextState(st, c, cp) {
-  switch (c) {
-    // Extend; keeps picto bits, advances InCB run
-    case 3:
-      if (st & 24) {
-        if (cp === 0x200C) return st & 6;  // ZWNJ has InCB=None
-        if ((st & 24) === 16 || isLinker(cp)) return (st & 6) | 16;
-        return (st & 6) | 8;
-      }
-      return st & 6;
-    // Extended_Pictographic
-    case 4:
-      return 2;
-    // Regional_Indicator; toggles parity
-    case 10:
-      return (st & 1) ^ 1;
-    // ZWJ; captures the picto bit, advances InCB run
-    case 14:
-      return (st & 2) << 1 | (st & 24);
-    // InCB=Consonant (15); callers never pass other categories
-    default:
-      return 8;
-  }
+  if (c === 3) return st ? nextExtend(st, cp) : 0;
+  if ((0xC418 >> c) & 1) return NEXT[(c << 5) | st];
+  return 0;
 }

@@ -39,7 +39,7 @@ export function* graphemeSegments(input) {
   let catBefore = cat(cp);
 
   /** Packed sequence state */
-  let st = (0xC418 >> catBefore) & 1 ? nextState(0, catBefore, cp) : 0;
+  let st = nextState(0, catBefore, cp);
 
   /** Start index of the current segment */
   let index = 0;
@@ -54,6 +54,7 @@ export function* graphemeSegments(input) {
     cp = /** @type {number} */ (input.codePointAt(cursor));
     let catAfter = cat(cp);
     let d = PAIR[catBefore << 4 | catAfter];
+
     let boundary;
     if (d === 0) boundary = true;
     else if (d === 1) boundary = false;
@@ -61,9 +62,7 @@ export function* graphemeSegments(input) {
     else if (d === 3) boundary = !(st & 4);
     else boundary = (st & 24) !== 16;
 
-    st = (0xC418 >> catAfter) & 1 && (st !== 0 || catAfter !== 3)
-      ? nextState(st, catAfter, cp)
-      : 0;
+    st = nextState(st, catAfter, cp);
 
     if (boundary) {
       yield {
