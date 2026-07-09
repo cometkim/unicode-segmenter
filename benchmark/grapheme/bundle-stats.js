@@ -4,12 +4,14 @@ import * as path from 'node:path';
 import { build } from 'esbuild';
 import { getBinary as getBinary_unicode_segmentation } from 'unicode-segmentation-wasm/wasm';
 
-import { reportBundleStats, reportWasmBindingStats } from '../_helper.js';
+import { printStats, reportBundleStats, reportWasmBindingStats, updateReadmeStats } from '../_helper.js';
 
 let baseDir = import.meta.dirname;
 
 let libs = [
   ['unicode-segmenter/grapheme', 'bundle-entries/unicode-segmenter.js'],
+  ['unicode-segmenter/grapheme-counter', 'bundle-entries/unicode-segmenter-counter.js'],
+  ['unicode-segmenter/grapheme + grapheme-counter', 'bundle-entries/unicode-segmenter-both.js'],
   ['graphemer', 'bundle-entries/graphemer.js'],
   ['grapheme-splitter', 'bundle-entries/grapheme-splitter.js'],
   ['@formatjs/intl-segmenter', 'bundle-entries/formatjs-intl-segmenter.js'],
@@ -63,4 +65,5 @@ let reports = await Promise.all(
   reports.push(bindingReport);
 }
 
-console.table(reports);
+printStats(reports);
+await updateReadmeStats(reports, 'JS Bundle Stats');

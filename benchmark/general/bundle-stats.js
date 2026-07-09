@@ -3,7 +3,7 @@
 import * as path from 'node:path';
 import { build } from 'esbuild';
 
-import { reportBundleStats } from '../_helper.js';
+import { printStats, reportBundleStats } from '../_helper.js';
 
 let baseDir = import.meta.dirname;
 
@@ -35,4 +35,4 @@ let reports = await Promise.all(
   }),
 );
 
-console.table(reports);
+printStats(reports);

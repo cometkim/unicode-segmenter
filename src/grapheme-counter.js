@@ -1,6 +1,6 @@
 // @ts-check
 
-import { cat, PAIR, nextState } from './grapheme-core.js';
+import { PAIR, cat, nextState } from './grapheme-core.js';
 
 /**
  * Count number of extended grapheme clusters in given text.
@@ -11,7 +11,7 @@ import { cat, PAIR, nextState } from './grapheme-core.js';
  * so counting is significantly faster.
  *
  * It is a standalone entry so that counting doesn't have to carry the
- * segmenter code, and vice versa — even without tree-shaking.
+ * segmenter code, and vice versa - even without tree-shaking.
  *
  * @param {string} text
  * @return {number} count of grapheme clusters

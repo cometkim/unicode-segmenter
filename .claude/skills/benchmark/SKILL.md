@@ -21,6 +21,8 @@ This library's priorities, in order: bundle size, runtime perf, memory footprint
 
 Benchmarks import `src/*.js` directly — no build step needed, current checkout state is what gets measured.
 
+Bundle-stats env options: `PRINT_FORMAT=markdown` prints a README-ready markdown table instead of `console.table`; `UPDATE_README=true` rewrites the matching README comparison table in place (rows/columns matched by name ignoring `*` footnote marks, which are preserved; hand-maintained cells like Unicode®/ESM? and the `Intl.Segmenter` row are untouched).
+
 ## Interpreting results
 
 - **Compare ratios within a run, not absolute ns across runs.** Apple Silicon clock scaling (3.7–4.5 GHz observed on M4 Pro) swings absolute numbers ±20% between runs. Each perf run includes the competitors, so the `summary` "x faster than" lines are the stable signal.
