@@ -36,6 +36,7 @@ Unicode® Standard Annex \#29 - [Revision 47](https://www.unicode.org/reports/tr
 Entries for Unicode text segmentation.
 
 - [`unicode-segmenter/grapheme`](#export-unicode-segmentergrapheme): Segments and counts **extended grapheme clusters**
+- [`unicode-segmenter/grapheme-counter`](#export-unicode-segmentergrapheme-counter): Standalone fast counter for **extended grapheme clusters**
 - [`unicode-segmenter/intl-adapter`](#export-unicode-segmenterintl-adapter): [`Intl.Segmenter`] adapter
 - [`unicode-segmenter/intl-polyfill`](#export-unicode-segmenterintl-polyfill): [`Intl.Segmenter`] polyfill
 
@@ -93,6 +94,8 @@ countGraphemes('a̐éö̲');
 > `countGraphemes()` is a small wrapper around `graphemeSegments()`.
 > 
 > If you need it more than once at a time, consider memoization or use `graphemeSegments()` or `splitGraphemes()` once instead.
+>
+> If counting is on your hot path, use the standalone [`unicode-segmenter/grapheme-counter`](#export-unicode-segmentergrapheme-counter) entry instead.
 
 #### Example: Build an advanced grapheme matcher
 
@@ -121,6 +124,31 @@ function* matchEmoji(str) {
 ```
 
 Or build even more advanced one like an Unicode-aware [TTY string width](https://github.com/cometkim/unicode-string-width) utility.
+
+### Export `unicode-segmenter/grapheme-counter`
+
+A standalone counter for extended grapheme clusters.
+
+The result is identical to `countGraphemes()` of `unicode-segmenter/grapheme`, but it runs the boundary rules directly without allocating segment objects or slicing strings, so counting is 4+ times faster and zero heap usage.
+
+It is a separate entry so that counting doesn't have to carry the segmenter code, and vice versa.
+
+#### Example: Count graphemes fast
+
+```js
+import { countGraphemes } from 'unicode-segmenter/grapheme-counter';
+
+countGraphemes('👋 안녕!');
+// => 5
+```
+
+> [!NOTE]
+> The counter module contains duplicate code from `graphemeSegments()`.
+> 
+> If you want a smaller bundle size and performance multipliers are not very important, use the `unicode-segmenter/grapheme` module instead.
+>
+> Full Segmenter is already optimized enough.
+
 
 ### Export `unicode-segmenter/intl-adapter`
 
@@ -216,7 +244,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Unicode® | ESM? |   Size    | Size (min) | Size (min+gzip) | Size (min+br) | Size (min+zstd) |
 |------------------------------|----------|------|----------:|-----------:|----------------:|--------------:|----------------:|
-| `unicode-segmenter/grapheme` |   17.0.0 |   ✔️ |     9,032 |      5,175 |           2,507 |         2,254 |           2,551 |
+| `unicode-segmenter/grapheme` |   17.0.0 |   ✔️ |     9,059 |      5,175 |           2,507 |         2,267 |           2,551 |
 | `graphemer`                  |   15.0.0 |   ✖️ ️|   410,435 |     95,104 |          15,752 |        10,660 |          15,911 |
 | `grapheme-splittetr`         |   10.0.0 |   ✖️ |   122,254 |     23,682 |           7,852 |         4,802 |           6,753 |
 | `@formatjs/intl-segmenter`*  |   17.0.0 |   ✖️ |   268,301 |    176,759 |          45,988 |        31,701 |          45,370 |
@@ -232,7 +260,7 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                         | Bytecode size | Bytecode size (gzip)* |
 |------------------------------|--------------:|----------------------:|
-| `unicode-segmenter/grapheme` |        19,354 |                10,713 |
+| `unicode-segmenter/grapheme` |        19,746 |                10,879 |
 | `graphemer`                  |       134,085 |                31,770 |
 | `grapheme-splitter`          |        63,942 |                19,165 |
 | `@formatjs/intl-segmenter`   |       329,547 |               136,751 |

@@ -30,6 +30,7 @@
     "./emoji": "./src/emoji.js",
     "./general": "./src/general.js",
     "./grapheme": "./src/grapheme.js",
+    "./grapheme-counter": "./src/grapheme-counter.js",
     "./utils": "./src/utils.js",
     "./intl-adapter": {
       "types": "./src/intl-adapter.js",
@@ -65,6 +66,10 @@
       "./grapheme": {
         "import": "./grapheme.js",
         "require": "./grapheme.cjs"
+      },
+      "./grapheme-counter": {
+        "import": "./grapheme-counter.js",
+        "require": "./grapheme-counter.cjs"
       },
       "./utils": {
         "import": "./utils.js",
@@ -103,7 +108,8 @@
     "perf:grapheme": "node --expose-gc benchmark/grapheme/perf.js",
     "perf:grapheme:browser": "vite -c benchmark/grapheme/vite.config.js",
     "perf:grapheme:hermes": "node benchmark/grapheme/perf-hermes.js",
-    "perf:grapheme:quickjs": "node benchmark/grapheme/perf-quickjs.js"
+    "perf:grapheme:quickjs": "node benchmark/grapheme/perf-quickjs.js",
+    "perf:grapheme-counter": "node --expose-gc benchmark/grapheme/perf-counter.js"
   },
   "alias": {
     "process": false
