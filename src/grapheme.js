@@ -33,54 +33,50 @@ export function* graphemeSegments(input) {
   if (len === 0) return;
 
   let cp = /** @type {number} */ (input.codePointAt(0));
-  let cursor = cp > 0xFFFF ? 2 : 1;
+  let cursor = 0;
 
   /** Category of the last consumed code point */
   let catBefore = cat(cp);
+  let catAfter = catBefore;
 
   /** Packed sequence state */
-  let st = nextState(0, catBefore, cp);
+  let st = 0;
 
   /** Start index of the current segment */
   let index = 0;
 
   /** Head code point of the current segment */
-  let hd = cp;
+  let _hd = cp;
 
   /** Category of the head */
   let catBegin = catBefore;
 
-  while (cursor < len) {
-    cp = /** @type {number} */ (input.codePointAt(cursor));
-    let catAfter = cat(cp);
-    let boundary = BND[(catBefore << 4 | catAfter) << 5 | st];
+  for (;;) {
+    cursor += cp > 0xFFFF ? 2 : 1;
+    st = nextState(st, catAfter, cp);
+    let boundary = 1;
+    if (cursor < len) {
+      cp = /** @type {number} */ (input.codePointAt(cursor));
+      catAfter = cat(cp);
+      boundary = BND[(catBefore << 4 | catAfter) << 5 | st];
+    }
 
     if (boundary) {
       yield {
         segment: input.slice(index, cursor),
         index,
         input,
-        _hd: hd,
+        _hd,
         _catBegin: /** @type {GraphemeCategoryNum} */ (catBegin === 15 ? 0 : catBegin),
         _catEnd: /** @type {GraphemeCategoryNum} */ (catBefore === 15 ? 0 : catBefore),
       };
-      index = cursor;
-      hd = cp;
+      if (cursor >= len) break; 
       catBegin = catAfter;
+      index = cursor;
+      _hd = cp;
     }
-    cursor += cp > 0xFFFF ? 2 : 1;
     catBefore = catAfter;
-    st = nextState(st, catAfter, cp);
   }
-
-  yield {
-    segment: input.slice(index),
-    index,
-    input,
-    _hd: hd,
-    _catBegin: /** @type {GraphemeCategoryNum} */ (catBegin === 15 ? 0 : catBegin),
-    _catEnd: /** @type {GraphemeCategoryNum} */ (catBefore === 15 ? 0 : catBefore),
-  };
 }
 
 /**

@@ -21,26 +21,34 @@ export function countGraphemes(text) {
   if (len === 0) return 0;
 
   let cp = /** @type {number} */ (text.codePointAt(0));
-  let cursor = cp > 0xFFFF ? 2 : 1;
+  let cursor = 0;
 
   /** Category of the last consumed code point */
   let catBefore = cat(cp);
+  let catAfter = catBefore;
 
   /** Packed sequence state; see `grapheme-core.js` */
-  let st = nextState(0, catBefore, cp);
+  let st = 0;
 
   /** The segment being scanned counts, whether or not a boundary follows */
-  let count = 1;
+  let count = 0;
 
-  while (cursor < len) {
-    cp = /** @type {number} */ (text.codePointAt(cursor));
-    let catAfter = cat(cp);
-    let boundary = BND[(catBefore << 4 | catAfter) << 5 | st];
-
-    if (boundary) count += 1;
+  for (;;) {
     cursor += cp > 0xFFFF ? 2 : 1;
-    catBefore = catAfter;
     st = nextState(st, catAfter, cp);
+    let boundary = 1;
+    if (cursor < len) {
+      cp = /** @type {number} */ (text.codePointAt(cursor));
+      catAfter = cat(cp);
+      boundary = BND[(catBefore << 4 | catAfter) << 5 | st];
+    }
+
+    if (boundary) {
+      count += boundary;
+      if (cursor >= len) break;
+    }
+
+    catBefore = catAfter;
   }
 
   return count;

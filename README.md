@@ -244,9 +244,9 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                                            | Unicode® | ESM?  |    Size | Size (min) | Size (min+gzip) | Size (min+br) | Size (min+zstd) |
 |-------------------------------------------------|----------|-------|--------:|-----------:|----------------:|--------------:|----------------:|
-| `unicode-segmenter/grapheme`                    | 17.0.0   | ✔️    |   8,812 |      5,243 |           2,527 |         2,276 |           2,588 |
-| `unicode-segmenter/grapheme-counter`            | 17.0.0   | ✔️    |   7,716 |      4,924 |           2,385 |         2,160 |           2,436 |
-| `unicode-segmenter/grapheme + grapheme-counter` | 17.0.0   | ✔️    |   9,487 |      5,454 |           2,563 |         2,298 |           2,626 |
+| `unicode-segmenter/grapheme`                    | 17.0.0   | ✔️    |   8,565 |      5,170 |           2,541 |         2,302 |           2,604 |
+| `unicode-segmenter/grapheme-counter`            | 17.0.0   | ✔️    |   7,810 |      4,937 |           2,404 |         2,159 |           2,458 |
+| `unicode-segmenter/grapheme + grapheme-counter` | 17.0.0   | ✔️    |   9,334 |      5,394 |           2,578 |         2,319 |           2,643 |
 | `graphemer`                                     | 15.0.0   | ✖️  ️ | 410,435 |     95,104 |          15,752 |        10,660 |          15,911 |
 | `grapheme-splitter`                             | 10.0.0   | ✖️    | 122,254 |     23,682 |           7,852 |         4,802 |           6,753 |
 | `@formatjs/intl-segmenter`*                     | 17.0.0   | ✖️    | 268,301 |    176,759 |          45,988 |        31,701 |          45,370 |
@@ -262,9 +262,9 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                                            | Bytecode size | Bytecode size (gzip)* |
 |-------------------------------------------------|--------------:|----------------------:|
-| `unicode-segmenter/grapheme`                    |        20,002 |                11,086 |
-| `unicode-segmenter/grapheme-counter`            |        18,491 |                10,278 |
-| `unicode-segmenter/grapheme + grapheme-counter` |        20,811 |                11,472 |
+| `unicode-segmenter/grapheme`                    |        19,798 |                11,032 |
+| `unicode-segmenter/grapheme-counter`            |        18,489 |                10,304 |
+| `unicode-segmenter/grapheme + grapheme-counter` |        20,605 |                11,432 |
 | `graphemer`                                     |       134,085 |                31,770 |
 | `grapheme-splitter`                             |        63,942 |                19,165 |
 | `@formatjs/intl-segmenter`                      |       329,547 |               136,751 |
