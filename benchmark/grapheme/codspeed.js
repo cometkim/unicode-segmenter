@@ -2,6 +2,7 @@ import { withCodSpeed } from '@codspeed/tinybench-plugin';
 import { Bench } from 'tinybench';
 
 import { graphemeSegments } from '../../src/grapheme.js';
+import { countGraphemes } from '../../src/grapheme-counter.js';
 import { testcases } from './_testcases.js';
 
 const bench = withCodSpeed(new Bench());
@@ -17,6 +18,18 @@ for (const [name, input] of testcases) {
       // result reflects interpreter performance only.
       for (let i = 0; i < 2000; i++) {
         void [...graphemeSegments(input)];
+      }
+    },
+  });
+}
+
+for (const [name, input] of testcases) {
+  bench.add(`grapheme-counter - ${name}`, () => {
+    void countGraphemes(input);
+  }, {
+    beforeAll() {
+      for (let i = 0; i < 2000; i++) {
+        void countGraphemes(input);
       }
     },
   });
