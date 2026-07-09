@@ -1,6 +1,6 @@
 // @ts-check
 
-import { PAIR, cat, nextState } from './grapheme-core.js';
+import { BND, cat, nextState } from './grapheme-core.js';
 
 /**
  * Count number of extended grapheme clusters in given text.
@@ -34,20 +34,26 @@ export function countGraphemes(text) {
 
   while (cursor < len) {
     cp = /** @type {number} */ (text.codePointAt(cursor));
+    if (cp < 0x7F && cp >= 0x20) {
+      // Printable ASCII fast path. Every one is `Any`: a boundary always
+      // precedes it (a pair ending in `Any` is never state-dependent)
+      // except after Prepend (GB9b), and it resets the sequence state.
+      // The rest of the run needs no category or boundary lookups at all.
+      if (catBefore !== 9) count += 1;
+      cursor += 1;
+      while (cursor < len && (cp = text.charCodeAt(cursor)) < 0x7F && cp >= 0x20) {
+        count += 1;
+        cursor += 1;
+      }
+      catBefore = 0;
+      st = 0;
+      continue;
+    }
     let catAfter = cat(cp);
-    let d = PAIR[catBefore << 4 | catAfter];
-    let boundary;
-    if (d === 0) boundary = true;
-    else if (d === 1) boundary = false;
-    else if (d === 2) boundary = !(st & 1);
-    else if (d === 3) boundary = !(st & 4);
-    else boundary = (st & 24) !== 16;
-
+    count += BND[(catBefore << 4 | catAfter) << 5 | st];
     st = (0xC418 >> catAfter) & 1 && (st !== 0 || catAfter !== 3)
       ? nextState(st, catAfter, cp)
       : 0;
-
-    if (boundary) count += 1;
     cursor += cp > 0xFFFF ? 2 : 1;
     catBefore = catAfter;
   }

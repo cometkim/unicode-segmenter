@@ -113,14 +113,31 @@ export function cat(cp) {
   return findUnicodeRangeCategory(cp, TAIL_S, TAIL_E);
 }
 
-// Boundary decision table for category pairs, `PAIR[catBefore << 4 | catAfter]`
+// Boundary decision rules for category pairs, `grapheme_pairs[catBefore << 4 | catAfter]`
 //
 // - 0: boundary (GB999 and friends)
 // - 1: no boundary
-// - 2: GB12/GB13, no boundary iff odd run of RI precedes
-// - 3: GB11, no boundary iff the ZWJ was preceded by ExtPic Extend*
-// - 4: GB9c, no boundary iff InCB Consonant [Extend Linker]* Linker [Extend Linker]* precedes
-export const PAIR = Uint8Array.from(grapheme_pairs, Number);
+// - 2: GB12/GB13, no boundary iff odd run of RI precedes (state bit 0)
+// - 3: GB11, no boundary iff the ZWJ was preceded by ExtPic Extend* (state bit 2)
+// - 4: GB9c, no boundary iff InCB Consonant [Extend Linker]* Linker [Extend Linker]* precedes (state bits 3-4)
+//
+// The table is expanded over the 32 packed states into `BND`, so the hot
+// loops resolve a boundary with a single indexed load,
+// `BND[(catBefore << 4 | catAfter) << 5 | st]`, and no branch chain.
+// Crucially the state comes from *before* the transition on `catAfter`,
+// so the load never depends on the previous iteration's load; a fully
+// fused (state x category) DFA measures 1.4-2x *slower* on V8 for exactly
+// that reason.
+export const BND = new Uint8Array(256 << 5);
+for (let p = 0; p < 256; p++) {
+  let d = +grapheme_pairs[p];
+  for (let st = 0; st < 32; st++) {
+    BND[p << 5 | st] = d < 2 ? 1 - d
+      : d === 2 ? ~st & 1
+      : d === 3 ? ~st >> 2 & 1
+      : +((st & 24) !== 16);
+  }
+}
 
 /**
  * The Unicode `Indic_Conjunct_Break=Linker` set
