@@ -163,22 +163,10 @@ function isLinker(cp) {
     || cp === 0x11F42;  // Kawi Conjoiner
 }
 
-// Next-state table for the four cp-independent transitions
-// (Extended_Pictographic, Regional_Indicator, ZWJ, InCB=Consonant).
-// Index: `NEXT[(cat << 5) | st]`; only rows for cats 4, 10, 14, 15 are populated.
-// Extend (cat 3) is cp-dependent (ZWNJ vs `isLinker`) and is handled by `nextExtend` directly.
-const NEXT = new Uint8Array(16 << 5);
-for (let st = 0; st < 32; st++) {
-  NEXT[(4 << 5)  | st] = 2;                          // Extended_Pictographic
-  NEXT[(10 << 5) | st] = (st & 1) ^ 1;               // Regional_Indicator
-  NEXT[(14 << 5) | st] = (st & 2) << 1 | (st & 24);  // ZWJ
-  NEXT[(15 << 5) | st] = 8;                          // InCB=Consonant
-}
-
 /**
  * State transition on consuming an Extend code point (category 3).
- * The cp-dependent ZWNJ / `isLinker` branches; the cp-independent
- * transitions live in {@link NEXT}.
+ * The cp-dependent ZWNJ / `isLinker` branches are extracted here so
+ * that {@link nextState} stays a compact switch.
  *
  * @param {number} st packed state
  * @param {number} cp the consumed Extend code point
@@ -202,15 +190,14 @@ function nextExtend(st, cp) {
 //             10 = it also contains a Linker (GB9c)
 //
 // It is a pure function of the consumed code point sequence, so it carries
-// across segment boundaries without any reset. Callers skip the transition
-// (resetting state to 0) unless the category can arm or keep state;
-// see the `0xC418` masks (categories 3, 4, 10, 14, and 15) on call sites.
+// across segment boundaries without any reset. Non-stateful categories
+// reset the state to 0 inside {@link nextState}.
 
 /**
  * State transition on consuming a code point.
  *
- * Extend (cat 3) is cp-dependent and goes through {@link nextExtend};
- * other stateful categories use the {@link NEXT} table;
+ * Extend (cat 3) is cp-dependent and delegates to {@link nextExtend};
+ * the remaining stateful categories (4, 10, 14, 15) are inline;
  * everything else resets to 0.
  *
  * @param {number} st packed state
@@ -219,9 +206,14 @@ function nextExtend(st, cp) {
  * @return {number} next packed state
  */
 export function nextState(st, c, cp) {
-  if (c === 3) return st ? nextExtend(st, cp) : 0;
-  if ((0xC418 >> c) & 1) return NEXT[(c << 5) | st];
-  return 0;
+  switch (c) {
+    case 3:  return st ? nextExtend(st, cp) : 0;
+    case 4:  return 2;                          // Extended_Pictographic
+    case 10: return (st & 1) ^ 1;               // Regional_Indicator
+    case 14: return (st & 2) << 1 | (st & 24);  // ZWJ
+    case 15: return 8;                          // InCB=Consonant
+    default: return 0;
+  }
 }
 
 /**
