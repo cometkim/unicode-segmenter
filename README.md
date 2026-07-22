@@ -94,8 +94,6 @@ countGraphemes('a̐éö̲');
 > `countGraphemes()` is a small wrapper around `graphemeSegments()`.
 > 
 > If you need it more than once at a time, consider memoization or use `graphemeSegments()` or `splitGraphemes()` once instead.
->
-> If counting is on your hot path, use the standalone [`unicode-segmenter/grapheme-counter`](#export-unicode-segmentergrapheme-counter) entry instead.
 
 #### Example: Build an advanced grapheme matcher
 
@@ -124,31 +122,6 @@ function* matchEmoji(str) {
 ```
 
 Or build even more advanced one like an Unicode-aware [TTY string width](https://github.com/cometkim/unicode-string-width) utility.
-
-### Export `unicode-segmenter/grapheme-counter`
-
-A standalone counter for extended grapheme clusters.
-
-The result is identical to `countGraphemes()` of `unicode-segmenter/grapheme`, but it runs the boundary rules directly without allocating segment objects or slicing strings, so counting is 4+ times faster and zero heap usage.
-
-It is a separate entry so that counting doesn't have to carry the segmenter code, and vice versa.
-
-#### Example: Count graphemes fast
-
-```js
-import { countGraphemes } from 'unicode-segmenter/grapheme-counter';
-
-countGraphemes('👋 안녕!');
-// => 5
-```
-
-> [!NOTE]
-> The counter module contains duplicate code from `graphemeSegments()`.
-> 
-> If you want a smaller bundle size and performance multipliers are not very important, use the `unicode-segmenter/grapheme` module instead.
->
-> Full Segmenter is already optimized enough.
-
 
 ### Export `unicode-segmenter/intl-adapter`
 
