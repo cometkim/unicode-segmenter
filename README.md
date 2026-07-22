@@ -36,7 +36,6 @@ Unicode® Standard Annex \#29 - [Revision 47](https://www.unicode.org/reports/tr
 Entries for Unicode text segmentation.
 
 - [`unicode-segmenter/grapheme`](#export-unicode-segmentergrapheme): Segments and counts **extended grapheme clusters**
-- [`unicode-segmenter/grapheme-counter`](#export-unicode-segmentergrapheme-counter): Standalone fast counter for **extended grapheme clusters**
 - [`unicode-segmenter/intl-adapter`](#export-unicode-segmenterintl-adapter): [`Intl.Segmenter`] adapter
 - [`unicode-segmenter/intl-polyfill`](#export-unicode-segmenterintl-polyfill): [`Intl.Segmenter`] polyfill
 
