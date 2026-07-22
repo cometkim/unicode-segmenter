@@ -356,45 +356,7 @@ export {
  * [...splitGraphemes('abc')] // => ['a', 'b', 'c']
  */
 export function* splitGraphemes(input) {
-  let len = input.length;
-  if (len === 0) return;
-
-  let cp = /** @type {number} */ (input.codePointAt(0));
-  let cursor = cp > BMP_MAX ? 2 : 1;
-
-  /** Category of the last consumed code point */
-  let catBefore = cat(cp);
-
-  /** Packed sequence state */
-  let st = (0xC418 >> catBefore) & 1 ? nextState(0, catBefore, cp) : 0;
-
-  /** Start index of the current segment */
-  let index = 0;
-
-  while (cursor < len) {
-    cp = /** @type {number} */ (input.codePointAt(cursor));
-    let catAfter = cat(cp);
-    let d = PAIR[catBefore << 4 | catAfter];
-    let boundary;
-    if (d === 0) boundary = true;
-    else if (d === 1) boundary = false;
-    else if (d === 2) boundary = !(st & 1);
-    else if (d === 3) boundary = !(st & 4);
-    else boundary = (st & 24) !== 16;
-
-    st = (0xC418 >> catAfter) & 1 && (st !== 0 || catAfter !== 3)
-      ? nextState(st, catAfter, cp)
-      : 0;
-
-    if (boundary) {
-      yield input.slice(index, cursor);
-      index = cursor;
-    }
-    cursor += cp > BMP_MAX ? 2 : 1;
-    catBefore = catAfter;
-  }
-
-  yield input.slice(index);
+  for (let s of graphemeSegments(input)) yield s.segment;
 }
 
 // Keep one live segmenter and its result reachable so their hidden classes
