@@ -1,14 +1,17 @@
 import { withCodSpeed } from '@codspeed/tinybench-plugin';
 import { Bench } from 'tinybench';
 
-import { graphemeSegments } from '../../src/grapheme.js';
-import { countGraphemes } from '../../src/grapheme-counter.js';
+import {
+  graphemeSegments,
+  countGraphemes,
+  splitGraphemes,
+} from 'unicode-segmenter/grapheme';
 import { testcases } from './_testcases.js';
 
 const bench = withCodSpeed(new Bench());
 
 for (const [name, input] of testcases) {
-  bench.add(`grapheme - ${name}`, () => {
+  bench.add(`graphemeSegments - ${name}`, () => {
     void [...graphemeSegments(input)];
   }, {
     beforeAll() {
@@ -24,12 +27,24 @@ for (const [name, input] of testcases) {
 }
 
 for (const [name, input] of testcases) {
-  bench.add(`grapheme-counter - ${name}`, () => {
+  bench.add(`countGraphemes - ${name}`, () => {
     void countGraphemes(input);
   }, {
     beforeAll() {
       for (let i = 0; i < 2000; i++) {
         void countGraphemes(input);
+      }
+    },
+  });
+}
+
+for (const [name, input] of testcases) {
+  bench.add(`splitGraphemes - ${name}`, () => {
+    void splitGraphemes(input);
+  }, {
+    beforeAll() {
+      for (let i = 0; i < 2000; i++) {
+        void splitGraphemes(input);
       }
     },
   });
