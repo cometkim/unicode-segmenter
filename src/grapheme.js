@@ -350,7 +350,7 @@ export function countGraphemes(input) {
     st = nextState(st, catAfter, cp);
 
     if (boundary) count += 1;
-    cursor += cp > 0xFFFF ? 2 : 1;
+    cursor += cp > BMP_MAX ? 2 : 1;
     catBefore = catAfter;
   }
 
