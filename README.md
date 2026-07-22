@@ -81,6 +81,19 @@ import { splitGraphemes } from 'unicode-segmenter/grapheme';
 // 4: 2️⃣
 ```
 
+#### Example: Collect graphemes into an array
+
+If you need the result as an array, use `collectGraphemes()` for convenience.
+
+This is a fast version of `[...splitGraphemes(str)]`. But it may consume more memory for large text as it buffers all.
+
+```js
+import { collectGraphemes } from 'unicode-segmenter/grapheme';
+
+collectGraphemes('#️⃣*️⃣0️⃣1️⃣2️⃣'); // => ["#️⃣", "*️⃣", "0️⃣", "1️⃣", "2️⃣"]
+```
+
+
 #### Example: Count graphemes
 
 If you need only the count, use `countGraphemes()`, which is optimized to avoid allocations for segments.

@@ -105,7 +105,7 @@
     "perf:grapheme:hermes": "node benchmark/grapheme/perf-hermes.js",
     "perf:grapheme:quickjs": "node benchmark/grapheme/perf-quickjs.js",
     "perf:grapheme-count": "node --expose-gc benchmark/grapheme/perf-count.js",
-    "perf:grapheme-split": "node --expose-gc benchmark/grapheme/perf-split.js"
+    "perf:grapheme-collect": "node --expose-gc benchmark/grapheme/perf-collect.js"
   },
   "alias": {
     "process": false

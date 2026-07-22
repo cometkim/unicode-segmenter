@@ -360,7 +360,10 @@ export function* splitGraphemes(input) {
 }
 
 /**
- * Split given text into extended grapheme clusters.
+ * Collect all extended grapheme clusters in given text.
+ *
+ * This is a faster alternative to {@link splitGraphemes}, as it packs sliced segments directly into the result array.
+ * However, for large inputs, using the {@link splitGraphemes} is more memory-efficient.
  *
  * @param {string} input
  * @return {string[]} array of grapheme clusters
@@ -368,9 +371,9 @@ export function* splitGraphemes(input) {
  * @see {@link splitGraphemes} for a large text input.
  *
  * @example
- * splitGraphemesToArray('abc') // => ['a', 'b', 'c']
+ * collectGraphemes('abc') // => ['a', 'b', 'c']
  */
-export function splitGraphemesToArray(input) {
+export function collectGraphemes(input) {
   /** @type {string[]} */
   let result = [];
 

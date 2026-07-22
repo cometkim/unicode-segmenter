@@ -9,7 +9,7 @@ import {
 
 import {
   splitGraphemes,
-  splitGraphemesToArray,
+  collectGraphemes,
 } from '../../src/grapheme.js';
 import { testcases } from './_testcases.js';
 
@@ -23,8 +23,8 @@ for (const [title, input] of testcases) {
   group(title, () => {
     summary(() => {
       barplot(() => {
-        bench('unicode-segmenter (split-to-array)', () => {
-          do_not_optimize(splitGraphemesToArray(input));
+        bench('unicode-segmenter (collect)', () => {
+          do_not_optimize(collectGraphemes(input));
         }).gc('inner').baseline(true);
 
         bench('unicode-segmenter (split)', () => {

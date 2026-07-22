@@ -7,8 +7,9 @@ import fc from 'fast-check';
 import {
   GraphemeCategory,
   graphemeSegments,
-  splitGraphemes,
   countGraphemes,
+  splitGraphemes,
+  collectGraphemes,
 } from 'unicode-segmenter/grapheme';
 import { assertObjectContaining } from './_helper.js';
 
@@ -105,7 +106,7 @@ test('countGraphemes', async t => {
   });
 });
 
-test('splitGrapheme', async t => {
+test('splitGraphemes', async t => {
   await t.test('latin', () => {
     assert.deepEqual(
       [...splitGraphemes('abcd')],
@@ -160,6 +161,63 @@ test('splitGrapheme', async t => {
   });
 });
 
+test('collectGraphemes', async t => {
+  await t.test('latin', () => {
+    assert.deepEqual(
+      collectGraphemes('abcd'),
+      ['a', 'b', 'c', 'd'],
+    );
+  });
+
+  await t.test('flags', () => {
+    assert.deepEqual(
+      collectGraphemes('🇷🇸🇮🇴'),
+      ['🇷🇸', '🇮🇴'],
+    );
+  });
+
+  await t.test('emoji', () => {
+    assert.deepEqual(
+      collectGraphemes('👻👩‍👩‍👦‍👦'),
+      ['👻', '👩‍👩‍👦‍👦'],
+    );
+    assert.deepEqual(
+      collectGraphemes('🌷🎁💩😜👍🏳️‍🌈'),
+      ['🌷', '🎁', '💩', '😜', '👍', '🏳️‍🌈'],
+    );
+  });
+
+  await t.test('diacritics as combining marks', () => {
+    assert.deepEqual(
+      collectGraphemes('Ĺo͂řȩm̅'),
+      ['Ĺ', 'o͂', 'ř', 'ȩ', 'm̅'],
+    );
+  });
+
+  await t.test('Jamo', () => {
+    assert.deepEqual(
+      collectGraphemes('가갉'),
+      ['가', '갉'],
+    );
+  });
+
+  await t.test('Hindi', () => {
+    assert.deepEqual(
+      collectGraphemes('अनुच्छेद'),
+      ['अ', 'नु', 'च्छे', 'द'],
+    );
+  });
+
+  await t.test('demonic', () => {
+    assert.deepEqual(
+      collectGraphemes('Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍A̴̵̜̰͔ͫ͗͢L̠ͨͧͩ͘G̴̻͈͍͔̹̑͗̎̅͛́Ǫ̵̹̻̝̳͂̌̌͘!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞'),
+      ['Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍', 'A̴̵̜̰͔ͫ͗͢', 'L̠ͨͧͩ͘', 'G̴̻͈͍͔̹̑͗̎̅͛́', 'Ǫ̵̹̻̝̳͂̌̌͘', '!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞'],
+    );
+  });
+});
+
+
+
 test('conformance', async t => {
   fc.configureGlobal({
     // Fix seed here for stable coverage report
@@ -175,6 +233,7 @@ test('conformance', async t => {
       assertObjectContaining([...graphemeSegments(input)], expected);
       assert.equal(countGraphemes(input), expected.length);
       assert.deepEqual([...splitGraphemes(input)], expected.map(s => s.segment));
+      assert.deepEqual(collectGraphemes(input), expected.map(s => s.segment));
   }
 
   await t.test('any string', () => {
