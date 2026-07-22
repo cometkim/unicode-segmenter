@@ -255,8 +255,8 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                                | Bytecode size | Bytecode size (gzip)* |
 |-------------------------------------|--------------:|----------------------:|
-| `unicode-segmenter/grapheme`        |        20,118 |                11,192 |
-| `unicode-segmenter/grapheme` (full) |        20,323 |                11,332 |
+| `unicode-segmenter/grapheme`        |        20,042 |                11,128 |
+| `unicode-segmenter/grapheme` (full) |        20,247 |                11,274 |
 | `graphemer`                         |       134,085 |                31,770 |
 | `grapheme-splitter`                 |        63,942 |                19,165 |
 | `@formatjs/intl-segmenter`          |       329,547 |               136,751 |

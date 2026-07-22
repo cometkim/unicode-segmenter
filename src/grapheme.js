@@ -90,7 +90,7 @@ let TAIL_E;
  * @param {number} cp
  * @return {number} category number, {@link GraphemeCategoryNum} or 15 (`InCB=Consonant`)
  */
-export function cat(cp) {
+function cat(cp) {
   if (cp < 0x3000) return T0[cp];
   // CJK: 0x3000-0x9FFF
   if (cp < T1_MIN) {
@@ -131,7 +131,7 @@ export function cat(cp) {
 // - 2: GB12/GB13, no boundary iff odd run of RI precedes
 // - 3: GB11, no boundary iff the ZWJ was preceded by ExtPic Extend*
 // - 4: GB9c, no boundary iff InCB Consonant [Extend Linker]* Linker [Extend Linker]* precedes
-export const PAIR = Uint8Array.from(grapheme_pairs, Number);
+const PAIR = Uint8Array.from(grapheme_pairs, Number);
 
 /**
  * The Unicode `Indic_Conjunct_Break=Linker` set
@@ -205,7 +205,7 @@ function nextExtend(st, cp) {
  * @param {number} cp the consumed code point
  * @return {number} next packed state
  */
-export function nextState(st, c, cp) {
+function nextState(st, c, cp) {
   switch (c) {
     case 3:  return st ? nextExtend(st, cp) : 0;
     case 4:  return 2;                          // Extended_Pictographic
