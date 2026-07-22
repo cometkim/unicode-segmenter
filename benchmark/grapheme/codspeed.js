@@ -40,11 +40,11 @@ for (const [name, input] of testcases) {
 
 for (const [name, input] of testcases) {
   bench.add(`splitGraphemes - ${name}`, () => {
-    void splitGraphemes(input);
+    void [...splitGraphemes(input)];
   }, {
     beforeAll() {
       for (let i = 0; i < 2000; i++) {
-        void splitGraphemes(input);
+        void [...splitGraphemes(input)];
       }
     },
   });
