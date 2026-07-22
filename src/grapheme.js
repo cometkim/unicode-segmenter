@@ -194,6 +194,35 @@ function nextExtend(st, cp) {
 // reset the state to 0 inside {@link nextState}.
 
 /**
+ * Resolve a pair rule to a boundary decision.
+ *
+ * Each entry in {@link PAIR} encodes *how* to decide a boundary between
+ * two adjacent categories, not the decision itself:
+ *
+ *   0 -> always a boundary (break)
+ *   1 -> never a boundary   (no-break)
+ *   2 -> boundary unless an odd number of Regional_Indicators precede (GB12/GB13)
+ *   3 -> boundary unless preceded by ExtPic Extend* (GB11)
+ *   4 -> boundary unless an InCB Linker has been seen in the run (GB9c)
+ *
+ * Rules 2-4 consult the packed sequence state `st` that was captured
+ * *before* the state transition on `catAfter`.
+ *
+ * @param {number} st packed state
+ * @param {number} pairRule the pair-rule value from {@link PAIR}
+ * @return {boolean} whether a boundary exists
+ */
+function isBoundary(st, pairRule) {
+  switch (pairRule) {
+    case 0:  return true;
+    case 1:  return false;
+    case 2:  return !(st & 1);
+    case 3:  return !(st & 4);
+    default: return (st & 24) !== 16;
+  }
+}
+
+/**
  * State transition on consuming a code point.
  *
  * Extend (cat 3) is cp-dependent and delegates to {@link nextExtend};
@@ -250,13 +279,7 @@ export function* graphemeSegments(input) {
   while (cursor < len) {
     cp = /** @type {number} */ (input.codePointAt(cursor));
     let catAfter = cat(cp);
-    let d = PAIR[catBefore << 4 | catAfter];
-    let boundary;
-    if (d === 0) boundary = true;
-    else if (d === 1) boundary = false;
-    else if (d === 2) boundary = !(st & 1);
-    else if (d === 3) boundary = !(st & 4);
-    else boundary = (st & 24) !== 16;
+    let boundary = isBoundary(st, PAIR[catBefore << 4 | catAfter]);
 
     st = nextState(st, catAfter, cp);
 
@@ -322,13 +345,7 @@ export function countGraphemes(input) {
   while (cursor < len) {
     cp = /** @type {number} */ (input.codePointAt(cursor));
     let catAfter = cat(cp);
-    let d = PAIR[catBefore << 4 | catAfter];
-    let boundary;
-    if (d === 0) boundary = true;
-    else if (d === 1) boundary = false;
-    else if (d === 2) boundary = !(st & 1);
-    else if (d === 3) boundary = !(st & 4);
-    else boundary = (st & 24) !== 16;
+    let boundary = isBoundary(st, PAIR[catBefore << 4 | catAfter]);
 
     st = nextState(st, catAfter, cp);
 
@@ -398,13 +415,7 @@ export function collectGraphemes(input) {
   while (cursor < len) {
     cp = /** @type {number} */ (input.codePointAt(cursor));
     let catAfter = cat(cp);
-    let d = PAIR[catBefore << 4 | catAfter];
-    let boundary;
-    if (d === 0) boundary = true;
-    else if (d === 1) boundary = false;
-    else if (d === 2) boundary = !(st & 1);
-    else if (d === 3) boundary = !(st & 4);
-    else boundary = (st & 24) !== 16;
+    let boundary = isBoundary(st, PAIR[catBefore << 4 | catAfter]);
 
     st = nextState(st, catAfter, cp);
 
