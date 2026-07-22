@@ -10,7 +10,6 @@ import {
 import {
   graphemeSegments,
   countGraphemes,
-  splitGraphemes,
 } from '../../src/grapheme.js';
 import { testcases } from './_testcases.js';
 
@@ -18,20 +17,22 @@ import { testcases } from './_testcases.js';
 const isSystemRuntime = typeof process === 'object' || typeof Deno === 'object' && typeof Bun === 'object';
 const isWebWorker = !isSystemRuntime && typeof self === 'object';
 
+const intlSegmenter = new Intl.Segmenter();
+
 for (const [title, input] of testcases) {
   group(title, () => {
     summary(() => {
       barplot(() => {
-        bench('full segmenter', () => {
-          do_not_optimize([...graphemeSegments(input)].length);
+        bench('unicode-segmenter (count-only)', () => {
+          do_not_optimize(countGraphemes(input));
         }).gc('inner').baseline(true);
 
-        bench('split only', () => {
-          do_not_optimize([...splitGraphemes(input)].length);
+        bench('unicode-segmenter (full)', () => {
+          do_not_optimize([...graphemeSegments(input)].length);
         }).gc('inner');
 
-        bench('count only', () => {
-          do_not_optimize(countGraphemes(input));
+        bench('Intl.Segmenter', () => {
+          do_not_optimize([...intlSegmenter.segment(input)].length);
         }).gc('inner');
       });
     });
