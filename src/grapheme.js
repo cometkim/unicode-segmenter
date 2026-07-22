@@ -163,6 +163,36 @@ function isLinker(cp) {
     || cp === 0x11F42;  // Kawi Conjoiner
 }
 
+// Next-state table for the four cp-independent transitions
+// (Extended_Pictographic, Regional_Indicator, ZWJ, InCB=Consonant).
+// Index: `NEXT[(cat << 5) | st]`; only rows for cats 4, 10, 14, 15 are populated.
+// Extend (cat 3) is cp-dependent (ZWNJ vs `isLinker`) and is handled by `nextExtend` directly.
+const NEXT = new Uint8Array(16 << 5);
+for (let st = 0; st < 32; st++) {
+  NEXT[(4 << 5)  | st] = 2;                          // Extended_Pictographic
+  NEXT[(10 << 5) | st] = (st & 1) ^ 1;               // Regional_Indicator
+  NEXT[(14 << 5) | st] = (st & 2) << 1 | (st & 24);  // ZWJ
+  NEXT[(15 << 5) | st] = 8;                          // InCB=Consonant
+}
+
+/**
+ * State transition on consuming an Extend code point (category 3).
+ * The cp-dependent ZWNJ / `isLinker` branches; the cp-independent
+ * transitions live in {@link NEXT}.
+ *
+ * @param {number} st packed state
+ * @param {number} cp the consumed Extend code point
+ * @return {number} next packed state
+ */
+function nextExtend(st, cp) {
+  if (st & 24) {
+    if (cp === 0x200C) return st & 6;  // ZWNJ has InCB=None
+    if ((st & 24) === 16 || isLinker(cp)) return (st & 6) | 16;
+    return (st & 6) | 8;
+  }
+  return st & 6;
+}
+
 // Sequence state, packed in a small int:
 //
 //   bit 0   : odd run of Regional_Indicator immediately precedes (GB12, GB13)
@@ -179,34 +209,19 @@ function isLinker(cp) {
 /**
  * State transition on consuming a code point.
  *
+ * Extend (cat 3) is cp-dependent and goes through {@link nextExtend};
+ * other stateful categories use the {@link NEXT} table;
+ * everything else resets to 0.
+ *
  * @param {number} st packed state
  * @param {number} c category of the consumed code point
  * @param {number} cp the consumed code point
  * @return {number} next packed state
  */
 export function nextState(st, c, cp) {
-  switch (c) {
-    // Extend; keeps picto bits, advances InCB run
-    case 3:
-      if (st & 24) {
-        if (cp === 0x200C) return st & 6;  // ZWNJ has InCB=None
-        if ((st & 24) === 16 || isLinker(cp)) return (st & 6) | 16;
-        return (st & 6) | 8;
-      }
-      return st & 6;
-    // Extended_Pictographic
-    case 4:
-      return 2;
-    // Regional_Indicator; toggles parity
-    case 10:
-      return (st & 1) ^ 1;
-    // ZWJ; captures the picto bit, advances InCB run
-    case 14:
-      return (st & 2) << 1 | (st & 24);
-    // InCB=Consonant (15); callers never pass other categories
-    default:
-      return 8;
-  }
+  if (c === 3) return st ? nextExtend(st, cp) : 0;
+  if ((0xC418 >> c) & 1) return NEXT[(c << 5) | st];
+  return 0;
 }
 
 /**
@@ -229,7 +244,7 @@ export function* graphemeSegments(input) {
   let catBefore = cat(cp);
 
   /** Packed sequence state */
-  let st = (0xC418 >> catBefore) & 1 ? nextState(0, catBefore, cp) : 0;
+  let st = nextState(0, catBefore, cp);
 
   /** Start index of the current segment */
   let index = 0;
@@ -251,9 +266,7 @@ export function* graphemeSegments(input) {
     else if (d === 3) boundary = !(st & 4);
     else boundary = (st & 24) !== 16;
 
-    st = (0xC418 >> catAfter) & 1 && (st !== 0 || catAfter !== 3)
-      ? nextState(st, catAfter, cp)
-      : 0;
+    st = nextState(st, catAfter, cp);
 
     if (boundary) {
       yield {
@@ -309,7 +322,7 @@ export function countGraphemes(input) {
   let catBefore = cat(cp);
 
   /** Packed sequence state */
-  let st = (0xC418 >> catBefore) & 1 ? nextState(0, catBefore, cp) : 0;
+  let st = nextState(0, catBefore, cp);
 
   /** The segment being scanned counts, whether or not a boundary follows */
   let count = 1;
@@ -325,9 +338,7 @@ export function countGraphemes(input) {
     else if (d === 3) boundary = !(st & 4);
     else boundary = (st & 24) !== 16;
 
-    st = (0xC418 >> catAfter) & 1 && (st !== 0 || catAfter !== 3)
-      ? nextState(st, catAfter, cp)
-      : 0;
+    st = nextState(st, catAfter, cp);
 
     if (boundary) count += 1;
     cursor += cp > 0xFFFF ? 2 : 1;
@@ -387,7 +398,7 @@ export function collectGraphemes(input) {
   let catBefore = cat(cp);
 
   /** Packed sequence state */
-  let st = (0xC418 >> catBefore) & 1 ? nextState(0, catBefore, cp) : 0;
+  let st = nextState(0, catBefore, cp);
 
   /** Start index of the current segment */
   let index = 0;
@@ -403,9 +414,7 @@ export function collectGraphemes(input) {
     else if (d === 3) boundary = !(st & 4);
     else boundary = (st & 24) !== 16;
 
-    st = (0xC418 >> catAfter) & 1 && (st !== 0 || catAfter !== 3)
-      ? nextState(st, catAfter, cp)
-      : 0;
+    st = nextState(st, catAfter, cp);
 
     if (boundary) {
       result.push(input.slice(index, cursor));
