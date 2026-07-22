@@ -50,6 +50,10 @@ Utilities for text segmentation by extended grapheme cluster rules.
 
 #### Example: Get grapheme segments
 
+You can retrieve all grapheme segments using the `graphemeSegments()` generator.
+
+Each segment is returned as a `GraphemeSegment` object containing the `segment` (the substring), the starting `index`, and the full `input` string. This pattern is similar to the [`Intl.Segmenter`] API, so it can be a drop-in replacement.
+
 ```js
 import { graphemeSegments } from 'unicode-segmenter/grapheme';
 
@@ -61,6 +65,10 @@ import { graphemeSegments } from 'unicode-segmenter/grapheme';
 ```
 
 #### Example: Split graphemes
+
+You can split a string into graphemes by simply consuming the `splitGraphemes()` generator.
+
+`splitGraphemes()` is a simple wrapper around `graphemeSegments()`.
 
 ```js
 import { splitGraphemes } from 'unicode-segmenter/grapheme';
@@ -75,6 +83,10 @@ import { splitGraphemes } from 'unicode-segmenter/grapheme';
 
 #### Example: Count graphemes
 
+If you need only the count, use `countGraphemes()`, which is optimized to avoid allocations for segments.
+
+Mostly 2-4x faster than the full segmenter and more GC friendly, so you can call it in a hot path.
+
 ```js
 import { countGraphemes } from 'unicode-segmenter/grapheme';
 
@@ -88,11 +100,6 @@ countGraphemes('👋 안녕!');
 countGraphemes('a̐éö̲');
 // => 3
 ```
-
-> [!NOTE]
-> `countGraphemes()` is a small wrapper around `graphemeSegments()`.
-> 
-> If you need it more than once at a time, consider memoization or use `graphemeSegments()` or `splitGraphemes()` once instead.
 
 #### Example: Build an advanced grapheme matcher
 
