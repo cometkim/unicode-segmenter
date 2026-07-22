@@ -131,7 +131,7 @@ function cat(cp) {
 // - 2: GB12/GB13, no boundary iff odd run of RI precedes
 // - 3: GB11, no boundary iff the ZWJ was preceded by ExtPic Extend*
 // - 4: GB9c, no boundary iff InCB Consonant [Extend Linker]* Linker [Extend Linker]* precedes
-const PAIR = Uint8Array.from(grapheme_pairs, Number);
+const PAIR = Uint8Array.from(grapheme_pairs);
 
 /**
  * The Unicode `Indic_Conjunct_Break=Linker` set
