@@ -7,8 +7,11 @@ import {
   do_not_optimize,
 } from 'mitata';
 
-import { countGraphemes } from '../../src/grapheme.js';
-import { countGraphemes as countGraphemesFast } from '../../src/grapheme-counter.js';
+import {
+  graphemeSegments,
+  countGraphemes,
+  splitGraphemes,
+} from '../../src/grapheme.js';
 import { testcases } from './_testcases.js';
 
 // Node.js, Deno, Bun
@@ -19,11 +22,15 @@ for (const [title, input] of testcases) {
   group(title, () => {
     summary(() => {
       barplot(() => {
-        bench('grapheme-counter', () => {
-          do_not_optimize(countGraphemesFast(input));
+        bench('full segmenter', () => {
+          do_not_optimize([...graphemeSegments(input)].length);
         }).gc('inner').baseline(true);
 
-        bench('grapheme', () => {
+        bench('split only', () => {
+          do_not_optimize([...splitGraphemes(input)].length);
+        }).gc('inner');
+
+        bench('count only', () => {
           do_not_optimize(countGraphemes(input));
         }).gc('inner');
       });
