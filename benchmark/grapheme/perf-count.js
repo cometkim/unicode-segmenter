@@ -7,24 +7,32 @@ import {
   do_not_optimize,
 } from 'mitata';
 
-import { countGraphemes } from '../../src/grapheme.js';
-import { countGraphemes as countGraphemesFast } from '../../src/grapheme-counter.js';
+import {
+  graphemeSegments,
+  countGraphemes,
+} from '../../src/grapheme.js';
 import { testcases } from './_testcases.js';
 
 // Node.js, Deno, Bun
 const isSystemRuntime = typeof process === 'object' || typeof Deno === 'object' && typeof Bun === 'object';
 const isWebWorker = !isSystemRuntime && typeof self === 'object';
 
+const intlSegmenter = new Intl.Segmenter();
+
 for (const [title, input] of testcases) {
   group(title, () => {
     summary(() => {
       barplot(() => {
-        bench('grapheme-counter', () => {
-          do_not_optimize(countGraphemesFast(input));
+        bench('unicode-segmenter (count-only)', () => {
+          do_not_optimize(countGraphemes(input));
         }).gc('inner').baseline(true);
 
-        bench('grapheme', () => {
-          do_not_optimize(countGraphemes(input));
+        bench('unicode-segmenter (full)', () => {
+          do_not_optimize([...graphemeSegments(input)].length);
+        }).gc('inner');
+
+        bench('Intl.Segmenter', () => {
+          do_not_optimize([...intlSegmenter.segment(input)].length);
         }).gc('inner');
       });
     });

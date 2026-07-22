@@ -295,12 +295,45 @@ export function* graphemeSegments(input) {
  * Or if you need fast counting, use the standalone
  * `unicode-segmenter/grapheme-counter` entry instead.
  *
- * @param {string} text
+ * @param {string} input
  * @return {number} count of grapheme clusters
  */
-export function countGraphemes(text) {
-  let count = 0;
-  for (let _ of graphemeSegments(text)) count += 1;
+export function countGraphemes(input) {
+  let len = input.length;
+  if (len === 0) return 0;
+
+  let cp = /** @type {number} */ (input.codePointAt(0));
+  let cursor = cp > BMP_MAX ? 2 : 1;
+
+  /** Category of the last consumed code point */
+  let catBefore = cat(cp);
+
+  /** Packed sequence state */
+  let st = (0xC418 >> catBefore) & 1 ? nextState(0, catBefore, cp) : 0;
+
+  /** The segment being scanned counts, whether or not a boundary follows */
+  let count = 1;
+
+  while (cursor < len) {
+    cp = /** @type {number} */ (input.codePointAt(cursor));
+    let catAfter = cat(cp);
+    let d = PAIR[catBefore << 4 | catAfter];
+    let boundary;
+    if (d === 0) boundary = true;
+    else if (d === 1) boundary = false;
+    else if (d === 2) boundary = !(st & 1);
+    else if (d === 3) boundary = !(st & 4);
+    else boundary = (st & 24) !== 16;
+
+    st = (0xC418 >> catAfter) & 1 && (st !== 0 || catAfter !== 3)
+      ? nextState(st, catAfter, cp)
+      : 0;
+
+    if (boundary) count += 1;
+    cursor += cp > 0xFFFF ? 2 : 1;
+    catBefore = catAfter;
+  }
+
   return count;
 }
 
@@ -314,7 +347,7 @@ export {
 /**
  * Split given text into extended grapheme clusters.
  *
- * @param {string} text
+ * @param {string} input
  * @return {IterableIterator<string>} iterator for grapheme clusters
  *
  * @see {@link graphemeSegments} if you need extra information.
@@ -322,8 +355,8 @@ export {
  * @example
  * [...splitGraphemes('abc')] // => ['a', 'b', 'c']
  */
-export function* splitGraphemes(text) {
-  for (let s of graphemeSegments(text)) yield s.segment;
+export function* splitGraphemes(input) {
+  for (let s of graphemeSegments(input)) yield s.segment;
 }
 
 // Keep one live segmenter and its result reachable so their hidden classes
