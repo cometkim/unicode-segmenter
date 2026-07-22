@@ -48,22 +48,6 @@ And matchers for extra use cases.
 
 Utilities for text segmentation by extended grapheme cluster rules.
 
-#### Example: Get grapheme segments
-
-You can retrieve all grapheme segments using the `graphemeSegments()` generator.
-
-Each segment is returned as a `GraphemeSegmentOutput` object containing the `segment` (the substring), the starting `index`, and the full `input` string. This pattern is similar to the [`Intl.Segmenter`] API, so it can be a drop-in replacement.
-
-```js
-import { graphemeSegments } from 'unicode-segmenter/grapheme';
-
-[...graphemeSegments('a̐éö̲\r\n')];
-// 0: { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n' }
-// 1: { segment: 'é', index: 2, input: 'a̐éö̲\r\n' }
-// 2: { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n' }
-// 3: { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n' }
-```
-
 #### Example: Split graphemes
 
 You can split a string into graphemes by simply consuming the `splitGraphemes()` generator.
@@ -113,6 +97,22 @@ countGraphemes('👋 안녕!');
 // => 7
 countGraphemes('a̐éö̲');
 // => 3
+```
+
+#### Example: Get full segment info
+
+You can retrieve all grapheme segments using the `graphemeSegments()` generator.
+
+Each segment is returned as a `GraphemeSegmentOutput` object containing the `segment` (the substring), the starting `index`, and the full `input` string. This pattern is similar to the [`Intl.Segmenter`] API, so it can be a drop-in replacement.
+
+```js
+import { graphemeSegments } from 'unicode-segmenter/grapheme';
+
+[...graphemeSegments('a̐éö̲\r\n')];
+// 0: { segment: 'a̐', index: 0, input: 'a̐éö̲\r\n' }
+// 1: { segment: 'é', index: 2, input: 'a̐éö̲\r\n' }
+// 2: { segment: 'ö̲', index: 4, input: 'a̐éö̲\r\n' }
+// 3: { segment: '\r\n', index: 7, input: 'a̐éö̲\r\n' }
 ```
 
 #### Example: Build an advanced grapheme matcher
