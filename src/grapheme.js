@@ -313,16 +313,6 @@ export function* graphemeSegments(input) {
 /**
  * Count number of extended grapheme clusters in given text.
  *
- * NOTE:
- *
- * This function is a small wrapper around {@link graphemeSegments}.
- *
- * If you call it more than once at a time, consider memoization
- * or use {@link graphemeSegments} or {@link splitGraphemes} once instead
- *
- * Or if you need fast counting, use the standalone
- * `unicode-segmenter/grapheme-counter` entry instead.
- *
  * @param {string} input
  * @return {number} count of grapheme clusters
  */
