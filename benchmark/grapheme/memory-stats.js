@@ -13,7 +13,7 @@ function drain(iterable) {
 /** @type {Record<string, import('../_memory.js').LibAdapter>} */
 let libs = {
   'unicode-segmenter/grapheme': async () => {
-    let { graphemeSegments } = await import('../../src/grapheme.js');
+    let { graphemeSegments } = await import('unicode-segmenter/grapheme');
     return input => drain(graphemeSegments(input));
   },
   'graphemer': async () => {

@@ -10,9 +10,6 @@ import {
   splitGraphemes,
   countGraphemes,
 } from 'unicode-segmenter/grapheme';
-import {
-  countGraphemes as countGraphemesFast,
-} from 'unicode-segmenter/grapheme-counter';
 import { assertObjectContaining } from './_helper.js';
 
 test('graphemeSegments', async t => {
@@ -80,39 +77,31 @@ test('graphemeSegments', async t => {
 test('countGraphemes', async t => {
   await t.test('latin', () => {
     assert.equal(countGraphemes('abcd'), 4);
-    assert.equal(countGraphemesFast('abcd'), 4);
   });
 
   await t.test('flags', () => {
     assert.equal(countGraphemes('🇷🇸🇮🇴'), 2);
-    assert.equal(countGraphemesFast('🇷🇸🇮🇴'), 2);
   });
 
   await t.test('emoji', () => {
     assert.equal(countGraphemes('👻👩‍👩‍👦‍👦'), 2);
-    assert.equal(countGraphemesFast('👻👩‍👩‍👦‍👦'), 2);
     assert.equal(countGraphemes('🌷🎁💩😜👍🏳️‍🌈'), 6);
-    assert.equal(countGraphemesFast('🌷🎁💩😜👍🏳️‍🌈'), 6);
   });
 
   await t.test('diacritics as combining marks', () => {
     assert.equal(countGraphemes('Ĺo͂řȩm̅'), 5);
-    assert.equal(countGraphemesFast('Ĺo͂řȩm̅'), 5);
   });
 
   await t.test('Jamo', () => {
     assert.equal(countGraphemes('뎌쉐'), 2);
-    assert.equal(countGraphemesFast('뎌쉐'), 2);
   });
 
   await t.test('Hindi', () => {
     assert.equal(countGraphemes('अनुच्छेद'), 4);
-    assert.equal(countGraphemesFast('अनुच्छेद'), 4);
   });
 
   await t.test('demonic', () => {
     assert.equal(countGraphemes('Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍A̴̵̜̰͔ͫ͗͢L̠ͨͧͩ͘G̴̻͈͍͔̹̑͗̎̅͛́Ǫ̵̹̻̝̳͂̌̌͘!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞'), 6);
-    assert.equal(countGraphemesFast('Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍A̴̵̜̰͔ͫ͗͢L̠ͨͧͩ͘G̴̻͈͍͔̹̑͗̎̅͛́Ǫ̵̹̻̝̳͂̌̌͘!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞'), 6);
   });
 });
 
@@ -184,7 +173,8 @@ test('conformance', async t => {
   let assertProperty = input => {
       let expected = [...intlSegmenter.segment(input)];
       assertObjectContaining([...graphemeSegments(input)], expected);
-      assert.equal(countGraphemesFast(input), expected.length);
+      assert.equal(countGraphemes(input), expected.length);
+      assert.deepEqual([...splitGraphemes(input)], expected.map(s => s.segment));
   }
 
   await t.test('any string', () => {
