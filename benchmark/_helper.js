@@ -70,7 +70,7 @@ export function printStats(reports) {
     let value = report[key];
     if (value == null) return '';
     if (typeof value === 'number') return value.toLocaleString('en-US');
-    return i === 0 ? `\`${value}\`` : String(value);
+    return i === 0 ? `${value}` : String(value);
   }));
 
   let widths = columns.map((key, i) => {
@@ -92,10 +92,13 @@ export function printStats(reports) {
  * `UPDATE_README=true`.
  *
  * The table is located by its `#### <section>` heading. Rows are
- * matched by library name and columns by header text, both ignoring
- * the `*` footnote marks, which are preserved as-is. Cells with no
- * matching report column (e.g. Unicode®, ESM?) and rows with no
- * matching report (e.g. `Intl.Segmenter`) are left untouched.
+ * matched by their first cell against `report.name` verbatim — names
+ * are expected to already contain any backticks/footnote marks (e.g.
+ * `` `unicode-segmenter/grapheme` (full*) ``), so the README row's
+ * name cell is preserved as-is. Columns are matched by header text
+ * with `*` footnote marks stripped. Cells with no matching report
+ * column (e.g. Unicode®, ESM?) and rows with no matching report
+ * (e.g. `Intl.Segmenter`) are left untouched.
  *
  * @param {Array<Record<string, unknown>>} reports
  * @param {string} section heading text, e.g. 'JS Bundle Stats'
@@ -121,7 +124,10 @@ export async function updateReadmeStats(reports, section) {
   let end = head + 1;
   while (end < lines.length && lines[end].trimStart().startsWith('|')) end += 1;
 
-  let split = line => line.trim().replace(/^\||\|$/g, '').split('|').map(cell => cell.trim());
+  let split = line => line.trim().replace(/^\||\|$/g, '').split('|').map(cell => cell
+    .trim()
+    .replace(/\s+[\uFE0F\uFE0E]+$/, '')
+    .trim());
   let stripMark = text => text.replace(/\*+$/, '').trim();
 
   let header = split(lines[head]);
@@ -132,16 +138,10 @@ export async function updateReadmeStats(reports, section) {
   let colKeys = header.map(stripMark);
 
   let byName = new Map(reports.map(report => [String(report.name), report]));
-  for (let report of reports) {
-    // e.g. the 'unicode-segmentation (wasm-bindgen)' report matches
-    // the `unicode-segmentation` row
-    let alias = String(report.name).replace(/\s*\([^)]*\)$/, '');
-    if (!byName.has(alias)) byName.set(alias, report);
-  }
 
   let matched = new Set();
   for (let row of body) {
-    let report = byName.get(stripMark(row[0]).replace(/`/g, '').trim());
+    let report = byName.get(row[0]);
     if (!report) continue;
     matched.add(report);
     for (let i = 1; i < header.length; i++) {

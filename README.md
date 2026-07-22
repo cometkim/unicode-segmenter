@@ -215,15 +215,15 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 #### JS Bundle Stats
 
-| Name                                            | Unicode® | ESM? |    Size | Size (min) | Size (min+gzip) | Size (min+br) | Size (min+zstd) |
-|-------------------------------------------------|----------|------|--------:|-----------:|----------------:|--------------:|----------------:|
-| `unicode-segmenter/grapheme`                    | 17.0.0   | ✔️   |   8,782 |      5,069 |           2,462 |         2,203 |           2,507 |
-| `unicode-segmenter/grapheme` (full*)            | 17.0.0   | ✔️   |   9,268 |      5,313 |           2,624 |         2,350 |           2,672 |
-| `graphemer`                                     | 15.0.0   | ✖️  ️ | 410,435 |     95,104 |          15,752 |        10,660 |          15,911 |
-| `grapheme-splitter`                             | 10.0.0   | ✖️   | 122,254 |     23,682 |           7,852 |         4,802 |           6,753 |
-| `@formatjs/intl-segmenter`*                     | 17.0.0   | ✖️   | 268,301 |    176,759 |          45,988 |        31,701 |          45,370 |
-| `unicode-segmentation`*                         | 15.1.0   | -    |  56,529 |     52,439 |          24,108 |        17,343 |          24,375 |
-| `Intl.Segmenter`*                               | -        | -    |       0 |          0 |               0 |             0 |               0 |
+| Name                                 | Unicode® | ESM? |    Size | Size (min) | Size (min+gzip) | Size (min+br) | Size (min+zstd) |
+|--------------------------------------|----------|------|--------:|-----------:|----------------:|--------------:|----------------:|
+| `unicode-segmenter/grapheme`         | 17.0.0   | ✔️   |   8,782 |      5,069 |           2,462 |         2,203 |           2,507 |
+| `unicode-segmenter/grapheme` (full*) | 17.0.0   | ✔️   |   9,268 |      5,313 |           2,624 |         2,350 |           2,672 |
+| `graphemer`                          | 15.0.0   | ✖️   | 410,435 |     95,104 |          15,752 |        10,660 |          15,911 |
+| `grapheme-splitter`                  | 10.0.0   | ✖️   | 122,254 |     23,682 |           7,852 |         4,802 |           6,753 |
+| `@formatjs/intl-segmenter`*          | 17.0.0   | ✖️   | 268,301 |    176,759 |          45,988 |        31,701 |          45,370 |
+| `unicode-segmentation`*              | 15.1.0   | -    |  56,529 |     52,439 |          24,108 |        17,343 |          24,375 |
+| `Intl.Segmenter`*                    | -        | -    |       0 |          0 |               0 |             0 |               0 |
 
 * `unicode-segmenter/grapheme` provides count/split-only API which has much less overhead than full `Segmenter` implementation, which includes some redundant codes but tree-shakable.
 * `@formatjs/intl-segmenter` handles grapheme, word, and sentence, but it's not tree-shakable.
@@ -233,13 +233,13 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 #### Hermes Bytecode Stats
 
-| Name                                            | Bytecode size | Bytecode size (gzip)* |
-|-------------------------------------------------|--------------:|----------------------:|
-| `unicode-segmenter/grapheme`                    |        19,196 |                10,715 |
-| `unicode-segmenter/grapheme` (full)             |        19,401 |                10,848 |
-| `graphemer`                                     |       134,085 |                31,770 |
-| `grapheme-splitter`                             |        63,942 |                19,165 |
-| `@formatjs/intl-segmenter`                      |       329,547 |               136,751 |
+| Name                                | Bytecode size | Bytecode size (gzip)* |
+|-------------------------------------|--------------:|----------------------:|
+| `unicode-segmenter/grapheme`        |        19,196 |                10,715 |
+| `unicode-segmenter/grapheme` (full) |        19,401 |                10,848 |
+| `graphemer`                         |       134,085 |                31,770 |
+| `grapheme-splitter`                 |        63,942 |                19,165 |
+| `@formatjs/intl-segmenter`          |       329,547 |               136,751 |
 
 * The installation size contains _compressed_ assets.
 

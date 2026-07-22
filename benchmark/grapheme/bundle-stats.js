@@ -9,11 +9,11 @@ import { printStats, reportBundleStats, reportWasmBindingStats, updateReadmeStat
 let baseDir = import.meta.dirname;
 
 let libs = [
-  ['unicode-segmenter/grapheme', 'bundle-entries/unicode-segmenter.js'],
-  ['unicode-segmenter/grapheme (full)', 'bundle-entries/unicode-segmenter-full.js'],
-  ['graphemer', 'bundle-entries/graphemer.js'],
-  ['grapheme-splitter', 'bundle-entries/grapheme-splitter.js'],
-  ['@formatjs/intl-segmenter', 'bundle-entries/formatjs-intl-segmenter.js'],
+  ['`unicode-segmenter/grapheme`', 'bundle-entries/unicode-segmenter.js'],
+  ['`unicode-segmenter/grapheme` (full*)', 'bundle-entries/unicode-segmenter-full.js'],
+  ['`graphemer`', 'bundle-entries/graphemer.js'],
+  ['`grapheme-splitter`', 'bundle-entries/grapheme-splitter.js'],
+  ['`@formatjs/intl-segmenter`*', 'bundle-entries/formatjs-intl-segmenter.js'],
 ];
 
 let reports = await Promise.all(
@@ -40,7 +40,7 @@ let reports = await Promise.all(
 );
 
 {
-  let libName = 'unicode-segmentation (wasm-bindgen)';
+  let libName = '`unicode-segmentation`*';
   let bindingEntry = path.join(baseDir, 'bundle-entries/unicode-segmentation.js');
   let bindingResult = await build({
     write: false,
