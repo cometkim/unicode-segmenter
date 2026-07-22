@@ -140,5 +140,8 @@
     "xregexp": "5.1.2",
     "zx": "^8.8.5"
   },
-  "packageManager": "yarn@4.13.0"
+  "packageManager": "yarn@4.13.0",
+  "dependencies": {
+    "tar": "7.5.19"
+  }
 }
