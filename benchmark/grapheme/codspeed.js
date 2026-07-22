@@ -5,6 +5,7 @@ import {
   graphemeSegments,
   countGraphemes,
   splitGraphemes,
+  collectGraphemes,
 } from 'unicode-segmenter/grapheme';
 import { testcases } from './_testcases.js';
 
@@ -45,6 +46,18 @@ for (const [name, input] of testcases) {
     beforeAll() {
       for (let i = 0; i < 2000; i++) {
         void [...splitGraphemes(input)];
+      }
+    },
+  });
+}
+
+for (const [name, input] of testcases) {
+  bench.add(`collectGraphemes - ${name}`, () => {
+    void collectGraphemes(input);
+  }, {
+    beforeAll() {
+      for (let i = 0; i < 2000; i++) {
+        void collectGraphemes(input);
       }
     },
   });
