@@ -1,5 +1,20 @@
 # unicode-segmenter
 
+## 0.17.1
+
+### Patch Changes
+
+- e94d203: Add `collectGraphemes(input)` API that collects grapheme clusters into an array directly.
+
+  This is a fast version of `[...splitGraphemes(input)]`, which is acually the most used pattern in practice.
+
+  It's 2-4x faster than the iterator-based approach. However, it collects all grapheme clusters at once, so it's not good for large text or streamed input.
+
+- 5fcaa4f: Promote `countGraphemes()` API to be a fast path.
+
+  It avoids generator overhead and only counts boundaries without allocating segments.
+  When only counting, it achieves ~10x faster runtime performance and no GC pressure.
+
 ## 0.17.0
 
 ### Minor Changes
