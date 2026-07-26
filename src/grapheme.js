@@ -24,32 +24,31 @@ import {
 
 export { GraphemeCategory };
 
-// Repeated bounds are `let` bindings on purpose; minifiers inline
-// `const` numbers into every use site, but keep `let` shared.
-let BMP_MAX = 0xFFFF;
-let T1_MIN = 0xA000;
-let T2_MIN = 0x1F000;
-
-// Direct category lookup tables for the hot Unicode regions, and a flat
-// binary-search tail for everything rare.
+// Every bound below is spelled out as a literal on purpose.
 //
-// - T0: 0x0000-0x2FFF (ASCII, Latin, Greek, Cyrillic, Semitic, Indic, SEA, ...)
-// - 0x3000-0x9FFF (CJK): only 12 non-Any code points, computed inline
-// - T1: 0xA000-0xABFF
+// A shared module-scope binding saves a few bundled bytes, but it is a mutable context slot
+// that engines cannot fold into the comparison; hoisting the hottest one into a `let` measured up to 25% slower on the count loop.
+
+// Direct category lookup tables for the hot Unicode regions, and a flat binary-search tail for everything rare.
+//
+// - T0: 0x0000-0x309F (ASCII, Latin, Greek, Cyrillic, Semitic, Indic, SEA, CJK punctuation and kana;
+//   the table ends right after the last combining kana mark so that the CJK blocks need no lookup at all)
+// - 0x30A0-0xA65F (CJK, Yi, Lisu, Vai): only U+3297 and U+3299 are not `Any`
+// - T1: 0xA660-0xABFF
 // - 0xAC00-0xD7A3 (Hangul syllables): LV or LVT computed at runtime
-// - 0xD7A4-0xFDFF (Jamo Ext-B, surrogates, private use): computed inline
-// - 0xFE00-0xFE0F (variation selectors): computed inline
 // - T2: 0x1F000-0x1FAFF (emoji)
-// - 0xE0000-0xE0FFF (tags, VS supplement): computed inline
+// - 0xFE00-0xFE0F (variation selectors): computed inline
+// - 0xD7A4-0xFDFF (Jamo Ext-B, surrogates, private use): {@link catRare}
+// - 0xE0000-0xE0FFF (tags, VS supplement): {@link catRare}
 // - everything else: binary search over the range tail (TAIL_S/TAIL_E)
 //
 // The `Indic_Conjunct_Break=Consonant` property is folded into the category
 // space as the 16th category (15) since it never overlaps other categories.
 // It shares break semantics with `Any` and never escapes to the public API.
 //
-// Total index size: ~21KiB of flat typed arrays, no retained JS objects.
-const T0 = new Uint8Array(0x3000);
-const T1 = new Uint8Array(0xC00);
+// Total index size: ~19KiB of flat typed arrays, no retained JS objects.
+const T0 = new Uint8Array(0x30A0);
+const T1 = new Uint8Array(0x5A0);
 const T2 = new Uint8Array(0xB00);
 /** @type {Uint32Array} Range starts of the binary-search tail */
 let TAIL_S;
@@ -63,21 +62,21 @@ let TAIL_E;
     /** @type {number} */ to,
     /** @type {number} */ cat,
   ) => {
-    let hi = lo + t.length - 1;
-    for (let cp = from < lo ? lo : from, top = to > hi ? hi : to; cp <= top; cp++) {
-      t[cp - lo] = cat;
+    let end = to - lo + 1, len = t.length;
+    if (end > 0 && from - lo < len) {
+      t.fill(cat, from > lo ? from - lo : 0, end > len ? len : end);
     }
   };
   let starts = new Uint32Array(320), ends = new Uint32Array(320), n = 0;
-  for (let [from, to, cat] of decodeUnicodeData(grapheme_data, grapheme_cats)) {
+  decodeUnicodeData(grapheme_data, grapheme_cats, (from, to, cat) => {
     fill(T0, 0, from, to, cat);
-    fill(T1, T1_MIN, from, to, cat);
-    fill(T2, T2_MIN, from, to, cat);
-    if (to >= 0xFE10 && !(from >= T2_MIN && to <= 0x1FAFF)) {
+    fill(T1, 0xA660, from, to, cat);
+    fill(T2, 0x1F000, from, to, cat);
+    if (to >= 0xFE10 && !(from >= 0x1F000 && to <= 0x1FAFF)) {
       starts[n] = from;
       ends[n++] = to << 5 | cat;
     }
-  }
+  });
   TAIL_S = starts.slice(0, n);
   TAIL_E = ends.slice(0, n);
 }
@@ -91,19 +90,30 @@ let TAIL_E;
  * @return {number} category number, {@link GraphemeCategoryNum} or 15 (`InCB=Consonant`)
  */
 function cat(cp) {
-  if (cp < 0x3000) return T0[cp];
-  // CJK: 0x3000-0x9FFF
-  if (cp < T1_MIN) {
-    if (cp < 0x3030) return cp >= 0x302A ? 3 : 0;
-    if (cp < 0x309B) {
-      if (cp === 0x3030 || cp === 0x303D) return 4;
-      return cp >= 0x3099 ? 3 : 0;
-    }
-    return (cp === 0x3297 || cp === 0x3299) ? 4 : 0;
-  }
-  if (cp < 0xAC00) return T1[cp - T1_MIN];
+  if (cp < 0x30A0) return T0[cp];
+  // CJK through Vai: U+3297 and U+3299 are the only two that are not `Any`
+  if (cp < 0xA660) return cp === 0x3297 || cp === 0x3299 ? 4 : 0;
+  if (cp < 0xAC00) return T1[cp - 0xA660];
   // Hangul syllables: 0xAC00-0xD7A3, LV at every 28th
   if (cp < 0xD7A4) return (cp - 0xAC00) % 28 ? 8 : 7;
+  // Emoji: 0x1F000-0x1FAFF
+  if (cp >= 0x1F000 && cp < 0x1FB00) return T2[cp - 0x1F000];
+  // Variation selectors: 0xFE00-0xFE0F
+  if (cp >>> 4 === 0xFE0) return 3;
+  return catRare(cp);
+}
+
+/**
+ * Cold half of {@link cat}.
+ * Kept out of line so that the hot half stays well inside V8's 460-bytecode inlining limit.
+ *
+ * As a single function the ladder compiled to 453 bytecodes,
+ * one comparison away from a cliff that cost 15-45% on every segmentation loop once `cat` stopped being inlined.
+ *
+ * @param {number} cp in 0xD7A4-0xDFFF, 0xE000-0xFDFF, 0xFE10-0x1EFFF or 0x1FB00+
+ * @return {number} category number
+ */
+function catRare(cp) {
   // Hangul Jamo Extended-B, unassigned and surrogates as Any
   if (cp < 0xE000) {
     if (cp <= 0xD7C6) return cp >= 0xD7B0 ? 13 : 0;
@@ -111,10 +121,6 @@ function cat(cp) {
   }
   // Private use
   if (cp < 0xFE00) return cp === 0xFB1E ? 3 : 0;
-  // Variation selectors
-  if (cp < 0xFE10) return 3;
-  // Emoji: 0x1F000-0x1FAFF
-  if (cp >= T2_MIN && cp < 0x1FB00) return T2[cp - T2_MIN];
   // Tags and variation selectors supplement: 0xE0000-0xE0FFF
   if (cp >= 0xE0000) {
     if (cp > 0xE0FFF) return 0;
@@ -124,13 +130,16 @@ function cat(cp) {
   return findUnicodeRangeCategory(cp, TAIL_S, TAIL_E);
 }
 
-// Boundary decision table for category pairs, `PAIR[catBefore << 4 | catAfter]`
+// Boundary mask table for category pairs, `PAIR[catBefore << 4 | catAfter]`.
 //
-// - 0: boundary (GB999 and friends)
-// - 1: no boundary
+// A boundary exists iff the mask shares no bit with the packed sequence state,
+// so the whole decision is `!(st & PAIR[...])`:
+//
+// - 0: boundary (GB999 and friends), no state bit can match
+// - 1: no boundary; bit 0 is always set in the state
 // - 2: GB12/GB13, no boundary iff odd run of RI precedes
-// - 3: GB11, no boundary iff the ZWJ was preceded by ExtPic Extend*
-// - 4: GB9c, no boundary iff InCB Consonant [Extend Linker]* Linker [Extend Linker]* precedes
+// - 4: GB11, no boundary iff the ZWJ was preceded by ExtPic Extend*
+// - 8: GB9c, no boundary iff InCB Consonant [Extend Linker]* Linker [Extend Linker]* precedes
 const PAIR = Uint8Array.from(grapheme_pairs);
 
 /**
@@ -163,71 +172,44 @@ function isLinker(cp) {
     || cp === 0x11F42;  // Kawi Conjoiner
 }
 
+// Sequence state, packed in a small int. The bits a boundary rule can ask
+// about are laid out so that each {@link PAIR} mask selects exactly one:
+//
+//   bit 0 (1)  : always set, so the no-boundary mask always matches
+//   bit 1 (2)  : odd run of Regional_Indicator immediately precedes (GB12, GB13)
+//   bit 2 (4)  : the last consumed ZWJ was preceded by ExtPic Extend* (GB11)
+//   bit 3 (8)  : the InCB Consonant run contains a Linker (GB9c)
+//   bit 4 (16) : ExtPic Extend* immediately precedes (feeds bit 2 on ZWJ)
+//   bit 5 (32) : InCB Consonant [Extend Linker]* precedes
+//
+// It is a pure function of the consumed code point sequence,
+// so it carries across segment boundaries without any reset.
+// Non-stateful categories reset the state to 1 inside {@link nextState}.
+
 /**
- * State transition on consuming an Extend code point (category 3).
- * The cp-dependent ZWNJ / `isLinker` branches are extracted here so
- * that {@link nextState} stays a compact switch.
+ * State transition on consuming an Extend code point (category 3) that continues an InCB Consonant run.
+ * The cp-dependent ZWNJ / `isLinker` branches are extracted here so that {@link nextState} stays small enough to inline.
  *
  * @param {number} st packed state
  * @param {number} cp the consumed Extend code point
  * @return {number} next packed state
  */
 function nextExtend(st, cp) {
-  if (st & 24) {
-    if (cp === 0x200C) return st & 6;  // ZWNJ has InCB=None
-    if ((st & 24) === 16 || isLinker(cp)) return (st & 6) | 16;
-    return (st & 6) | 8;
-  }
-  return st & 6;
-}
-
-// Sequence state, packed in a small int:
-//
-//   bit 0   : odd run of Regional_Indicator immediately precedes (GB12, GB13)
-//   bit 1   : ExtPic Extend* immediately precedes (GB11)
-//   bit 2   : the last consumed ZWJ was preceded by ExtPic Extend* (GB11)
-//   bit 3-4 : InCB state; 01 = Consonant [Extend Linker]* precedes,
-//             10 = it also contains a Linker (GB9c)
-//
-// It is a pure function of the consumed code point sequence, so it carries
-// across segment boundaries without any reset. Non-stateful categories
-// reset the state to 0 inside {@link nextState}.
-
-/**
- * Resolve a pair rule to a boundary decision.
- *
- * Each entry in {@link PAIR} encodes *how* to decide a boundary between
- * two adjacent categories, not the decision itself:
- *
- *   0 -> always a boundary (break)
- *   1 -> never a boundary   (no-break)
- *   2 -> boundary unless an odd number of Regional_Indicators precede (GB12/GB13)
- *   3 -> boundary unless preceded by ExtPic Extend* (GB11)
- *   4 -> boundary unless an InCB Linker has been seen in the run (GB9c)
- *
- * Rules 2-4 consult the packed sequence state `st` that was captured
- * *before* the state transition on `catAfter`.
- *
- * @param {number} st packed state
- * @param {number} pairRule the pair-rule value from {@link PAIR}
- * @return {boolean} whether a boundary exists
- */
-function isBoundary(st, pairRule) {
-  switch (pairRule) {
-    case 0:  return true;
-    case 1:  return false;
-    case 2:  return !(st & 1);
-    case 3:  return !(st & 4);
-    default: return (st & 24) !== 16;
-  }
+  if (cp === 0x200C) return st & 21;  // ZWNJ has InCB=None
+  if (st & 8 || isLinker(cp)) return st & 21 | 40;
+  return st & 21 | 32;
 }
 
 /**
  * State transition on consuming a code point.
  *
- * Extend (cat 3) is cp-dependent and delegates to {@link nextExtend};
- * the remaining stateful categories (4, 10, 14, 15) are inline;
- * everything else resets to 0.
+ * Extend (cat 3) is cp-dependent within an InCB Consonant run and delegates to {@link nextExtend};
+ * the remaining stateful categories (4, 10, 14, 15) are inline; everything else resets to 1.
+ *
+ * @remarks
+ * > Keep this body at or below 99 bytecodes (`node --print-bytecode -print-bytecode-filter=nextState`):
+ * > Maglev refuses to inline anything from 100 bytecodes up, and the resulting call per code point measured 8-26% slower there.
+ * > That is also why the tests are an `if` chain rather than a `switch`, which spends 3 extra bytecodes on the discriminant.
  *
  * @param {number} st packed state
  * @param {number} c category of the consumed code point
@@ -235,14 +217,12 @@ function isBoundary(st, pairRule) {
  * @return {number} next packed state
  */
 function nextState(st, c, cp) {
-  switch (c) {
-    case 3:  return st ? nextExtend(st, cp) : 0;
-    case 4:  return 2;                          // Extended_Pictographic
-    case 10: return (st & 1) ^ 1;               // Regional_Indicator
-    case 14: return (st & 2) << 1 | (st & 24);  // ZWJ
-    case 15: return 8;                          // InCB=Consonant
-    default: return 0;
-  }
+  if (c === 3) return st & 32 ? nextExtend(st, cp) : st & 21;
+  if (c === 4) return 17;                     // Extended_Pictographic
+  if (c === 10) return (st & 2) ^ 3;          // Regional_Indicator
+  if (c === 14) return (st & 16) >> 2 | st & 41;  // ZWJ
+  if (c === 15) return 33;                    // InCB=Consonant
+  return 1;
 }
 
 /**
@@ -259,13 +239,13 @@ export function* graphemeSegments(input) {
   if (len === 0) return;
 
   let cp = /** @type {number} */ (input.codePointAt(0));
-  let cursor = cp > BMP_MAX ? 2 : 1;
+  let cursor = cp > 0xFFFF ? 2 : 1;
 
   /** Category of the last consumed code point */
   let catBefore = cat(cp);
 
-  /** Packed sequence state */
-  let st = nextState(0, catBefore, cp);
+  /** Packed sequence state, seeded with the always-set bit 0 */
+  let st = nextState(1, catBefore, cp);
 
   /** Start index of the current segment */
   let index = 0;
@@ -279,7 +259,7 @@ export function* graphemeSegments(input) {
   while (cursor < len) {
     cp = /** @type {number} */ (input.codePointAt(cursor));
     let catAfter = cat(cp);
-    let boundary = isBoundary(st, PAIR[catBefore << 4 | catAfter]);
+    let boundary = !(st & PAIR[catBefore << 4 | catAfter]);
 
     st = nextState(st, catAfter, cp);
 
@@ -296,7 +276,7 @@ export function* graphemeSegments(input) {
       hd = cp;
       catBegin = catAfter;
     }
-    cursor += cp > BMP_MAX ? 2 : 1;
+    cursor += cp > 0xFFFF ? 2 : 1;
     catBefore = catAfter;
   }
 
@@ -321,13 +301,13 @@ export function countGraphemes(input) {
   if (len === 0) return 0;
 
   let cp = /** @type {number} */ (input.codePointAt(0));
-  let cursor = cp > BMP_MAX ? 2 : 1;
+  let cursor = cp > 0xFFFF ? 2 : 1;
 
   /** Category of the last consumed code point */
   let catBefore = cat(cp);
 
-  /** Packed sequence state */
-  let st = nextState(0, catBefore, cp);
+  /** Packed sequence state, seeded with the always-set bit 0 */
+  let st = nextState(1, catBefore, cp);
 
   /** The segment being scanned counts, whether or not a boundary follows */
   let count = 1;
@@ -335,12 +315,11 @@ export function countGraphemes(input) {
   while (cursor < len) {
     cp = /** @type {number} */ (input.codePointAt(cursor));
     let catAfter = cat(cp);
-    let boundary = isBoundary(st, PAIR[catBefore << 4 | catAfter]);
 
+    count += +!(st & PAIR[catBefore << 4 | catAfter]);
     st = nextState(st, catAfter, cp);
 
-    if (boundary) count += 1;
-    cursor += cp > BMP_MAX ? 2 : 1;
+    cursor += cp > 0xFFFF ? 2 : 1;
     catBefore = catAfter;
   }
 
@@ -366,7 +345,37 @@ export {
  * [...splitGraphemes('abc')] // => ['a', 'b', 'c']
  */
 export function* splitGraphemes(input) {
-  for (let s of graphemeSegments(input)) yield s.segment;
+  let len = input.length;
+  if (len === 0) return;
+
+  let cp = /** @type {number} */ (input.codePointAt(0));
+  let cursor = cp > 0xFFFF ? 2 : 1;
+
+  /** Category of the last consumed code point */
+  let catBefore = cat(cp);
+
+  /** Packed sequence state, seeded with the always-set bit 0 */
+  let st = nextState(1, catBefore, cp);
+
+  /** Start index of the current segment */
+  let index = 0;
+
+  while (cursor < len) {
+    cp = /** @type {number} */ (input.codePointAt(cursor));
+    let catAfter = cat(cp);
+    let boundary = !(st & PAIR[catBefore << 4 | catAfter]);
+
+    st = nextState(st, catAfter, cp);
+
+    if (boundary) {
+      yield input.slice(index, cursor);
+      index = cursor;
+    }
+    cursor += cp > 0xFFFF ? 2 : 1;
+    catBefore = catAfter;
+  }
+
+  yield input.slice(index);
 }
 
 /**
@@ -391,13 +400,13 @@ export function collectGraphemes(input) {
   if (len === 0) return result;
 
   let cp = /** @type {number} */ (input.codePointAt(0));
-  let cursor = cp > BMP_MAX ? 2 : 1;
+  let cursor = cp > 0xFFFF ? 2 : 1;
 
   /** Category of the last consumed code point */
   let catBefore = cat(cp);
 
-  /** Packed sequence state */
-  let st = nextState(0, catBefore, cp);
+  /** Packed sequence state, seeded with the always-set bit 0 */
+  let st = nextState(1, catBefore, cp);
 
   /** Start index of the current segment */
   let index = 0;
@@ -405,7 +414,7 @@ export function collectGraphemes(input) {
   while (cursor < len) {
     cp = /** @type {number} */ (input.codePointAt(cursor));
     let catAfter = cat(cp);
-    let boundary = isBoundary(st, PAIR[catBefore << 4 | catAfter]);
+    let boundary = !(st & PAIR[catBefore << 4 | catAfter]);
 
     st = nextState(st, catAfter, cp);
 
@@ -413,7 +422,7 @@ export function collectGraphemes(input) {
       result.push(input.slice(index, cursor));
       index = cursor;
     }
-    cursor += cp > BMP_MAX ? 2 : 1;
+    cursor += cp > 0xFFFF ? 2 : 1;
     catBefore = catAfter;
   }
 
@@ -421,13 +430,12 @@ export function collectGraphemes(input) {
   return result;
 }
 
-// Keep one live segmenter and its result reachable so their hidden classes
-// stay strongly referenced. Otherwise a major GC while no segmenter is
-// alive clears the maps embedded weakly in JIT-optimized code, and the
-// next run pays deoptimization and re-learning costs.
+// Keep one live segmenter and its result reachable so their hidden classes stay strongly referenced.
+// Otherwise a major GC while no segmenter is alive clears the maps embedded weakly in JIT-optimized code,
+// and the next run pays deoptimization and re-learning costs.
 //
-// The instances are stashed on an always-retained module object, since
-// unreferenced module-scope bindings do not survive module evaluation.
+// The instances are stashed on an always-retained module object,
+// since unreferenced module-scope bindings do not survive module evaluation.
 {
   let keep = graphemeSegments('_');
   // @ts-ignore intended expando

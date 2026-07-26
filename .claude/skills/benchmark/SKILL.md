@@ -42,7 +42,8 @@ Never move test inputs by copy-paste: they contain invisible codepoints (ZWJ, va
 
 ## Size-sensitive coding notes (learned the hard way)
 
-- esbuild inlines `const`-bound numeric literals into every use site but preserves `let` bindings. Shared numeric bounds in `src/grapheme.js` (`BMP_MAX`, `T1_MIN`, `T2_MIN`) are deliberately `let` — keep them that way.
+- esbuild inlines `const`-bound numeric literals into every use site but preserves `let` bindings. That makes a shared `let` bound tempting for size, but it compiles to a mutable context slot the engine cannot fold into the comparison: hoisting the hottest bound in `src/grapheme.js` into a `let` measured up to 25% slower on the count loop, and removing the three shared bounds was *also* smaller after gzip. Spell hot-path bounds out as literals.
+- Hot-loop helpers live near engine inlining cliffs — check them with `--trace-turbo-inlining` (prints `bytecode size: N`) after any edit to `cat()` or `nextState()`. TurboFan refuses callees at 460 bytecodes (`cat` sat at 453 before it was split into `cat`/`catRare`; falling off cost 15-45%), Maglev refuses at 100 (`nextState` must stay ≤ 99, worth 8-26% there). Measure the mid/low tiers with `node --no-turbofan` and `node --jitless`; a change can win big on TurboFan and still lose on Maglev.
 - Generator syntax is the deliberate choice over a class-based iterator: a class was 13–34% faster on V8 but cost ~+1.6 KiB Hermes bytecode after Babel class lowering (Hermes can't parse class syntax natively). Don't convert to a class without re-measuring V8, JSC, Hermes, and all three size metrics.
 - `codePointAt()` beat manual `charCodeAt` surrogate pairing on every measured engine (17–20% faster on Hermes) and is smaller. Don't "optimize" it back.
 

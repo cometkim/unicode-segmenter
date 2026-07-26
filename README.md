@@ -52,7 +52,7 @@ Utilities for text segmentation by extended grapheme cluster rules.
 
 You can split a string into graphemes by simply consuming the `splitGraphemes()` generator.
 
-`splitGraphemes()` is a simple wrapper around `graphemeSegments()`.
+It yields substrings directly, so it allocates less than `graphemeSegments()`.
 
 ```js
 import { splitGraphemes } from 'unicode-segmenter/grapheme';
@@ -69,7 +69,7 @@ import { splitGraphemes } from 'unicode-segmenter/grapheme';
 
 If you need the result as an array, use `collectGraphemes()` for convenience.
 
-This is a fast version of `[...splitGraphemes(str)]`, 2-4x faster.
+This is a fast version of `[...splitGraphemes(str)]`, 1.5-2.5x faster.
 
 ```js
 import { collectGraphemes } from 'unicode-segmenter/grapheme';
@@ -237,8 +237,8 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                                 | Unicode® | ESM? |    Size | Size (min) | Size (min+gzip) | Size (min+br) | Size (min+zstd) |
 |--------------------------------------|----------|------|--------:|-----------:|----------------:|--------------:|----------------:|
-| `unicode-segmenter/grapheme`         | 17.0.0   | ✔️   |   8,684 |      5,133 |           2,453 |         2,220 |           2,505 |
-| `unicode-segmenter/grapheme` (full*) | 17.0.0   | ✔️   |  10,494 |      5,777 |           2,732 |         2,435 |           2,796 |
+| `unicode-segmenter/grapheme`         | 17.0.0   | ✔️   |   7,851 |      4,911 |           2,351 |         2,113 |           2,401 |
+| `unicode-segmenter/grapheme` (full*) | 17.0.0   | ✔️   |  10,220 |      5,752 |           2,646 |         2,367 |           2,705 |
 | `graphemer`                          | 15.0.0   | ✖️   | 410,435 |     95,104 |          15,752 |        10,660 |          15,911 |
 | `grapheme-splitter`                  | 10.0.0   | ✖️   | 122,254 |     23,682 |           7,852 |         4,802 |           6,753 |
 | `@formatjs/intl-segmenter`*          | 17.0.0   | ✖️   | 268,301 |    176,759 |          45,988 |        31,701 |          45,370 |
@@ -255,8 +255,8 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 
 | Name                                | Bytecode size | Bytecode size (gzip)* |
 |-------------------------------------|--------------:|----------------------:|
-| `unicode-segmenter/grapheme`        |        20,015 |                11,075 |
-| `unicode-segmenter/grapheme` (full) |        20,224 |                11,213 |
+| `unicode-segmenter/grapheme`        |        15,897 |                 9,039 |
+| `unicode-segmenter/grapheme` (full) |        16,102 |                 9,186 |
 | `graphemer`                         |       134,085 |                31,770 |
 | `grapheme-splitter`                 |        63,942 |                19,165 |
 | `@formatjs/intl-segmenter`          |       329,547 |               136,751 |
@@ -270,7 +270,7 @@ Retained memory per library after segmenting the benchmark corpus, measured by `
 
 | Name                         | JS heap | ArrayBuffers* |
 |------------------------------|--------:|--------------:|
-| `unicode-segmenter/grapheme` | 228 kB  |       20.6 kB |
+| `unicode-segmenter/grapheme` | 217 kB  |       19.1 kB |
 | `graphemer`                  | 2.32 MB |           0 B |
 | `grapheme-splitter`          | 570 kB  |           0 B |
 | `@formatjs/intl-segmenter`   | 1.95 MB |           0 B |
