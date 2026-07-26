@@ -523,14 +523,18 @@ export const ${name}_cats = '${breakTable.map(row => inversed[row[2]].toString(3
 
 /**
  * UAX #29 pair-wise rules for extended grapheme cluster boundaries,
- * evaluated into a 16x16 decision table indexed by
- * `catBefore << 4 | catAfter`.
+ * evaluated into a 16x16 mask table indexed by `catBefore << 4 | catAfter`.
  *
- * - 0: boundary (GB999 and friends)
- * - 1: no boundary
+ * Each entry is a bit mask over the runtime's packed sequence state;
+ * a boundary exists iff the mask and the state share no bit, so a single `!(st & PAIR[...])` resolves every rule.
+ *
+ * - 0: boundary (GB999 and friends), no state bit can match
+ * - 1: no boundary; bit 0 is always set in the state
  * - 2: GB12/GB13, no boundary iff odd run of RI precedes
- * - 3: GB11, no boundary iff the ZWJ was preceded by ExtPic Extend*
- * - 4: GB9c, no boundary iff InCB Consonant [Extend Linker]* Linker [Extend Linker]* precedes
+ * - 4: GB11, no boundary iff the ZWJ was preceded by ExtPic Extend*
+ * - 8: GB9c, no boundary iff InCB Consonant [Extend Linker]* Linker [Extend Linker]* precedes
+ *
+ * Every value stays a single decimal digit so that the runtime decodes the table with a bare `Uint8Array.from(grapheme_pairs)`.
  *
  * Category numbers follow the emitted `GraphemeCategory` enum:
  * 0 Any, 1 CR, 2 Control, 3 Extend, 4 Extended_Pictographic, 5 L, 6 LF,
@@ -554,9 +558,9 @@ let buildGraphemePairTable = () => {
       else if (B === 5) v = (A === 5 || A === 7 || A === 8 || A === 13) ? 1 : 0; // GB6: L × (L | V | LV | LVT)
       else if (B === 7 || B === 13) v = (A === 13 || A === 12) ? 1 : 0;          // GB7: (LV | V) × (V | T)
       else if (B === 8 || B === 12) v = A === 12 ? 1 : 0;                        // GB8: (LVT | T) × T
-      else if (B === 14 && A === 4) v = 3;                                       // GB11: ExtPic Extend* ZWJ × ExtPic
+      else if (B === 14 && A === 4) v = 4;                                       // GB11: ExtPic Extend* ZWJ × ExtPic
       else if (B === 10 && A === 10) v = 2;                                      // GB12, GB13: RI × RI
-      if (v === 0 && (B === 3 || B === 14) && a === 15) v = 4;                   // GB9c: InCB=C [E L]* L [E L]* × InCB=C
+      if (v === 0 && (B === 3 || B === 14) && a === 15) v = 8;                   // GB9c: InCB=C [E L]* L [E L]* × InCB=C
       out += v;
     }
   }
@@ -860,8 +864,9 @@ for (let chars of graphemeTable) {
 
 // Filter out ranges handled by inlined fast paths in cat()
 let graphemeTableOptimized = graphemeTable.filter(([from, to, cat]) => {
-  // CJK fast path: 0x3000-0x9FFF (inlined in cat())
-  if (from >= 0x3000 && to <= 0x9FFF) {
+  // CJK fast path: 0x30A0-0xA65F (inlined in cat(); the T0 table covers
+  // everything below 0x30A0, the T1 table everything from 0xA660)
+  if (from >= 0x30A0 && to <= 0xA65F) {
     return false;
   }
   // Hangul syllables (LV/LVT): computed at runtime
@@ -899,13 +904,8 @@ let graphemeTableOptimized = graphemeTable.filter(([from, to, cat]) => {
   };
   /** @type {(cp: number) => string} */
   let inlined = cp => {
-    // CJK: 0x3000-0x9FFF
-    if (cp >= 0x3000 && cp < 0xA000) {
-      if (cp < 0x3030) return cp >= 0x302A ? 'Extend' : 'Any';
-      if (cp < 0x309B) {
-        if (cp === 0x3030 || cp === 0x303D) return 'Extended_Pictographic';
-        return cp >= 0x3099 ? 'Extend' : 'Any';
-      }
+    // CJK, Yi, Lisu, Vai: 0x30A0-0xA65F
+    if (cp >= 0x30A0 && cp < 0xA660) {
       return (cp === 0x3297 || cp === 0x3299) ? 'Extended_Pictographic' : 'Any';
     }
     // Hangul syllables
@@ -929,7 +929,7 @@ let graphemeTableOptimized = graphemeTable.filter(([from, to, cat]) => {
     throw new Error(`no inlined fast path covers ${cp.toString(16)}`);
   };
   for (let [lo, hi] of [
-    [0x3000, 0x9FFF],
+    [0x30A0, 0xA65F],
     [0xAC00, 0xFE0F],
     [0xE0000, 0xE1000],
   ]) {
@@ -965,14 +965,15 @@ await emitSrc(
     f.write(`
 /**
  * UAX #29 pair-wise rules for extended grapheme cluster boundaries,
- * evaluated into a 16x16 decision table indexed by
- * \`catBefore << 4 | catAfter\`.
+ * evaluated into a 16x16 mask table indexed by \`catBefore << 4 | catAfter\`.
  *
- * - 0: boundary (GB999 and friends)
- * - 1: no boundary
+ * A boundary exists iff the mask shares no bit with the runtime's packed sequence state.
+ *
+ * - 0: boundary (GB999 and friends), no state bit can match
+ * - 1: no boundary; bit 0 is always set in the state
  * - 2: GB12/GB13, no boundary iff odd run of RI precedes
- * - 3: GB11, no boundary iff the ZWJ was preceded by ExtPic Extend*
- * - 4: GB9c, no boundary iff InCB Consonant [Extend Linker]* Linker [Extend Linker]* precedes
+ * - 4: GB11, no boundary iff the ZWJ was preceded by ExtPic Extend*
+ * - 8: GB9c, no boundary iff InCB Consonant [Extend Linker]* Linker [Extend Linker]* precedes
  *
  * See \`buildGraphemePairTable\` in scripts/unicode.js for the rules.
  */

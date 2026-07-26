@@ -31,14 +31,18 @@
  */
 
 /**
- * @template {number} [T=number]
+ * Decode {@link UnicodeDataEncoding} and hand every range to `emit`.
+ *
+ * Callers build their own index from the callback, so decoding never materializes an intermediate array of ranges;
+ * on the grapheme table that is ~800 short-lived tuples per module load.
+ *
  * @param {UnicodeDataEncoding} data
- * @param {string} [cats='']
- * @returns {Array<CategorizedUnicodeRange<T>>}
+ * @param {string} cats base36 category digit per range, or `''` for none
+ * @param {(from: number, to: number, cat: number) => void} emit
+ * @return {void}
  */
-export function decodeUnicodeData(data, cats = '') {
-  let buf = /** @type {Array<CategorizedUnicodeRange<T>>} */([])
-    , len = data.length
+export function decodeUnicodeData(data, cats, emit) {
+  let len = data.length
     , i = 0
     , j = 0
     , p = -1;
@@ -53,10 +57,8 @@ export function decodeUnicodeData(data, cats = '') {
   };
   while (i < len) {
     let from = p + 1 + read();
-    p = from + read();
-    buf.push([from, p, /** @type {T} */ (cats ? parseInt(cats[j++], 36) : 0)]);
+    emit(from, p = from + read(), cats ? parseInt(cats[j++], 36) : 0);
   }
-  return buf;
 }
 
 /**
@@ -113,12 +115,15 @@ export function findUnicodeRangeCategory(cp, starts, ends) {
  * @return {UnicodeRangeTable}
  */
 export function decodeUnicodeFlatData(data) {
-  let ranges = decodeUnicodeData(data)
-    , starts = new Uint32Array(ranges.length)
-    , ends = new Uint32Array(ranges.length);
-  for (let i = 0; i < ranges.length; i++) {
-    starts[i] = ranges[i][0];
-    ends[i] = ranges[i][1] << 5 | 1;
-  }
-  return [starts, ends];
+  // Every range takes at least two characters,
+  // so half the encoded length is a safe upper bound for the range count.
+  let cap = data.length >> 1
+    , starts = new Uint32Array(cap)
+    , ends = new Uint32Array(cap)
+    , n = 0;
+  decodeUnicodeData(data, '', (from, to) => {
+    starts[n] = from;
+    ends[n++] = to << 5 | 1;
+  });
+  return [starts.slice(0, n), ends.slice(0, n)];
 }
