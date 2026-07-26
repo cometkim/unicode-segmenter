@@ -315,9 +315,17 @@ export function countGraphemes(input) {
   while (cursor < len) {
     cp = /** @type {number} */ (input.codePointAt(cursor));
     let catAfter = cat(cp);
+    let boundary = !(st & PAIR[catBefore << 4 | catAfter]);
 
-    count += +!(st & PAIR[catBefore << 4 | catAfter]);
     st = nextState(st, catAfter, cp);
+
+    // NOTE: While TurboFan opts well coercion here, so the branchless form may faster here
+    // ```
+    // count += +!(st & PAIR[catBefore << 4 | catAfter]);
+    // ```
+    // However, Maglev doesn't.
+    // A segmenter called a few hundred times per interaction lives there.
+    if (boundary) count += 1;
 
     cursor += cp > 0xFFFF ? 2 : 1;
     catBefore = catAfter;
