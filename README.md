@@ -268,16 +268,16 @@ Since [Hermes doesn't support the `Intl.Segmenter` API](https://github.com/faceb
 Retained memory per library after segmenting the benchmark corpus, measured by `yarn memory-stats:grapheme` in isolated Node.js processes (median of 5, GC-stabilized deltas).
 
 
-| Name                         | JS heap | External* |
-|------------------------------|--------:|----------:|
-| `unicode-segmenter/grapheme` | 209 kB  |     42 kB |
-| `graphemer`                  | 2.32 MB |         - |
-| `grapheme-splitter`          | 570 kB  |         - |
-| `@formatjs/intl-segmenter`   | 1.95 MB |         - |
-| `unicode-segmentation`*      | 214 kB  |         - |
-| `Intl.Segmenter`*            | 86.5 kB |         - |
+| Name                         | JS heap | ArrayBuffers* |
+|------------------------------|--------:|--------------:|
+| `unicode-segmenter/grapheme` | 228 kB  |       20.6 kB |
+| `graphemer`                  | 2.32 MB |           0 B |
+| `grapheme-splitter`          | 570 kB  |           0 B |
+| `@formatjs/intl-segmenter`   | 1.95 MB |           0 B |
+| `unicode-segmentation`*      | 214 kB  |             - |
+| `Intl.Segmenter`*            | 86.1 kB |             - |
 
-* "External" is the extra ArrayBuffer memory relative to the ~40 kB runtime baseline shared by every row; `unicode-segmenter` keeps its lookup tables in typed arrays, which live there instead of the JS heap.
+* "ArrayBuffers" is `process.memoryUsage().arrayBuffers`: `unicode-segmenter` keeps its lookup tables in typed arrays, so they live there instead of the JS heap. No other JavaScript library here allocates any.
 * `unicode-segmentation`'s WASM linear memory and `Intl.Segmenter`'s ICU data are allocated by native code and invisible to both columns.
 
 #### Runtime Performance

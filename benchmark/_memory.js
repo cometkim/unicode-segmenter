@@ -11,7 +11,7 @@ import prettyBytes from 'pretty-bytes';
  * @property {number} initMs
  * @property {number} heapImport JS heap retained right after load
  * @property {number} heapUse JS heap retained after workload runs
- * @property {number} externalUse external + ArrayBuffer memory after workload runs
+ * @property {number} bufferUse ArrayBuffer memory retained after workload runs
  */
 
 const RESULT_MARKER = '__MEMORY_BENCH_RESULT__';
@@ -54,7 +54,7 @@ export async function memoryBenchmark(adapters, workload, options = {}) {
       'Init (ms)': median(runs.map(r => r.initMs)).toFixed(2),
       'Heap (import)': size(median(runs.map(r => r.heapImport))),
       'Heap (after use)': size(median(runs.map(r => r.heapUse))),
-      'External (after use)': size(median(runs.map(r => r.externalUse))),
+      'ArrayBuffers (after use)': size(median(runs.map(r => r.bufferUse))),
     });
   }
   console.table(report);
@@ -85,7 +85,10 @@ async function measure(adapter, workload, uses) {
     initMs,
     heapImport: m1.heapUsed - m0.heapUsed,
     heapUse: m2.heapUsed - m0.heapUsed,
-    externalUse: (m2.external + m2.arrayBuffers) - (m0.external + m0.arrayBuffers),
+    // `external` already contains `arrayBuffers`, so adding the two counts every lookup table twice.
+    // What `external` adds on top is ~40 kB of module-loader machinery that every row pays identically,
+    // which says nothing about the library, so only the buffers are reported.
+    bufferUse: m2.arrayBuffers - m0.arrayBuffers,
   };
 }
 
