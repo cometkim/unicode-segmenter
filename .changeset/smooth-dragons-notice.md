@@ -2,7 +2,7 @@
 "unicode-segmenter": patch
 ---
 
-Optimize the hot loop based on a eep analysis of the V8 optimization chain.
+Optimize the hot loop based on a deep analysis of the V8 optimization chain.
 
 As the result, the bundle size, speed, and memory usage. All three axes are improved. See PR [#144](https://github.com/cometkim/unicode-segmenter/pull/144) for detailed explanation.
 
@@ -16,6 +16,6 @@ As the result, the bundle size, speed, and memory usage. All three axes are impr
 The state compaction strategy is the major part. It is valid across all optimization tiers of the V8 runtime (Jitless, Maglev, TurboFan) and has been consistently improved across all other engines.
 
 Another noticeable change is `splitGraphemes()`, it now owns its loop, just like `countGraphemes()`.
-It produces a 30-60% performance improvement. The increase in size is roughly free after compression, since the fourth byte-aligned copy of the loop back-references the other three. And margins are amortized by other improvements.
+It produces a 30-60% performance improvement. The size increase is roughly free after compression, since the fourth byte-aligned copy of the loop back-references the other three. And the uncompressed size is amortized by other improvements.
 
 All the analysis have done by Claude Opus 5, well-done!
