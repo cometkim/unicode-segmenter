@@ -437,15 +437,3 @@ export function collectGraphemes(input) {
   result.push(input.slice(index));
   return result;
 }
-
-// Keep one live segmenter and its result reachable so their hidden classes stay strongly referenced.
-// Otherwise a major GC while no segmenter is alive clears the maps embedded weakly in JIT-optimized code,
-// and the next run pays deoptimization and re-learning costs.
-//
-// The instances are stashed on an always-retained module object,
-// since unreferenced module-scope bindings do not survive module evaluation.
-{
-  let keep = graphemeSegments('_');
-  // @ts-ignore intended expando
-  PAIR._keep = [keep, keep.next()];
-}
