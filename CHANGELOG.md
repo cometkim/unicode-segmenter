@@ -1,5 +1,11 @@
 # unicode-segmenter
 
+## 0.17.3
+
+### Patch Changes
+
+- 308be8c: Fixed G9Bc edge case. The `0x0A4D` (Gurmukhi Sign Virama) was incorrectly treated as InCB=Linker.
+
 ## 0.17.2
 
 ### Patch Changes
