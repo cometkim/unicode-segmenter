@@ -151,7 +151,6 @@ const PAIR = Uint8Array.from(grapheme_pairs);
 function isLinker(cp) {
   return cp === 0x094D  // Devanagari Sign Virama
     || cp === 0x09CD    // Bengali Sign Virama
-    || cp === 0x0A4D    // Gurmukhi Sign Virama
     || cp === 0x0ACD    // Gujarati Sign Virama
     || cp === 0x0B4D    // Oriya Sign Virama
     || cp === 0x0C4D    // Telugu Sign Virama

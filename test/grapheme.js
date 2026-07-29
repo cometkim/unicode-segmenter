@@ -353,6 +353,10 @@ test('counterexamples', async t => {
     'क‌्क',
     'कﾞ्क',
     'ൎക്ക',
+    // GB9c: U+0A4D (Gurmukhi Sign Virama) is *not* InCB=Linker per DerivedCoreProperties.txt;
+    // the lib must not treat it as one even when it appears inside an InCB=Consonant run from another script
+    '\u0915\u0A4D\u0915', // DEVANAGARI KA + GURMUKHI VIRAMA + DEVANAGARI KA
+    '\u0A15\u0A4D\u0A15', // pure Gurmukhi KA + virama + KA (InCB=None - harmless)
     // Hangul Jamo Extended-B boundaries; U+D7FC..U+D7FF are unassigned
     '가퟼',
     'ퟻ퟼',
