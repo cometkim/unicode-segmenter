@@ -79,6 +79,22 @@ collectGraphemes('#️⃣*️⃣0️⃣1️⃣2️⃣'); // => ["#️⃣", "*️
 
 However, it collects all grapheme clusters at once, so it's not good for large text or streamed input.
 
+
+#### Example: Collect grapheme start indices into a reusable array
+
+If you only want the **start indices** of each grapheme cluster, use `collectGraphemeIndices()`, which is optimized to avoid allocations for segments and the output array.
+
+It populates a reusable target array in-place, returns the number of indices written, and is typically **2-4x faster** than `collectGraphemes()` and more GC friendly, so you can call it in a hot path.
+
+```js
+import { collectGraphemeIndices } from 'unicode-segmenter/grapheme';
+
+const dest = [];
+const str = 'a🏳️‍🌈b';
+str.length; // => 8
+const count = collectGraphemeIndices('a🏳️‍🌈b', dest); // 3 + fills dest with [0, 1, 7]
+```
+
 #### Example: Count graphemes
 
 If you need only the count, use `countGraphemes()`, which is optimized to avoid allocations for segments.

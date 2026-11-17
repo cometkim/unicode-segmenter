@@ -8,11 +8,14 @@ import {
   countGraphemes,
   splitGraphemes,
   collectGraphemes,
+  collectGraphemeIndices,
 } from 'unicode-segmenter/grapheme';
 import { testcases } from './_testcases.js';
 import { corpora } from './_corpora.js';
 
 const bench = withCodSpeed(new Bench());
+
+const sharedIndexBuffer = new Array(65536).fill(0);
 
 /**
  * One factory per API, so that the function CodSpeed measures contains a single call and nothing else.
@@ -24,6 +27,7 @@ const apis = [
   ['countGraphemes', input => () => { void countGraphemes(input); }],
   ['splitGraphemes', input => () => { void [...splitGraphemes(input)]; }],
   ['collectGraphemes', input => () => { void collectGraphemes(input); }],
+  ['collectGraphemeIndices', input => () => { void collectGraphemeIndices(input, sharedIndexBuffer); }],
 ];
 
 /**

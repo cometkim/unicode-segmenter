@@ -436,3 +436,57 @@ export function collectGraphemes(input) {
   result.push(input.slice(index));
   return result;
 }
+
+/**
+ * Collect all extended grapheme cluster start indices in the given text.
+ *
+ * Writes the start index of each grapheme cluster into `dest` and returns
+ * the number of indices written. Useful for zero-allocation iteration or buffer reuse.
+ *
+ * @param {string} input
+ * @param {number[]} dest - The destination array to write start indices into.
+ * @return {number} The number of graphemes (and indices written to `dest`).
+ *
+ * @example
+ * const dest = [];
+ * const str = 'a🏳️‍🌈b';
+ * str.length; // => 8
+ * const count = collectGraphemeIndices('a🏳️‍🌈b', dest); // 3 + fills dest with [0, 1, 7]
+ */
+export function collectGraphemeIndices(input, dest) {
+  let len = input.length;
+  if (len === 0) return 0;
+
+  let cp = /** @type {number} */ (input.codePointAt(0));
+  let cursor = cp > 0xFFFF ? 2 : 1;
+
+  /** Category of the last consumed code point */
+  let catBefore = cat(cp);
+
+  /** Packed sequence state, seeded with the always-set bit 0 */
+  let st = nextState(1, catBefore, cp);
+
+  /** Start index of the current segment */
+  let index = 0;
+
+  /** how many boundary indices have been written to dest */
+  let boundaryCount = 0;
+
+  while (cursor < len) {
+    cp = /** @type {number} */ (input.codePointAt(cursor));
+    let catAfter = cat(cp);
+    let boundary = !(st & PAIR[catBefore << 4 | catAfter]);
+
+    st = nextState(st, catAfter, cp);
+
+    if (boundary) {
+      dest[boundaryCount++] = index;
+      index = cursor;
+    }
+    cursor += cp > 0xFFFF ? 2 : 1;
+    catBefore = catAfter;
+  }
+
+  dest[boundaryCount++] = index;
+  return boundaryCount;
+}
