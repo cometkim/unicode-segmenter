@@ -12,6 +12,7 @@ import {
   collectGraphemes,
 } from 'unicode-segmenter/grapheme';
 import { assertObjectContaining } from './_helper.js';
+import {collectGraphemeIndices} from "#src/grapheme.js";
 
 test('graphemeSegments', async t => {
   await t.test('empty string', () => {
@@ -216,6 +217,76 @@ test('collectGraphemes', async t => {
   });
 });
 
+test('collectGraphemeIndices', async t => {
+  await t.test('latin', () => {
+    /** @type {number[]} */
+    const dest = [];
+    assert.equal(collectGraphemeIndices('abcd', dest), 4);
+    assert.deepEqual(dest, [0, 1, 2, 3]);
+  });
+
+  await t.test('flags', () => {
+    /** @type {number[]} */
+    const dest = [];
+    assert.equal(collectGraphemeIndices('🇷🇸🇮🇴', dest), 2);
+    assert.deepEqual(dest, [0, 4]);
+  });
+
+  await t.test('emoji', () => {
+    /** @type {number[]} */
+    const dest = [];
+    assert.equal(collectGraphemeIndices('👻👩‍👩‍👦‍👦', dest), 2);
+    assert.deepEqual(dest, [0, 2]);
+
+    assert.equal(collectGraphemeIndices('🌷🎁💩😜👍🏳️‍🌈', dest), 6);
+    assert.deepEqual(dest, [0, 2, 4, 6, 8, 10]);
+  });
+
+  await t.test('diacritics as combining marks', () => {
+    /** @type {number[]} */
+    const dest = [];
+    assert.equal(collectGraphemeIndices('Ĺo͂řȩm̅', dest), 5);
+    assert.deepEqual(dest, [0, 2, 4, 6, 8]);
+  });
+
+  await t.test('Jamo', () => {
+    /** @type {number[]} */
+    const dest = [];
+    assert.equal(collectGraphemeIndices('가갉', dest), 2);
+    assert.deepEqual(dest, [0, 1]);
+  });
+
+  await t.test('Hindi', () => {
+    /** @type {number[]} */
+    const dest = [];
+    assert.equal(collectGraphemeIndices('अनुच्छेद', dest), 4);
+    assert.deepEqual(dest, [0, 1, 3, 7]);
+  });
+
+  await t.test('demonic', () => {
+    /** @type {number[]} */
+    const dest = [];
+    assert.equal(collectGraphemeIndices('Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍A̴̵̜̰͔ͫ͗͢L̠ͨͧͩ͘G̴̻͈͍͔̹̑͗̎̅͛́Ǫ̵̹̻̝̳͂̌̌͘!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞', dest), 6);
+    assert.deepEqual(dest, [0, 19, 28, 34, 47, 58]);
+  });
+
+  await t.test('reuses given array', () => {
+    /** @type {number[]} */
+    const dest = [];
+
+    assert.equal(collectGraphemeIndices('', dest), 0);
+    assert.deepEqual(dest, []);
+
+    assert.equal(collectGraphemeIndices('a🏳️‍🌈b🏳️‍🌈c', dest), 5);
+    assert.deepEqual(dest, [0, 1, 7, 8, 14]);
+
+    assert.equal(collectGraphemeIndices('xa🏳️‍🌈b🏳️‍🌈c🏳️‍🌈d', dest), 8);
+    assert.deepEqual(dest, [0, 1, 2, 8, 9, 15, 16, 22]);
+
+    assert.equal(collectGraphemeIndices('xya🏳️‍🌈b', dest), 5);
+    assert.deepEqual(dest, [0, 1, 2, 3, 9, 15, 16, 22]);
+  });
+});
 
 
 test('conformance', async t => {
